@@ -1,0 +1,174 @@
+.dashboard-page {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--ef-text-main);
+  }
+
+  .role-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    background: #f1f3f4;
+    color: var(--ef-text-secondary);
+    padding: 3px 8px;
+    border-radius: var(--ef-radius-sm);
+    margin-bottom: 6px;
+  }
+
+  .header-desc {
+    font-size: 0.88rem;
+    color: var(--ef-text-secondary);
+    margin-top: 2px;
+  }
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.content-card {
+  background: #ffffff;
+  border: 1px solid var(--ef-border-subtle);
+  border-radius: var(--ef-radius-lg);
+  padding: 20px 24px;
+  box-shadow: var(--ef-shadow-card);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .card-meta {
+    font-size: 0.78rem;
+    color: var(--ef-text-tertiary);
+  }
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    text-align: left;
+    padding: 12px 14px;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    color: var(--ef-text-secondary);
+    border-bottom: 2px solid var(--ef-border-subtle);
+    letter-spacing: 0.04em;
+  }
+
+  td {
+    padding: 14px;
+    font-size: 0.88rem;
+    border-bottom: 1px solid var(--ef-border-subtle);
+
+    .sub-text {
+      font-size: 0.75rem;
+      color: var(--ef-text-tertiary);
+      margin-top: 2px;
+    }
+  }
+}
+
+.branding-customizer-card {
+  border-left: 4px solid var(--ef-primary);
+
+  .live-preview-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #e8f0fe;
+    color: var(--ef-primary);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 500;
+
+    .pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #34a853;
+      box-shadow: 0 0 0 2px rgba(52, 168, 83, 0.2);
+    }
+  }
+
+  .brand-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: var(--ef-radius-md);
+    margin-bottom: 16px;
+    font-size: 0.88rem;
+
+    &.success {
+      background: #e6f4ea;
+      color: #137333;
+      border: 1px solid #ceead6;
+    }
+  }
+
+  .branding-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+
+    .field-hint {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.74rem;
+      color: var(--ef-text-tertiary);
+    }
+  }
+
+  .branding-actions {
+    display: flex;
+    justify-content: flex-end;
+
+    .save-brand-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      font-weight: 600;
+    }
+  }
+}
+
+

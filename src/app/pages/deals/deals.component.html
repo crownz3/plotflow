@@ -1,0 +1,90 @@
+<div class="deals-page animate-fade-in">
+  <div class="page-header">
+    <div>
+      <h1>Deal Closing & Commission Ledger</h1>
+      <p class="sub-desc">Track closed brokerage transactions, GST splits, and agent payouts.</p>
+    </div>
+
+    <button class="ef-btn ef-btn-primary" (click)="openDealModal.set(true)">
+      <span>🎊 New Deal Closing Calculator</span>
+    </button>
+  </div>
+
+  <!-- Financial Totals Bar -->
+  <div class="financial-summary-cards">
+    <div class="fin-card">
+      <span class="fin-label">Total Gross Brokerage</span>
+      <span class="fin-val">{{ dealService.totalGrossBrokerage() | currencyFormat }}</span>
+    </div>
+    <div class="fin-card">
+      <span class="fin-label">Net Agency Brokerage</span>
+      <span class="fin-val text-success">{{ dealService.totalNetBrokerage() | currencyFormat }}</span>
+    </div>
+    <div class="fin-card">
+      <span class="fin-label">Receivable Balance</span>
+      <span class="fin-val text-warning">{{ dealService.totalReceivable() | currencyFormat }}</span>
+    </div>
+  </div>
+
+  <!-- Deals Table -->
+  <div class="deals-card">
+    <div class="table-responsive">
+      <table class="deals-table">
+        <thead>
+          <tr>
+            <th>Deal Title & Property</th>
+            <th>Closing Date</th>
+            <th>Deal Value</th>
+            <th>Gross Brokerage</th>
+            <th>Agent Payout</th>
+            <th>Net Agency Profit</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let deal of dealService.tenantDeals()">
+            <td>
+              <strong>{{ deal.dealTitle }}</strong>
+              <div class="deal-prop">🏡 {{ deal.propertyTitle }} • Client: {{ deal.clientName }}</div>
+            </td>
+            <td>{{ deal.closingDate | date:'mediumDate' }}</td>
+            <td><strong>{{ deal.dealValue | currencyFormat }}</strong></td>
+            <td>{{ deal.grossBrokerage | currencyFormat }}</td>
+            <td>
+              <span class="agent-tag">{{ deal.agentCommissionAmount | currencyFormat }}</span>
+              <div class="agent-sub">Advisor: {{ deal.agentName }}</div>
+            </td>
+            <td class="profit-cell">{{ deal.netAgencyBrokerage | currencyFormat }}</td>
+            <td>
+              <app-status-pill [status]="deal.status"></app-status-pill>
+            </td>
+            <td>
+              <div class="actions-row">
+                <button
+                  class="ef-btn ef-btn-tonal ef-btn-sm mark-paid-btn"
+                  *ngIf="deal.balanceReceivable > 0"
+                  (click)="markPaidInFull(deal)">
+                  ✔ Paid Full
+                </button>
+                <button
+                  class="ef-btn ef-btn-outlined ef-btn-sm delete-deal-btn"
+                  (click)="deleteDeal(deal)"
+                  style="color: var(--ef-status-urgent);">
+                  🗑 Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Deal Modal with Confetti -->
+  <app-deal-modal
+    *ngIf="openDealModal()"
+    (onClose)="openDealModal.set(false)">
+  </app-deal-modal>
+</div>
+

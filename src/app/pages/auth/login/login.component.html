@@ -1,0 +1,82 @@
+<div class="login-wrapper">
+  <div class="login-card animate-fade-in">
+    <div class="brand-header">
+      <div class="brand-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+      </div>
+      <h1>{{ platformConfig.platformName() }}</h1>
+      <p class="tagline">{{ platformConfig.tagline() }}</p>
+    </div>
+
+    <!-- Real Firebase Google Sign-In Button -->
+    <div class="google-auth-box">
+      <button type="button" class="google-signin-btn" (click)="signInWithGoogle()" [disabled]="isLoggingIn">
+        <svg class="google-icon" viewBox="0 0 24 24" width="22" height="22">
+          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
+          <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.17 0 9.99 0 12s.45 3.83 1.25 5.42l4.03-3.15z"/>
+          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+        </svg>
+        <span>{{ isLoggingIn ? 'Connecting to Google...' : 'Sign in with Google' }}</span>
+      </button>
+      <span class="auth-pill-badge">Google Workspace &amp; Gmail Only</span>
+    </div>
+
+    <div class="divider">
+      <span>OR INSTANT EVALUATION ACCESS</span>
+    </div>
+
+    <!-- 1-Click Fast Role Sign-In Bar (For instant testing & evaluation) -->
+    <div class="demo-login-box">
+      <span class="demo-label">⚡ Fast One-Click Demo Access:</span>
+      <div class="demo-buttons">
+        <button class="demo-btn agency-admin" (click)="quickLogin('agency_admin')">
+          <strong>Principal Broker (Agency Admin)</strong>
+          <span>primeproperties.broker&#64;gmail.com</span>
+        </button>
+        <button class="demo-btn agent" (click)="quickLogin('agent')">
+          <strong>Associate Agent</strong>
+          <span>primeproperties.agent&#64;gmail.com</span>
+        </button>
+        <button class="demo-btn super-admin" (click)="quickLogin('super_admin')">
+          <strong>SaaS Super Admin</strong>
+          <span>Mohamed Ibrahim (mohamedibrahim040125&#64;gmail.com)</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="divider">
+      <span>OR SIGN IN WITH CREDENTIALS</span>
+    </div>
+
+    <form class="login-form" (submit)="handleLogin($event)">
+      <div class="ef-form-group">
+        <label>Google Work Mail (&#64;gmail.com)</label>
+        <input type="email" [(ngModel)]="email" name="email" placeholder="broker.realty@gmail.com">
+        <small class="field-hint" style="color: var(--ef-text-tertiary); font-size: 0.74rem; margin-top: 4px; display: block;">
+          PlotFlow requires authenticated Google Mail (&#64;gmail.com) accounts for all tenants.
+        </small>
+        <div *ngIf="errorMessage" style="color: #d93025; font-size: 0.8rem; margin-top: 6px; font-weight: 500;">
+          {{ errorMessage }}
+        </div>
+      </div>
+
+      <div class="ef-form-group">
+        <label>Password</label>
+        <input type="password" [(ngModel)]="password" name="password" placeholder="••••••••">
+      </div>
+
+      <button type="submit" class="ef-btn ef-btn-primary login-btn">
+        Sign In
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <p>New Brokerage? <a (click)="quickRegister()" class="register-link">Start 14-Day Free Agency Trial</a></p>
+    </div>
+  </div>
+</div>
+

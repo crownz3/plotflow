@@ -1,0 +1,37 @@
+<div class="lead-card animate-fade-in" (click)="onOpenMatcher.emit(lead)">
+  <div class="lead-card-top">
+    <span class="priority-pill" [ngClass]="lead.priority">{{ lead.priority | uppercase }}</span>
+    <span class="source-tag">{{ lead.source }}</span>
+  </div>
+
+  <h4 class="lead-name">{{ lead.name }}</h4>
+  <p class="lead-phone">{{ lead.phone }}</p>
+
+  <div class="lead-req-box">
+    <span class="req-type">{{ lead.requirement.propertyTypes.join(', ') }}</span>
+    <span class="req-budget">{{ lead.requirement.budgetMin | currencyFormat }} - {{ lead.requirement.budgetMax | currencyFormat }}</span>
+  </div>
+
+  <!-- Quick Action Row -->
+  <div class="lead-actions" (click)="$event.stopPropagation()">
+    <a [href]="'tel:' + lead.phone" class="action-btn" title="Call">📞 Call</a>
+    <a [href]="leadService.getWhatsAppShareUrl(lead)" target="_blank" class="action-btn wa" title="WhatsApp">💬 WhatsApp</a>
+    <button class="action-btn match" (click)="onOpenMatcher.emit(lead)" title="Smart Property Matcher">
+      🏡 Match
+    </button>
+    <button class="action-btn edit-lead-btn" (click)="onEdit.emit(lead)" title="Edit Lead">
+      ✏
+    </button>
+    <button class="action-btn delete-lead-btn" (click)="onDelete.emit(lead)" title="Delete Lead" style="color: var(--ef-status-urgent);">
+      🗑
+    </button>
+    <button
+      class="action-btn won"
+      *ngIf="lead.stage !== 'closed_won'"
+      (click)="onMarkWon.emit(lead)"
+      title="Mark as Closed Won">
+      🏆 Won
+    </button>
+  </div>
+</div>
+

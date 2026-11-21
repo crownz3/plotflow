@@ -1,0 +1,115 @@
+<div class="dashboard-page animate-fade-in">
+  <div class="dashboard-header">
+    <div>
+      <span class="role-badge">Associate Broker Workspace</span>
+      <h1>Welcome, {{ auth.currentUser()?.displayName }}</h1>
+      <p class="header-desc">Track your assigned prospects, scheduled site visits, and commission earnings.</p>
+    </div>
+
+    <div class="quick-action-bar">
+      <button class="ef-btn ef-btn-primary" (click)="openDealModal.set(true)">
+        <span>🎊 Close My Deal & Celebrate</span>
+      </button>
+      <a routerLink="/leads" class="ef-btn ef-btn-tonal">
+        <span>My Leads & Pipeline</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Agent KPI Cards -->
+  <div class="kpi-grid">
+    <app-stat-card
+      title="My Assigned Leads"
+      [value]="leadService.tenantLeads().length"
+      subtitle="In active pipeline"
+      badgeText="Active"
+      badgeColor="green"
+      iconColor="blue">
+      <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+      </svg>
+    </app-stat-card>
+
+    <app-stat-card
+      title="My Site Visits Today"
+      value="1"
+      subtitle="Sholinganallur Villa"
+      badgeText="Today 5 PM"
+      badgeColor="blue"
+      iconColor="amber">
+      <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+      </svg>
+    </app-stat-card>
+
+    <app-stat-card
+      title="My Closed Deals"
+      value="2"
+      subtitle="This Month"
+      badgeText="Top 10%"
+      badgeColor="green"
+      iconColor="green">
+      <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </app-stat-card>
+
+    <app-stat-card
+      title="My Commission Payout"
+      value="₹2,05,000"
+      subtitle="Earned this month"
+      badgeText="Net Payout"
+      badgeColor="green"
+      iconColor="green">
+      <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="1" x2="12" y2="23"></line>
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+      </svg>
+    </app-stat-card>
+  </div>
+
+  <!-- Action Queue Today -->
+  <div class="content-card">
+    <div class="card-header">
+      <h2>My Priority Call & Follow-up Queue</h2>
+      <span class="card-meta">Action Required Today</span>
+    </div>
+
+    <div class="queue-list">
+      <div class="queue-item" *ngFor="let lead of leadService.tenantLeads()">
+        <div class="queue-avatar" [ngClass]="lead.priority">{{ lead.name.slice(0, 2).toUpperCase() }}</div>
+        <div class="queue-info">
+          <div class="queue-title-row">
+            <strong>{{ lead.name }}</strong>
+            <app-status-pill [status]="lead.stage"></app-status-pill>
+          </div>
+          <div class="queue-req">
+            Looking for: {{ lead.requirement.propertyTypes.join(', ') }} • Budget: {{ lead.requirement.budgetMin | currencyFormat }} - {{ lead.requirement.budgetMax | currencyFormat }}
+          </div>
+          <div class="queue-notes" *ngIf="lead.notes[0]">
+            💬 "{{ lead.notes[0].text }}"
+          </div>
+        </div>
+
+        <div class="queue-actions">
+          <a [href]="'tel:' + lead.phone" class="ef-btn ef-btn-outlined ef-btn-sm">
+            📞 Call
+          </a>
+          <a [href]="leadService.getWhatsAppShareUrl(lead)" target="_blank" class="ef-btn ef-btn-primary ef-btn-sm">
+            💬 WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Deal Closing Modal with Confetti -->
+  <app-deal-modal
+    *ngIf="openDealModal()"
+    (onClose)="openDealModal.set(false)">
+  </app-deal-modal>
+</div>
+

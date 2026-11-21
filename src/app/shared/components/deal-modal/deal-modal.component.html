@@ -1,0 +1,74 @@
+<div class="modal-backdrop" (click)="onClose.emit()">
+  <div class="modal-card animate-fade-in" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <h2>Deal Closing & Commission Calculator</h2>
+        <p class="modal-sub">Finalize transaction terms, calculate splits, and log to agency ledger.</p>
+      </div>
+      <button class="close-btn" (click)="onClose.emit()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="deal-inputs-grid">
+        <div class="ef-form-group">
+          <label>Deal Title</label>
+          <input type="text" [(ngModel)]="dealTitle" placeholder="e.g. ECR Penthouse Sale Closing">
+        </div>
+
+        <div class="ef-form-group">
+          <label>Total Deal Value (₹)</label>
+          <input type="number" [(ngModel)]="dealValue" (ngModelChange)="recalculate()" placeholder="e.g. 24500000">
+        </div>
+
+        <div class="ef-form-group">
+          <label>Buyer Brokerage (%)</label>
+          <input type="number" step="0.1" [(ngModel)]="buyerPct" (ngModelChange)="recalculate()">
+        </div>
+
+        <div class="ef-form-group">
+          <label>Seller Brokerage (%)</label>
+          <input type="number" step="0.1" [(ngModel)]="sellerPct" (ngModelChange)="recalculate()">
+        </div>
+
+        <div class="ef-form-group">
+          <label>GST Rate (%)</label>
+          <input type="number" step="1" [(ngModel)]="gstPct" (ngModelChange)="recalculate()">
+        </div>
+
+        <div class="ef-form-group">
+          <label>Agent Commission Split (%)</label>
+          <input type="number" step="1" [(ngModel)]="agentSplitPct" (ngModelChange)="recalculate()">
+        </div>
+      </div>
+
+      <!-- Real-Time Calculation Preview Card -->
+      <div class="calculation-summary-card">
+        <h3>Brokerage Breakdown & Payouts</h3>
+        <div class="calc-row">
+          <span>Gross Brokerage ({{ buyerPct + sellerPct }}%):</span>
+          <strong>{{ financials().grossBrokerage | currencyFormat }}</strong>
+        </div>
+        <div class="calc-row text-danger">
+          <span>GST Deducted ({{ gstPct }}%):</span>
+          <span>- {{ financials().gstAmount | currencyFormat }}</span>
+        </div>
+        <div class="calc-row text-info">
+          <span>Agent Commission Payout ({{ agentSplitPct }}%):</span>
+          <strong>{{ financials().agentCommissionAmount | currencyFormat }}</strong>
+        </div>
+        <div class="calc-row net-row">
+          <span>Net Agency Profit:</span>
+          <span class="net-profit-val">{{ financials().netAgencyBrokerage | currencyFormat }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="ef-btn ef-btn-outlined" (click)="onClose.emit()">Cancel</button>
+      <button class="ef-btn ef-btn-primary" (click)="submitDeal()">
+        <span>🎊 Finalize & Close Deal</span>
+      </button>
+    </div>
+  </div>
+</div>
+

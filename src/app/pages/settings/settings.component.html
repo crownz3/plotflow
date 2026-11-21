@@ -1,0 +1,138 @@
+<div class="settings-page animate-fade-in">
+  <div class="page-header">
+    <div>
+      <h1>Agency Settings & Team Management</h1>
+      <p class="sub-desc">Customize agency branding for generated brochures and manage sub-broker team access.</p>
+    </div>
+
+    <button class="ef-btn ef-btn-primary" (click)="saveSettings()">
+      <span>Save All Changes</span>
+    </button>
+  </div>
+
+  <div class="settings-layout">
+    <!-- Agency Profile Card -->
+    <div class="content-card">
+      <h2>Agency Information & Branding</h2>
+      <p class="section-sub">These details automatically appear on client-facing PDF brochures and WhatsApp shares.</p>
+
+      <div class="form-grid">
+        <div class="ef-form-group col-span-2">
+          <label>Brokerage Agency Name</label>
+          <input type="text" [(ngModel)]="agencyName">
+        </div>
+
+        <div class="ef-form-group">
+          <label>RERA Registration Number</label>
+          <input type="text" [(ngModel)]="reraNumber">
+        </div>
+
+        <div class="ef-form-group">
+          <label>Office Phone / WhatsApp</label>
+          <input type="text" [(ngModel)]="phone">
+        </div>
+
+        <div class="ef-form-group">
+          <label>Default Currency</label>
+          <select [(ngModel)]="currency">
+            <option value="INR">INR (₹ Indian Rupee - Lakhs / Crores)</option>
+            <option value="USD">USD ($ United States Dollar)</option>
+            <option value="AED">AED (United Arab Emirates Dirham)</option>
+            <option value="EUR">EUR (€ Euro)</option>
+          </select>
+        </div>
+
+        <div class="ef-form-group">
+          <label>Primary Land Area Unit</label>
+          <select [(ngModel)]="defaultAreaUnit">
+            <option value="sqft">Square Feet (Sq.ft)</option>
+            <option value="cent">Cent</option>
+            <option value="acre">Acre</option>
+            <option value="ground">Ground</option>
+          </select>
+        </div>
+
+        <div class="ef-form-group col-span-2">
+          <label>Office Address</label>
+          <input type="text" [(ngModel)]="address">
+        </div>
+      </div>
+    </div>
+
+    <!-- Team Members Card -->
+    <div class="content-card">
+      <div class="card-header">
+        <div>
+          <h2>Sub-Brokers & Agents Team</h2>
+          <span class="card-meta">Role-Based Access Control (RBAC)</span>
+        </div>
+        <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="openInviteModal.set(true)">
+          + Invite Agent
+        </button>
+      </div>
+
+      <div class="team-list">
+        <div class="team-member-row" *ngFor="let member of tenantService.teamMembers()">
+          <div class="member-avatar">{{ member.displayName.slice(0, 2).toUpperCase() }}</div>
+          <div class="member-info">
+            <strong>{{ member.displayName }}</strong>
+            <span>{{ member.email }}</span>
+          </div>
+          <span class="role-pill" [ngClass]="member.role === 'agency_admin' ? 'admin' : 'agent'">
+            {{ member.role === 'agency_admin' ? 'Agency Admin' : 'Agent' }}
+          </span>
+          <button
+            class="ef-btn ef-btn-outlined ef-btn-sm delete-member-btn"
+            *ngIf="member.role !== 'agency_admin'"
+            (click)="removeMember(member.uid)"
+            style="color: var(--ef-status-urgent); margin-left: 8px;">
+            🗑 Remove
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invite Agent Modal -->
+  <div class="modal-backdrop" *ngIf="openInviteModal()" (click)="openInviteModal.set(false)">
+    <div class="modal-card animate-fade-in" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Invite Associate Broker to Agency</h2>
+        <button class="close-btn" (click)="openInviteModal.set(false)">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="ef-form-group col-span-2">
+            <label>Agent Full Name</label>
+            <input type="text" [(ngModel)]="inviteName" placeholder="e.g. Priya Sundaram">
+          </div>
+          <div class="ef-form-group col-span-2">
+            <label>Google Work Mail (&#64;gmail.com)</label>
+            <input type="email" [(ngModel)]="inviteEmail" placeholder="priya.realty&#64;gmail.com">
+            <small class="field-hint" style="color: var(--ef-text-tertiary); font-size: 0.74rem; margin-top: 4px; display: block;">
+              Only Google Mail (&#64;gmail.com) accounts allowed.
+            </small>
+            <div *ngIf="inviteErrorMessage" style="color: #d93025; font-size: 0.8rem; margin-top: 4px; font-weight: 500;">
+              {{ inviteErrorMessage }}
+            </div>
+          </div>
+          <div class="ef-form-group col-span-2">
+            <label>Role</label>
+            <select [(ngModel)]="inviteRole">
+              <option value="agent">Agent (Associate Broker)</option>
+              <option value="agency_admin">Agency Admin (Co-Broker)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="ef-btn ef-btn-outlined" (click)="openInviteModal.set(false)">Cancel</button>
+        <button class="ef-btn ef-btn-primary" (click)="sendInvite()">Send Invitation</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-notice" *ngIf="savedNotice()">
+    ✔ Settings saved successfully!
+  </div>
+</div>

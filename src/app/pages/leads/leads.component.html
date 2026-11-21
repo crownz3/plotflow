@@ -1,0 +1,197 @@
+<div class="leads-page animate-fade-in">
+  <div class="page-header">
+    <div>
+      <h1>Broker CRM & Lead Pipeline</h1>
+      <p class="sub-desc">Track prospect stages, auto-match matching inventory, and log interactions.</p>
+    </div>
+
+    <button class="ef-btn ef-btn-primary" (click)="openAddModal.set(true)">
+      <span>+ Add New Lead</span>
+    </button>
+  </div>
+
+  <!-- Kanban Pipeline Board -->
+  <div class="kanban-board">
+    <!-- STAGE COLUMNS -->
+    <div class="kanban-column" *ngFor="let stage of stages">
+      <div class="column-header" [ngClass]="stage.id">
+        <span class="column-title">{{ stage.title }}</span>
+        <span class="column-count">{{ leadService.leadsByStage()[stage.id].length }}</span>
+      </div>
+
+      <div class="column-cards">
+        <app-lead-card
+          *ngFor="let lead of leadService.leadsByStage()[stage.id]"
+          [lead]="lead"
+          (onOpenMatcher)="openMatcher($event)"
+          (onMarkWon)="markAsWon($event)"
+          (onEdit)="startEditLead($event)"
+          (onDelete)="deleteLead($event)">
+        </app-lead-card>
+
+        <div class="empty-column-placeholder" *ngIf="leadService.leadsByStage()[stage.id].length === 0">
+          No leads in this stage
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Smart Property Matcher Drawer / Modal -->
+  <div class="modal-backdrop" *ngIf="selectedLeadForMatch()" (click)="selectedLeadForMatch.set(null)">
+    <div class="modal-card matcher-modal animate-fade-in" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h2>Smart Property Matcher for {{ selectedLeadForMatch()?.name }}</h2>
+          <p class="modal-sub">
+            Budget: {{ selectedLeadForMatch()?.requirement?.budgetMin | currencyFormat }} - {{ selectedLeadForMatch()?.requirement?.budgetMax | currencyFormat }}
+            • Locations: {{ selectedLeadForMatch()?.requirement?.preferredLocations?.join(', ') }}
+          </p>
+        </div>
+        <button class="close-btn" (click)="selectedLeadForMatch.set(null)">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <h3>Matching Inventory Suggestions ({{ matchedProperties().length }})</h3>
+
+        <div class="matching-grid" *ngIf="matchedProperties().length > 0">
+          <div class="match-item-card" *ngFor="let prop of matchedProperties()">
+            <div class="match-info">
+              <strong>{{ prop.title }}</strong>
+              <div class="match-meta">
+                <span class="match-price">{{ prop.price | currencyFormat }}</span>
+                <span>📍 {{ prop.location.locality }}</span>
+                <span>📐 {{ prop.area }} {{ prop.areaUnit }}</span>
+              </div>
+            </div>
+
+            <div class="match-actions">
+              <a
+                [href]="leadService.getWhatsAppShareUrl(selectedLeadForMatch()!, prop)"
+                target="_blank"
+                class="ef-btn ef-btn-primary ef-btn-sm">
+                💬 Pitch on WhatsApp
+              </a>
+              <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="closeDealWithProp(prop)">
+                Close Deal 🎊
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="matchedProperties().length === 0">
+          <p>No inventory currently matches this lead's criteria.</p>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="ef-btn ef-btn-outlined" (click)="selectedLeadForMatch.set(null)">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Lead Modal -->
+  <div class="modal-backdrop" *ngIf="openAddModal()" (click)="openAddModal.set(false)">
+    <div class="modal-card animate-fade-in" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Add New Buyer Prospect</h2>
+        <button class="close-btn" (click)="openAddModal.set(false)">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="ef-form-group col-span-2">
+            <label>Prospect Name</label>
+            <input type="text" [(ngModel)]="newLead.name" placeholder="e.g. Vikram Malhotra">
+          </div>
+          <div class="ef-form-group">
+            <label>Phone Number</label>
+            <input type="text" [(ngModel)]="newLead.phone" placeholder="+91 98765 00000">
+          </div>
+          <div class="ef-form-group">
+            <label>Lead Source</label>
+            <select [(ngModel)]="newLead.source">
+              <option value="walk_in">Walk-in Client</option>
+              <option value="portal_99acres">99acres Lead</option>
+              <option value="portal_magicbricks">MagicBricks</option>
+              <option value="referral">Client Referral</option>
+              <option value="social_media">Instagram / FB Ad</option>
+            </select>
+          </div>
+          <div class="ef-form-group">
+            <label>Minimum Budget (₹)</label>
+            <input type="number" [(ngModel)]="newLead.budgetMin">
+          </div>
+          <div class="ef-form-group">
+            <label>Maximum Budget (₹)</label>
+            <input type="number" [(ngModel)]="newLead.budgetMax">
+          </div>
+          <div class="ef-form-group col-span-2">
+            <label>Preferred Localities (comma separated)</label>
+            <input type="text" [(ngModel)]="newLead.locations" placeholder="e.g. ECR, Velachery, OMR">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="ef-btn ef-btn-outlined" (click)="openAddModal.set(false)">Cancel</button>
+        <button class="ef-btn ef-btn-primary" (click)="saveLead()">Save Prospect</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Deal Closing Modal -->
+  <app-deal-modal
+    *ngIf="dealModalOpen()"
+    [property]="dealModalProp"
+    [lead]="selectedLeadForMatch() || undefined"
+    (onClose)="dealModalOpen.set(false)">
+  </app-deal-modal>
+
+  <!-- Edit Lead Modal -->
+  <div class="modal-backdrop" *ngIf="editingLead()" (click)="editingLead.set(null)">
+    <div class="modal-card animate-fade-in" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Edit Prospect Lead</h2>
+        <button class="close-btn" (click)="editingLead.set(null)">&times;</button>
+      </div>
+      <div class="modal-body" *ngIf="editingLead()">
+        <div class="form-grid">
+          <div class="ef-form-group col-span-2">
+            <label>Prospect Name</label>
+            <input type="text" [(ngModel)]="editLeadForm.name">
+          </div>
+          <div class="ef-form-group">
+            <label>Phone Number</label>
+            <input type="text" [(ngModel)]="editLeadForm.phone">
+          </div>
+          <div class="ef-form-group">
+            <label>Pipeline Stage</label>
+            <select [(ngModel)]="editLeadForm.stage">
+              <option value="new">New Lead</option>
+              <option value="contacted">Contacted</option>
+              <option value="visit_scheduled">Visit Scheduled</option>
+              <option value="negotiation">Negotiation</option>
+              <option value="closed_won">Closed Won</option>
+              <option value="closed_lost">Closed Lost</option>
+            </select>
+          </div>
+          <div class="ef-form-group">
+            <label>Priority</label>
+            <select [(ngModel)]="editLeadForm.priority">
+              <option value="hot">Hot</option>
+              <option value="warm">Warm</option>
+              <option value="cold">Cold</option>
+            </select>
+          </div>
+          <div class="ef-form-group">
+            <label>Max Budget (₹)</label>
+            <input type="number" [(ngModel)]="editLeadForm.budgetMax">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="ef-btn ef-btn-outlined" (click)="editingLead.set(null)">Cancel</button>
+        <button class="ef-btn ef-btn-primary" (click)="saveEditLead()">Update Prospect</button>
+      </div>
+    </div>
+  </div>
+</div>
+

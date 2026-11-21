@@ -1,0 +1,48 @@
+<header class="app-navbar">
+  <div class="navbar-left">
+    <button class="menu-toggle-btn" (click)="onToggleSidebar.emit()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+    <div class="brand-title">
+      <span class="brand-name">{{ platformConfig.platformName() }}</span>
+      <span class="brand-tag">PRO</span>
+    </div>
+  </div>
+
+  <div class="navbar-center">
+    <div class="global-search-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" placeholder="Search properties, leads, localities, deals...">
+    </div>
+  </div>
+
+  <div class="navbar-right">
+    <!-- Active Tenant Badge -->
+    <div class="tenant-badge" title="Active Agency Organization Context">
+      <span class="dot"></span>
+      <span class="tenant-name">{{ tenantService.activeTenant().agencyName }}</span>
+    </div>
+
+    <!-- Quick Role Switcher for Testing -->
+    <div class="role-switcher">
+      <select [ngModel]="auth.currentRole()" (ngModelChange)="switchRole($event)">
+        <option value="agency_admin">Role: Principal Broker</option>
+        <option value="agent">Role: Associate Agent</option>
+        <option value="super_admin">Role: Platform Super-Admin</option>
+      </select>
+    </div>
+
+    <!-- User Profile Avatar -->
+    <div class="user-avatar-btn">
+      <div class="avatar-circle">{{ userInitials }}</div>
+    </div>
+  </div>
+</header>
+

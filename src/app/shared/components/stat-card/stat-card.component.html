@@ -1,0 +1,16 @@
+<div class="stat-card animate-fade-in" [ngClass]="theme">
+  <div class="stat-card-header">
+    <span class="stat-card-title">{{ title }}</span>
+    <div class="stat-card-icon" [ngClass]="iconColor">
+      <ng-content select="[slot=icon]"></ng-content>
+    </div>
+  </div>
+  <div class="stat-card-body">
+    <span class="stat-card-value">{{ value }}</span>
+    <div class="stat-card-footer" *ngIf="subtitle || badgeText">
+      <span class="stat-badge" *ngIf="badgeText" [ngClass]="badgeColor">{{ badgeText }}</span>
+      <span class="stat-subtitle" *ngIf="subtitle">{{ subtitle }}</span>
+    </div>
+  </div>
+</div>
+

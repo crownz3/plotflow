@@ -1,0 +1,6 @@
+<ng-container [ngSwitch]="auth.currentRole()">
+  <app-super-admin-dashboard *ngSwitchCase="'super_admin'"></app-super-admin-dashboard>
+  <app-agent-dashboard *ngSwitchCase="'agent'"></app-agent-dashboard>
+  <app-agency-admin-dashboard *ngSwitchDefault></app-agency-admin-dashboard>
+</ng-container>
+

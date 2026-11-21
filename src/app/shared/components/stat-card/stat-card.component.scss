@@ -1,0 +1,75 @@
+.stat-card {
+  background: #ffffff;
+  border: 1px solid var(--ef-border-subtle);
+  border-radius: var(--ef-radius-md);
+  padding: 16px 20px;
+  box-shadow: var(--ef-shadow-card);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--ef-shadow-elevated);
+  }
+}
+
+.stat-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stat-card-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ef-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.stat-card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ef-primary-tint);
+  color: var(--ef-primary);
+
+  &.green { background: var(--ef-success-tint); color: var(--ef-success); }
+  &.amber { background: var(--ef-warning-tint); color: #b06000; }
+  &.red { background: var(--ef-danger-tint); color: var(--ef-danger); }
+}
+
+.stat-card-value {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: var(--ef-text-main);
+  line-height: 1.2;
+}
+
+.stat-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.stat-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--ef-radius-pill);
+
+  &.green { background: var(--ef-success-tint); color: var(--ef-success); }
+  &.blue { background: var(--ef-info-tint); color: var(--ef-info); }
+}
+
+.stat-subtitle {
+  font-size: 0.75rem;
+  color: var(--ef-text-tertiary);
+}
+

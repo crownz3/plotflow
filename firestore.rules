@@ -1,0 +1,892 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: /platform_config/{configDoc}
+    // Document ID: configDoc (e.g. 'global')
+    // Fields:
+    //   - id: string (optional, 1..100 chars)
+    //   - platformName: string (required, 1..100 chars) - SaaS Platform Brand Name
+    //   - tagline: string (optional, 0..200 chars) - Brand Tagline
+    //   - supportEmail: string (optional, valid email or 0..100 chars) - Helpdesk email
+    //   - updatedAt: number (optional) - Unix timestamp ms
+    //
+    // Collection: /users/{userId}
+    // Document ID: userId (matches auth.uid)
+    // Fields:
+    //   - uid: string (required, immutable, 1..128 chars) - Firebase Auth UID
+    //   - email: string (required, valid Google Mail) - Broker/agent email (gmail.com/googlemail.com)
+    //   - displayName: string (required, 1..100 chars) - Full name
+    //   - phoneNumber: string (optional, 0..25 chars) - Contact phone
+    //   - photoURL: string (optional, 0..500 chars) - Avatar URL
+    //   - tenantId: string (required, immutable on update by user, 1..100 chars) - Agency tenant reference
+    //   - agencyName: string (optional, 0..100 chars) - Agency display name
+    //   - role: string (required, 'super_admin' | 'agency_admin' | 'agent') - User permission role
+    //   - isActive: bool (required) - Account active status
+    //   - assignedPropertyIds: list of strings (optional, <= 100 items) - Assigned properties
+    //   - createdAt: number (required, immutable) - Creation Unix timestamp ms
+    //   - lastLoginAt: number (optional) - Last login Unix timestamp ms
+    //
+    // Collection: /tenants/{tenantId}
+    // Document ID: tenantId
+    // Fields:
+    //   - id: string (required, immutable, matches tenantId)
+    //   - agencyName: string (required, 1..100 chars) - Real estate agency name
+    //   - ownerUid: string (required, immutable) - Agency owner user UID
+    //   - reraNumber: string (optional, 0..50 chars) - RERA registration number
+    //   - logoUrl: string (optional, 0..500 chars) - Agency branding logo URL
+    //   - phone: string (required, 1..25 chars) - Agency primary phone
+    //   - email: string (required, valid Google Mail) - Agency business email (gmail.com/googlemail.com)
+    //   - address: string (required, 1..200 chars) - Agency physical address
+    //   - currency: string (required, 'INR' | 'USD' | 'AED' | 'EUR') - Primary currency
+    //   - defaultAreaUnit: string (required, 'sqft' | 'cent' | 'acre' | 'ground' | 'guntha') - Default unit
+    //   - subscriptionPlan: string (required, 'trial' | 'starter' | 'pro' | 'enterprise') - Plan tier
+    //   - trialExpiresAt: number (required) - Subscription/trial expiration timestamp
+    //   - totalAgentsCount: number (optional, >= 0)
+    //   - totalListingsCount: number (optional, >= 0)
+    //   - createdAt: number (required, immutable) - Creation timestamp
+    //   - updatedAt: number (required) - Last update timestamp
+    //
+    // Collection: /tenants/{tenantId}/users/{userId}
+    // Document ID: userId (matches auth.uid)
+    // Fields:
+    //   - uid: string (required, immutable, 1..128 chars) - Firebase Auth UID
+    //   - email: string (required, valid Google Mail) - Broker/agent email (gmail.com/googlemail.com)
+    //   - displayName: string (required, 1..100 chars) - Full name
+    //   - phoneNumber: string (optional, 0..25 chars) - Contact phone
+    //   - photoURL: string (optional, 0..500 chars) - Avatar URL
+    //   - tenantId: string (required, immutable, 1..100 chars) - Tenant ID reference
+    //   - agencyName: string (optional, 0..100 chars) - Agency display name
+    //   - role: string (required, 'super_admin' | 'agency_admin' | 'agent') - User role
+    //   - isActive: bool (required) - Account active status
+    //   - assignedPropertyIds: list of strings (optional, <= 100 items)
+    //   - createdAt: number (required, immutable) - Creation timestamp
+    //   - lastLoginAt: number (optional) - Last login timestamp
+    //
+    // Collection: /tenants/{tenantId}/properties/{propertyId}
+    // Document ID: propertyId
+    // Fields:
+    //   - id: string (required, immutable, 1..100 chars)
+    //   - tenantId: string (required, immutable, matches tenantId)
+    //   - title: string (required, 1..200 chars)
+    //   - description: string (required, 0..5000 chars)
+    //   - propertyType: string (required, 'apartment' | 'villa' | 'plot' | 'commercial' | 'agricultural' | 'penthouse')
+    //   - listingType: string (required, 'sale' | 'rent' | 'lease')
+    //   - status: string (required, 'available' | 'under_offer' | 'sold' | 'rented')
+    //   - price: number (required, >= 0)
+    //   - pricePerUnitArea: number (optional, >= 0)
+    //   - negotiable: bool (required)
+    //   - maintenanceFee: number (optional, >= 0)
+    //   - area: number (required, > 0)
+    //   - areaUnit: string (required, 'sqft' | 'cent' | 'acre' | 'ground' | 'guntha')
+    //   - bhk: string (optional)
+    //   - bathrooms: number (optional, >= 0)
+    //   - facing: string (optional)
+    //   - furnishingStatus: string (optional)
+    //   - location: map (required)
+    //   - amenities: list of strings (required, <= 50 items)
+    //   - images: list of strings (required, <= 30 items)
+    //   - floorPlanUrl: string (optional, 0..500 chars)
+    //   - ownerDetails: map (required)
+    //   - assignedAgentId: string (optional, 0..128 chars)
+    //   - assignedAgentName: string (optional, 0..100 chars)
+    //   - tags: list of strings (optional, <= 30 items)
+    //   - featured: bool (optional)
+    //   - createdBy: string (required, immutable, 1..128 chars)
+    //   - createdAt: number (required, immutable)
+    //   - updatedAt: number (required)
+    //
+    // Collection: /tenants/{tenantId}/leads/{leadId}
+    // Document ID: leadId
+    // Fields:
+    //   - id: string (required, immutable, 1..100 chars)
+    //   - tenantId: string (required, immutable, matches tenantId)
+    //   - name: string (required, 1..100 chars)
+    //   - phone: string (required, 1..25 chars)
+    //   - email: string (optional, valid email or 0..100 chars)
+    //   - source: string (required, 'walk_in' | 'portal_99acres' | 'portal_magicbricks' | 'referral' | 'social_media' | 'direct_call' | 'website')
+    //   - stage: string (required, 'new' | 'contacted' | 'visit_scheduled' | 'negotiation' | 'closed_won' | 'closed_lost')
+    //   - priority: string (required, 'hot' | 'warm' | 'cold')
+    //   - requirement: map (required)
+    //   - assignedAgentId: string (optional, 0..128 chars)
+    //   - assignedAgentName: string (optional, 0..100 chars)
+    //   - lastContactedAt: number (optional)
+    //   - nextFollowUpAt: number (optional)
+    //   - notes: list of maps (required, <= 200 items)
+    //   - matchedPropertyCount: number (optional, >= 0)
+    //   - createdAt: number (required, immutable)
+    //   - updatedAt: number (required)
+    //
+    // Collection: /tenants/{tenantId}/siteVisits/{visitId} (and /site_visits/{visitId})
+    // Document ID: visitId
+    // Fields:
+    //   - id: string (required, immutable, 1..100 chars)
+    //   - tenantId: string (required, immutable, matches tenantId)
+    //   - leadId: string (required, 1..100 chars)
+    //   - leadName: string (required, 1..100 chars)
+    //   - leadPhone: string (required, 1..25 chars)
+    //   - propertyId: string (required, 1..100 chars)
+    //   - propertyTitle: string (required, 1..200 chars)
+    //   - propertyLocation: string (required, 1..200 chars)
+    //   - agentId: string (required, 1..128 chars)
+    //   - agentName: string (required, 1..100 chars)
+    //   - scheduledTime: number (required)
+    //   - status: string (required, 'scheduled' | 'completed' | 'cancelled' | 'rescheduled')
+    //   - feedback: string (optional, 0..1000 chars)
+    //   - clientRating: number (optional, 1..5)
+    //   - notificationScheduled: bool (optional)
+    //   - createdAt: number (required, immutable)
+    //   - updatedAt: number (optional)
+    //
+    // Collection: /tenants/{tenantId}/deals/{dealId}
+    // Document ID: dealId
+    // Fields:
+    //   - id: string (required, immutable, 1..100 chars)
+    //   - tenantId: string (required, immutable, matches tenantId)
+    //   - dealTitle: string (required, 1..200 chars)
+    //   - propertyId: string (required, 1..100 chars)
+    //   - propertyTitle: string (required, 1..200 chars)
+    //   - leadId: string (required, 1..100 chars)
+    //   - clientName: string (required, 1..100 chars)
+    //   - agentId: string (required, 1..128 chars)
+    //   - agentName: string (required, 1..100 chars)
+    //   - dealValue: number (required, >= 0)
+    //   - buyerBrokeragePercent: number (required, >= 0)
+    //   - sellerBrokeragePercent: number (required, >= 0)
+    //   - grossBrokerage: number (required, >= 0)
+    //   - gstPercent: number (required, >= 0)
+    //   - gstAmount: number (required, >= 0)
+    //   - agentCommissionPercent: number (required, >= 0)
+    //   - agentCommissionAmount: number (required, >= 0)
+    //   - netAgencyBrokerage: number (required)
+    //   - paymentMilestones: list of maps (optional, <= 20 items)
+    //   - totalReceived: number (required, >= 0)
+    //   - balanceReceivable: number (required)
+    //   - closingDate: number (required)
+    //   - status: string (required, 'draft' | 'under_process' | 'closed_paid' | 'closed_won' | 'cancelled')
+    //   - createdAt: number (required, immutable)
+    //   - updatedAt: number (optional)
+    //
+    // Collection: /tenants/{tenantId}/expenses/{expenseId}
+    // Document ID: expenseId
+    // Fields:
+    //   - id: string (required, immutable, 1..100 chars)
+    //   - tenantId: string (required, immutable, matches tenantId)
+    //   - title: string (required, 1..200 chars)
+    //   - category: string (required, 'marketing' | 'travel_fuel' | 'office_rent' | 'portal_listing_fee' | 'legal_documentation' | 'miscellaneous')
+    //   - amount: number (required, > 0)
+    //   - date: number (required)
+    //   - relatedDealId: string (optional, 0..100 chars)
+    //   - loggedBy: string (required, 1..128 chars)
+    //   - receiptUrl: string (optional, 0..500 chars)
+    //   - createdAt: number (required, immutable)
+    //
+    // Collection: /tenants/{tenantId}/agents/{agentId}
+    // Document ID: agentId
+    // Fields:
+    //   - id: string (required, immutable, 1..100 chars)
+    //   - tenantId: string (required, immutable, matches tenantId)
+    //   - name: string (required, 1..100 chars)
+    //   - email: string (required, valid email)
+    //   - phone: string (required, 1..25 chars)
+    //   - role: string (required, 'agency_admin' | 'agent')
+    //   - isActive: bool (required)
+    //   - commissionSplitPercent: number (optional, 0..100)
+    //   - createdAt: number (required, immutable)
+    //   - updatedAt: number (required)
+    //
+    // Collection: /tenants/{tenantId}/settings/{settingId}
+    // Document ID: settingId (e.g. 'agency')
+    // Fields:
+    //   - tenantId: string (required, immutable, matches tenantId)
+    //   - updatedAt: number (required)
+    // ===============================================================
+
+    // ---------------------------------------------------------------
+    // Root Level Default Deny
+    // ---------------------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ===============================================================
+    // Global Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.uid;
+    }
+
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == request.auth.uid;
+    }
+
+    function uidNotModified() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == resource.data.uid;
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$');
+    }
+
+    function isGoogleMail(email) {
+      return email is string && email.matches('^[a-zA-Z0-9._%+-]+@(gmail\\.com|googlemail\\.com)$');
+    }
+
+    function isValidOptionalString(data, field, minLen, maxLen) {
+      return !(field in data) || (data[field] is string && data[field].size() >= minLen && data[field].size() <= maxLen);
+    }
+
+    function userDocExists() {
+      return isAuthenticated() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function tenantUserDocExists(tenantId) {
+      return isAuthenticated() && exists(/databases/$(database)/documents/tenants/$(tenantId)/users/$(request.auth.uid));
+    }
+
+    function getTenantUserData(tenantId) {
+      return get(/databases/$(database)/documents/tenants/$(tenantId)/users/$(request.auth.uid)).data;
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && (
+        ('role' in request.auth.token && request.auth.token.role == 'super_admin') ||
+        ('email' in request.auth.token && request.auth.token.email == 'mohamedibrahim040125@gmail.com') ||
+        (userDocExists() && getUserData().role == 'super_admin')
+      );
+    }
+
+    function isTenantMember(tenantId) {
+      return isAuthenticated() && (
+        isSuperAdmin() ||
+        ('tenantId' in request.auth.token && request.auth.token.tenantId == tenantId) ||
+        (tenantUserDocExists(tenantId) && getTenantUserData(tenantId).isActive != false) ||
+        (userDocExists() && getUserData().tenantId == tenantId && getUserData().isActive != false)
+      );
+    }
+
+    function getUserRoleInTenant(tenantId) {
+      return isSuperAdmin() ? 'super_admin' :
+        ('role' in request.auth.token && 'tenantId' in request.auth.token && request.auth.token.tenantId == tenantId) ? request.auth.token.role :
+        (tenantUserDocExists(tenantId)) ? getTenantUserData(tenantId).role :
+        (userDocExists() && getUserData().tenantId == tenantId) ? getUserData().role :
+        '';
+    }
+
+    function isTenantAdmin(tenantId) {
+      return isSuperAdmin() || (isTenantMember(tenantId) && getUserRoleInTenant(tenantId) == 'agency_admin');
+    }
+
+    function isAgencyAdmin(tenantId) {
+      return isTenantAdmin(tenantId);
+    }
+
+    function isTenantAgent(tenantId) {
+      return isSuperAdmin() || (isTenantMember(tenantId) && (getUserRoleInTenant(tenantId) == 'agent' || getUserRoleInTenant(tenantId) == 'agency_admin'));
+    }
+
+    // ===============================================================
+    // Domain Validator Functions (Enforced on create AND update)
+    // ===============================================================
+
+    function isValidPlatformConfig(data) {
+      return data.keys().hasAll(['platformName']) &&
+        data.keys().hasOnly(['id', 'platformName', 'tagline', 'supportEmail', 'updatedAt']) &&
+        data.platformName is string && data.platformName.size() >= 1 && data.platformName.size() <= 100 &&
+        isValidOptionalString(data, 'id', 1, 100) &&
+        isValidOptionalString(data, 'tagline', 0, 200) &&
+        isValidOptionalString(data, 'supportEmail', 0, 100) &&
+        (!( 'updatedAt' in data ) || data.updatedAt is number);
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'displayName', 'tenantId', 'role', 'isActive', 'createdAt']) &&
+        data.keys().hasOnly(['uid', 'email', 'displayName', 'phoneNumber', 'photoURL', 'tenantId', 'agencyName', 'role', 'isActive', 'assignedPropertyIds', 'createdAt', 'lastLoginAt']) &&
+        data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 &&
+        isGoogleMail(data.email) &&
+        data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 100 &&
+        isValidOptionalString(data, 'phoneNumber', 0, 25) &&
+        isValidOptionalString(data, 'photoURL', 0, 500) &&
+        isValidOptionalString(data, 'agencyName', 0, 100) &&
+        data.tenantId is string && data.tenantId.size() >= 1 && data.tenantId.size() <= 100 &&
+        data.role in ['super_admin', 'agency_admin', 'agent'] &&
+        data.isActive is bool &&
+        (!( 'assignedPropertyIds' in data ) || (data.assignedPropertyIds is list && data.assignedPropertyIds.size() <= 100)) &&
+        data.createdAt is number &&
+        (!( 'lastLoginAt' in data ) || data.lastLoginAt is number);
+    }
+
+    function isValidTenant(data) {
+      return data.keys().hasAll(['id', 'agencyName', 'ownerUid', 'phone', 'email', 'address', 'currency', 'defaultAreaUnit', 'subscriptionPlan', 'trialExpiresAt', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'agencyName', 'ownerUid', 'reraNumber', 'logoUrl', 'phone', 'email', 'address', 'currency', 'defaultAreaUnit', 'subscriptionPlan', 'trialExpiresAt', 'totalAgentsCount', 'totalListingsCount', 'createdAt', 'updatedAt']) &&
+        data.id is string && data.id.size() >= 1 && data.id.size() <= 100 &&
+        data.agencyName is string && data.agencyName.size() >= 1 && data.agencyName.size() <= 100 &&
+        data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128 &&
+        data.phone is string && data.phone.size() >= 1 && data.phone.size() <= 25 &&
+        isGoogleMail(data.email) &&
+        data.address is string && data.address.size() >= 1 && data.address.size() <= 200 &&
+        data.currency in ['INR', 'USD', 'AED', 'EUR'] &&
+        data.defaultAreaUnit in ['sqft', 'cent', 'acre', 'ground', 'guntha'] &&
+        data.subscriptionPlan in ['trial', 'starter', 'pro', 'enterprise'] &&
+        data.trialExpiresAt is number &&
+        data.createdAt is number &&
+        data.updatedAt is number &&
+        isValidOptionalString(data, 'reraNumber', 0, 50) &&
+        isValidOptionalString(data, 'logoUrl', 0, 500) &&
+        (!( 'totalAgentsCount' in data ) || (data.totalAgentsCount is number && data.totalAgentsCount >= 0)) &&
+        (!( 'totalListingsCount' in data ) || (data.totalListingsCount is number && data.totalListingsCount >= 0));
+    }
+
+    function isValidProperty(data) {
+      return data.keys().hasAll(['id', 'tenantId', 'title', 'description', 'propertyType', 'listingType', 'status', 'price', 'area', 'areaUnit', 'negotiable', 'location', 'amenities', 'images', 'ownerDetails', 'createdBy', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'tenantId', 'title', 'description', 'propertyType', 'listingType', 'status', 'price', 'pricePerUnitArea', 'negotiable', 'maintenanceFee', 'area', 'areaUnit', 'bhk', 'bathrooms', 'facing', 'furnishingStatus', 'location', 'amenities', 'images', 'floorPlanUrl', 'ownerDetails', 'assignedAgentId', 'assignedAgentName', 'tags', 'featured', 'createdBy', 'createdAt', 'updatedAt']) &&
+        data.id is string && data.id.size() >= 1 && data.id.size() <= 100 &&
+        data.tenantId is string && data.tenantId.size() >= 1 && data.tenantId.size() <= 100 &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+        data.description is string && data.description.size() <= 5000 &&
+        data.propertyType in ['apartment', 'villa', 'plot', 'commercial', 'agricultural', 'penthouse'] &&
+        data.listingType in ['sale', 'rent', 'lease'] &&
+        data.status in ['available', 'under_offer', 'sold', 'rented'] &&
+        data.price is number && data.price >= 0 &&
+        data.area is number && data.area > 0 &&
+        data.areaUnit in ['sqft', 'cent', 'acre', 'ground', 'guntha'] &&
+        data.negotiable is bool &&
+        data.location is map &&
+        data.amenities is list && data.amenities.size() <= 50 &&
+        data.images is list && data.images.size() <= 30 &&
+        data.ownerDetails is map &&
+        data.createdBy is string && data.createdBy.size() >= 1 && data.createdBy.size() <= 128 &&
+        data.createdAt is number &&
+        data.updatedAt is number &&
+        isValidOptionalString(data, 'floorPlanUrl', 0, 500) &&
+        isValidOptionalString(data, 'assignedAgentId', 0, 128) &&
+        isValidOptionalString(data, 'assignedAgentName', 0, 100) &&
+        isValidOptionalString(data, 'bhk', 0, 50) &&
+        isValidOptionalString(data, 'facing', 0, 50) &&
+        isValidOptionalString(data, 'furnishingStatus', 0, 50) &&
+        (!( 'tags' in data ) || (data.tags is list && data.tags.size() <= 30)) &&
+        (!( 'featured' in data ) || data.featured is bool) &&
+        (!( 'bathrooms' in data ) || (data.bathrooms is number && data.bathrooms >= 0)) &&
+        (!( 'pricePerUnitArea' in data ) || (data.pricePerUnitArea is number && data.pricePerUnitArea >= 0)) &&
+        (!( 'maintenanceFee' in data ) || (data.maintenanceFee is number && data.maintenanceFee >= 0));
+    }
+
+    function isValidLead(data) {
+      return data.keys().hasAll(['id', 'tenantId', 'name', 'phone', 'source', 'stage', 'priority', 'requirement', 'notes', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'tenantId', 'name', 'phone', 'email', 'source', 'stage', 'priority', 'requirement', 'assignedAgentId', 'assignedAgentName', 'lastContactedAt', 'nextFollowUpAt', 'notes', 'matchedPropertyCount', 'createdAt', 'updatedAt']) &&
+        data.id is string && data.id.size() >= 1 && data.id.size() <= 100 &&
+        data.tenantId is string && data.tenantId.size() >= 1 && data.tenantId.size() <= 100 &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+        data.phone is string && data.phone.size() >= 1 && data.phone.size() <= 25 &&
+        data.source in ['walk_in', 'portal_99acres', 'portal_magicbricks', 'referral', 'social_media', 'direct_call', 'website'] &&
+        data.stage in ['new', 'contacted', 'visit_scheduled', 'negotiation', 'closed_won', 'closed_lost'] &&
+        data.priority in ['hot', 'warm', 'cold'] &&
+        data.requirement is map &&
+        data.notes is list && data.notes.size() <= 200 &&
+        data.createdAt is number &&
+        data.updatedAt is number &&
+        isValidOptionalString(data, 'email', 0, 100) &&
+        isValidOptionalString(data, 'assignedAgentId', 0, 128) &&
+        isValidOptionalString(data, 'assignedAgentName', 0, 100) &&
+        (!( 'lastContactedAt' in data ) || data.lastContactedAt is number) &&
+        (!( 'nextFollowUpAt' in data ) || data.nextFollowUpAt is number) &&
+        (!( 'matchedPropertyCount' in data ) || (data.matchedPropertyCount is number && data.matchedPropertyCount >= 0));
+    }
+
+    function isValidSiteVisit(data) {
+      return data.keys().hasAll(['id', 'tenantId', 'leadId', 'leadName', 'leadPhone', 'propertyId', 'propertyTitle', 'propertyLocation', 'agentId', 'agentName', 'scheduledTime', 'status', 'createdAt']) &&
+        data.keys().hasOnly(['id', 'tenantId', 'leadId', 'leadName', 'leadPhone', 'propertyId', 'propertyTitle', 'propertyLocation', 'agentId', 'agentName', 'scheduledTime', 'status', 'feedback', 'clientRating', 'notificationScheduled', 'createdAt', 'updatedAt']) &&
+        data.id is string && data.id.size() >= 1 && data.id.size() <= 100 &&
+        data.tenantId is string && data.tenantId.size() >= 1 && data.tenantId.size() <= 100 &&
+        data.leadId is string && data.leadId.size() >= 1 && data.leadId.size() <= 100 &&
+        data.leadName is string && data.leadName.size() >= 1 && data.leadName.size() <= 100 &&
+        data.leadPhone is string && data.leadPhone.size() >= 1 && data.leadPhone.size() <= 25 &&
+        data.propertyId is string && data.propertyId.size() >= 1 && data.propertyId.size() <= 100 &&
+        data.propertyTitle is string && data.propertyTitle.size() >= 1 && data.propertyTitle.size() <= 200 &&
+        data.propertyLocation is string && data.propertyLocation.size() >= 1 && data.propertyLocation.size() <= 200 &&
+        data.agentId is string && data.agentId.size() >= 1 && data.agentId.size() <= 128 &&
+        data.agentName is string && data.agentName.size() >= 1 && data.agentName.size() <= 100 &&
+        data.scheduledTime is number &&
+        data.status in ['scheduled', 'completed', 'cancelled', 'rescheduled'] &&
+        data.createdAt is number &&
+        (!( 'notificationScheduled' in data ) || data.notificationScheduled is bool) &&
+        (!( 'updatedAt' in data ) || data.updatedAt is number) &&
+        isValidOptionalString(data, 'feedback', 0, 1000) &&
+        (!( 'clientRating' in data ) || (data.clientRating is number && data.clientRating >= 1 && data.clientRating <= 5));
+    }
+
+    function isValidDeal(data) {
+      return data.keys().hasAll(['id', 'tenantId', 'dealTitle', 'propertyId', 'propertyTitle', 'leadId', 'clientName', 'agentId', 'agentName', 'dealValue', 'buyerBrokeragePercent', 'sellerBrokeragePercent', 'grossBrokerage', 'gstPercent', 'gstAmount', 'agentCommissionPercent', 'agentCommissionAmount', 'netAgencyBrokerage', 'totalReceived', 'balanceReceivable', 'closingDate', 'status', 'createdAt']) &&
+        data.keys().hasOnly(['id', 'tenantId', 'dealTitle', 'propertyId', 'propertyTitle', 'leadId', 'clientName', 'agentId', 'agentName', 'dealValue', 'buyerBrokeragePercent', 'sellerBrokeragePercent', 'grossBrokerage', 'gstPercent', 'gstAmount', 'agentCommissionPercent', 'agentCommissionAmount', 'netAgencyBrokerage', 'paymentMilestones', 'totalReceived', 'balanceReceivable', 'closingDate', 'status', 'createdAt', 'updatedAt']) &&
+        data.id is string && data.id.size() >= 1 && data.id.size() <= 100 &&
+        data.tenantId is string && data.tenantId.size() >= 1 && data.tenantId.size() <= 100 &&
+        data.dealTitle is string && data.dealTitle.size() >= 1 && data.dealTitle.size() <= 200 &&
+        data.propertyId is string && data.propertyId.size() >= 1 && data.propertyId.size() <= 100 &&
+        data.propertyTitle is string && data.propertyTitle.size() >= 1 && data.propertyTitle.size() <= 200 &&
+        data.leadId is string && data.leadId.size() >= 1 && data.leadId.size() <= 100 &&
+        data.clientName is string && data.clientName.size() >= 1 && data.clientName.size() <= 100 &&
+        data.agentId is string && data.agentId.size() >= 1 && data.agentId.size() <= 128 &&
+        data.agentName is string && data.agentName.size() >= 1 && data.agentName.size() <= 100 &&
+        data.dealValue is number && data.dealValue >= 0 &&
+        data.buyerBrokeragePercent is number && data.buyerBrokeragePercent >= 0 &&
+        data.sellerBrokeragePercent is number && data.sellerBrokeragePercent >= 0 &&
+        data.grossBrokerage is number && data.grossBrokerage >= 0 &&
+        data.gstPercent is number && data.gstPercent >= 0 &&
+        data.gstAmount is number && data.gstAmount >= 0 &&
+        data.agentCommissionPercent is number && data.agentCommissionPercent >= 0 &&
+        data.agentCommissionAmount is number && data.agentCommissionAmount >= 0 &&
+        data.netAgencyBrokerage is number &&
+        (!( 'paymentMilestones' in data ) || (data.paymentMilestones is list && data.paymentMilestones.size() <= 20)) &&
+        data.totalReceived is number && data.totalReceived >= 0 &&
+        data.balanceReceivable is number &&
+        data.closingDate is number &&
+        data.status in ['draft', 'under_process', 'closed_paid', 'closed_won', 'cancelled'] &&
+        data.createdAt is number &&
+        (!( 'updatedAt' in data ) || data.updatedAt is number);
+    }
+
+    function isValidExpense(data) {
+      return data.keys().hasAll(['id', 'tenantId', 'title', 'category', 'amount', 'date', 'loggedBy', 'createdAt']) &&
+        data.keys().hasOnly(['id', 'tenantId', 'title', 'category', 'amount', 'date', 'relatedDealId', 'loggedBy', 'receiptUrl', 'createdAt']) &&
+        data.id is string && data.id.size() >= 1 && data.id.size() <= 100 &&
+        data.tenantId is string && data.tenantId.size() >= 1 && data.tenantId.size() <= 100 &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+        data.category in ['marketing', 'travel_fuel', 'office_rent', 'portal_listing_fee', 'legal_documentation', 'miscellaneous'] &&
+        data.amount is number && data.amount > 0 &&
+        data.date is number &&
+        data.loggedBy is string && data.loggedBy.size() >= 1 && data.loggedBy.size() <= 128 &&
+        data.createdAt is number &&
+        isValidOptionalString(data, 'relatedDealId', 0, 100) &&
+        isValidOptionalString(data, 'receiptUrl', 0, 500);
+    }
+
+    function isValidAgent(data) {
+      return data.keys().hasAll(['id', 'tenantId', 'name', 'email', 'phone', 'role', 'isActive', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'tenantId', 'name', 'email', 'phone', 'role', 'isActive', 'commissionSplitPercent', 'createdAt', 'updatedAt']) &&
+        data.id is string && data.id.size() >= 1 && data.id.size() <= 100 &&
+        data.tenantId is string && data.tenantId.size() >= 1 && data.tenantId.size() <= 100 &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+        isGoogleMail(data.email) &&
+        data.phone is string && data.phone.size() >= 1 && data.phone.size() <= 25 &&
+        data.role in ['agency_admin', 'agent'] &&
+        data.isActive is bool &&
+        (!( 'commissionSplitPercent' in data ) || (data.commissionSplitPercent is number && data.commissionSplitPercent >= 0 && data.commissionSplitPercent <= 100)) &&
+        data.createdAt is number &&
+        data.updatedAt is number;
+    }
+
+    function isValidSettings(data) {
+      return data.keys().hasAll(['tenantId', 'updatedAt']) &&
+        data.tenantId is string && data.tenantId.size() >= 1 && data.tenantId.size() <= 100 &&
+        data.updatedAt is number;
+    }
+
+    // ===============================================================
+    // Platform Configuration (/platform_config/{configDoc})
+    // ===============================================================
+    match /platform_config/{configDoc} {
+      // Read allowed for all authenticated users
+      allow read: if isAuthenticated();
+
+      // Write allowed ONLY for super_admin
+      allow create, update: if isSuperAdmin() && isValidPlatformConfig(request.resource.data);
+      allow delete: if isSuperAdmin();
+    }
+
+    // ===============================================================
+    // Global Users Collection (/users/{userId})
+    // ===============================================================
+    match /users/{userId} {
+      // User can read their own profile; Super Admins can read all profiles.
+      allow read: if isOwner(userId) || isSuperAdmin();
+
+      // Users can create their own profile (regular users cannot assign super_admin).
+      allow create: if (
+        isSuperAdmin() ||
+        (
+          isOwner(userId) &&
+          request.resource.data.uid == userId &&
+          (request.resource.data.role in ['agency_admin', 'agent'])
+        )
+      ) && isValidUser(request.resource.data);
+
+      // Users can update their profile; immutable fields (uid, tenantId, role, createdAt) are protected from privilege escalation.
+      allow update: if (
+        isSuperAdmin() ||
+        (
+          isOwner(userId) &&
+          request.resource.data.uid == resource.data.uid &&
+          request.resource.data.createdAt == resource.data.createdAt &&
+          request.resource.data.role == resource.data.role &&
+          request.resource.data.tenantId == resource.data.tenantId
+        )
+      ) && isValidUser(request.resource.data);
+
+      // Only Super Admins can delete user profiles.
+      allow delete: if isSuperAdmin();
+    }
+
+    // ===============================================================
+    // Multi-Tenant Isolation Root (/tenants/{tenantId})
+    // ===============================================================
+    match /tenants/{tenantId} {
+      // Tenant members and Super Admins can read agency organization data.
+      allow read: if isSuperAdmin() || isTenantMember(tenantId);
+
+      // Authenticated users can bootstrap an agency tenant as owner; Super Admins can create any tenant.
+      allow create: if (
+        isSuperAdmin() ||
+        (
+          isAuthenticated() &&
+          request.resource.data.id == tenantId &&
+          request.resource.data.ownerUid == request.auth.uid
+        )
+      ) && isValidTenant(request.resource.data);
+
+      // Agency Admins can update agency details; immutable fields are preserved.
+      allow update: if (
+        isSuperAdmin() ||
+        (
+          isTenantAdmin(tenantId) &&
+          request.resource.data.id == resource.data.id &&
+          request.resource.data.createdAt == resource.data.createdAt &&
+          request.resource.data.ownerUid == resource.data.ownerUid
+        )
+      ) && isValidTenant(request.resource.data);
+
+      // Only Super Admins or Agency Owner can delete the tenant organization.
+      allow delete: if isSuperAdmin() || (isTenantAdmin(tenantId) && resource.data.ownerUid == request.auth.uid);
+
+      // -------------------------------------------------------------
+      // Subcollection: Tenant Users (/tenants/{tenantId}/users/{userId})
+      // -------------------------------------------------------------
+      match /users/{userId} {
+        // Agency Admins, Super Admins, and the user themselves can read tenant user records.
+        allow read: if isSuperAdmin() || isTenantAdmin(tenantId) || (isTenantMember(tenantId) && request.auth.uid == userId);
+
+        // Only Agency Admins or Super Admins can invite/create new users in the tenant.
+        allow create: if (
+          isSuperAdmin() ||
+          (
+            isTenantAdmin(tenantId) &&
+            request.resource.data.tenantId == tenantId &&
+            request.resource.data.uid == userId
+          )
+        ) && isValidUser(request.resource.data);
+
+        // Agency Admins can update roles/users; individuals can only update their own profile data (role, tenantId, uid immutable).
+        allow update: if (
+          isSuperAdmin() ||
+          (
+            isTenantAdmin(tenantId) &&
+            request.resource.data.tenantId == resource.data.tenantId &&
+            request.resource.data.uid == resource.data.uid &&
+            request.resource.data.createdAt == resource.data.createdAt
+          ) ||
+          (
+            isTenantMember(tenantId) &&
+            request.auth.uid == userId &&
+            request.resource.data.uid == resource.data.uid &&
+            request.resource.data.tenantId == resource.data.tenantId &&
+            request.resource.data.role == resource.data.role &&
+            request.resource.data.createdAt == resource.data.createdAt
+          )
+        ) && isValidUser(request.resource.data);
+
+        // Only Agency Admins and Super Admins can delete or offboard users. Agents cannot delete users.
+        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId);
+      }
+
+      // -------------------------------------------------------------
+      // Subcollection: Properties (/tenants/{tenantId}/properties/{propertyId})
+      // -------------------------------------------------------------
+      match /properties/{propertyId} {
+        // Read allowed for all members of the tenant and Super Admin
+        allow read: if isSuperAdmin() || isTenantMember(tenantId);
+
+        // Create allowed for agents and agency admins within their own tenant
+        allow create: if (
+          isSuperAdmin() ||
+          (
+            isTenantMember(tenantId) &&
+            (getUserRoleInTenant(tenantId) in ['agency_admin', 'agent']) &&
+            request.resource.data.tenantId == tenantId &&
+            request.resource.data.id == propertyId &&
+            request.resource.data.createdBy == request.auth.uid
+          )
+        ) && isValidProperty(request.resource.data);
+
+        // Update allowed for Agency Admin, or Agent if property is assigned to them or being assigned
+        allow update: if (
+          isSuperAdmin() ||
+          (
+            isTenantAdmin(tenantId) &&
+            request.resource.data.tenantId == resource.data.tenantId &&
+            request.resource.data.id == resource.data.id &&
+            request.resource.data.createdAt == resource.data.createdAt &&
+            request.resource.data.createdBy == resource.data.createdBy
+          ) ||
+          (
+            isTenantMember(tenantId) &&
+            getUserRoleInTenant(tenantId) == 'agent' &&
+            request.resource.data.tenantId == resource.data.tenantId &&
+            request.resource.data.id == resource.data.id &&
+            request.resource.data.createdAt == resource.data.createdAt &&
+            request.resource.data.createdBy == resource.data.createdBy &&
+            (resource.data.assignedAgentId == request.auth.uid || request.resource.data.assignedAgentId == request.auth.uid)
+          )
+        ) && isValidProperty(request.resource.data);
+
+        // Agents CANNOT delete properties. Agency Admins & Super Admins only.
+        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId);
+      }
+
+      // -------------------------------------------------------------
+      // Subcollection: Leads (/tenants/{tenantId}/leads/{leadId})
+      // -------------------------------------------------------------
+      match /leads/{leadId} {
+        // Read allowed for all members of the tenant and Super Admin
+        allow read: if isSuperAdmin() || isTenantMember(tenantId);
+
+        // Agents and Agency Admins can create leads in their tenant
+        allow create: if (
+          isSuperAdmin() ||
+          (
+            isTenantMember(tenantId) &&
+            (getUserRoleInTenant(tenantId) in ['agency_admin', 'agent']) &&
+            request.resource.data.tenantId == tenantId &&
+            request.resource.data.id == leadId
+          )
+        ) && isValidLead(request.resource.data);
+
+        // Agents and Agency Admins can update leads in their tenant
+        allow update: if (
+          isSuperAdmin() ||
+          (
+            isTenantMember(tenantId) &&
+            (getUserRoleInTenant(tenantId) in ['agency_admin', 'agent']) &&
+            request.resource.data.tenantId == resource.data.tenantId &&
+            request.resource.data.id == resource.data.id &&
+            request.resource.data.createdAt == resource.data.createdAt
+          )
+        ) && isValidLead(request.resource.data);
+
+        // Only Agency Admins & Super Admins can delete leads
+        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId);
+      }
+
+      // -------------------------------------------------------------
+      // Subcollection: Site Visits (camelCase: /tenants/{tenantId}/siteVisits/{visitId})
+      // -------------------------------------------------------------
+      match /siteVisits/{visitId} {
+        allow read: if isSuperAdmin() || isTenantMember(tenantId);
+
+        allow create: if (
+          isSuperAdmin() ||
+          (
+            isTenantMember(tenantId) &&
+            (getUserRoleInTenant(tenantId) in ['agency_admin', 'agent']) &&
+            request.resource.data.tenantId == tenantId &&
+            request.resource.data.id == visitId
+          )
+        ) && isValidSiteVisit(request.resource.data);
+
+        allow update: if (
+          isSuperAdmin() ||
+          (
+            isTenantMember(tenantId) &&
+            (getUserRoleInTenant(tenantId) in ['agency_admin', 'agent']) &&
+            request.resource.data.tenantId == resource.data.tenantId &&
+            request.resource.data.id == resource.data.id &&
+            request.resource.data.createdAt == resource.data.createdAt
+          )
+        ) && isValidSiteVisit(request.resource.data);
+
+        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId) || (
+          isTenantMember(tenantId) && resource.data.agentId == request.auth.uid
+        );
+      }
+
+      // -------------------------------------------------------------
+      // Subcollection: Site Visits (snake_case alias: /tenants/{tenantId}/site_visits/{visitId})
+      // -------------------------------------------------------------
+      match /site_visits/{visitId} {
+        allow read: if isSuperAdmin() || isTenantMember(tenantId);
+
+        allow create: if (
+          isSuperAdmin() ||
+          (
+            isTenantMember(tenantId) &&
+            (getUserRoleInTenant(tenantId) in ['agency_admin', 'agent']) &&
+            request.resource.data.tenantId == tenantId &&
+            request.resource.data.id == visitId
+          )
+        ) && isValidSiteVisit(request.resource.data);
+
+        allow update: if (
+          isSuperAdmin() ||
+          (
+            isTenantMember(tenantId) &&
+            (getUserRoleInTenant(tenantId) in ['agency_admin', 'agent']) &&
+            request.resource.data.tenantId == resource.data.tenantId &&
+            request.resource.data.id == resource.data.id &&
+            request.resource.data.createdAt == resource.data.createdAt
+          )
+        ) && isValidSiteVisit(request.resource.data);
+
+        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId) || (
+          isTenantMember(tenantId) && resource.data.agentId == request.auth.uid
+        );
+      }
+
+      // -------------------------------------------------------------
+      // Subcollection: Deals & Commission Ledger (/tenants/{tenantId}/deals/{dealId})
+      // -------------------------------------------------------------
+      match /deals/{dealId} {
+        // Read allowed for any tenant member or Super Admin.
+        allow read: if isSuperAdmin() || isTenantMember(tenantId);
+
+        // Create allowed for agents and agency admins in the tenant
+        allow create: if (
+          isSuperAdmin() ||
+          (
+            isTenantMember(tenantId) &&
+            (getUserRoleInTenant(tenantId) in ['agency_admin', 'agent']) &&
+            request.resource.data.tenantId == tenantId &&
+            request.resource.data.id == dealId
+          )
+        ) && isValidDeal(request.resource.data);
+
+        // Update allowed for agents and agency admins in the tenant
+        allow update: if (
+          isSuperAdmin() ||
+          (
+            isTenantMember(tenantId) &&
+            (getUserRoleInTenant(tenantId) in ['agency_admin', 'agent']) &&
+            request.resource.data.tenantId == resource.data.tenantId &&
+            request.resource.data.id == resource.data.id &&
+            request.resource.data.createdAt == resource.data.createdAt
+          )
+        ) && isValidDeal(request.resource.data);
+
+        // Delete restricted to Agency Admin or Super Admin
+        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId);
+      }
+
+      // -------------------------------------------------------------
+      // Subcollection: Expenses (/tenants/{tenantId}/expenses/{expenseId})
+      // -------------------------------------------------------------
+      match /expenses/{expenseId} {
+        // Read and write restricted strictly to Agency Admins and Super Admins.
+        allow read: if isSuperAdmin() || isTenantAdmin(tenantId);
+
+        allow create: if (
+          isSuperAdmin() ||
+          (
+            isTenantAdmin(tenantId) &&
+            request.resource.data.tenantId == tenantId &&
+            request.resource.data.id == expenseId
+          )
+        ) && isValidExpense(request.resource.data);
+
+        allow update: if (
+          isSuperAdmin() ||
+          (
+            isTenantAdmin(tenantId) &&
+            request.resource.data.tenantId == resource.data.tenantId &&
+            request.resource.data.id == resource.data.id &&
+            request.resource.data.createdAt == resource.data.createdAt
+          )
+        ) && isValidExpense(request.resource.data);
+
+        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId);
+      }
+
+      // -------------------------------------------------------------
+      // Subcollection: Settings (/tenants/{tenantId}/settings/{settingId})
+      // -------------------------------------------------------------
+      match /settings/{settingId} {
+        // Tenant members can read agency settings (branding, logo, RERA, default units).
+        allow read: if isSuperAdmin() || isTenantMember(tenantId);
+
+        // Only Agency Admins and Super Admins can write settings. Agents cannot modify settings.
+        allow create: if (
+          isSuperAdmin() ||
+          (
+            isTenantAdmin(tenantId) &&
+            request.resource.data.tenantId == tenantId
+          )
+        ) && isValidSettings(request.resource.data);
+
+        allow update: if (
+          isSuperAdmin() ||
+          (
+            isTenantAdmin(tenantId) &&
+            request.resource.data.tenantId == resource.data.tenantId
+          )
+        ) && isValidSettings(request.resource.data);
+
+        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId);
+      }
+
+      // -------------------------------------------------------------
+      // Subcollection: Agents (Agency Team Directory) (/tenants/{tenantId}/agents/{agentId})
+      // -------------------------------------------------------------
+      match /agents/{agentId} {
+        // Tenant members can read agents directory.
+        allow read: if isSuperAdmin() || isTenantMember(tenantId);
+
+        // Only Agency Admins and Super Admins can create, update, or remove agents. Agents cannot invite/manage agents.
+        allow create: if (
+          isSuperAdmin() ||
+          (
+            isTenantAdmin(tenantId) &&
+            request.resource.data.tenantId == tenantId &&
+            request.resource.data.id == agentId
+          )
+        ) && isValidAgent(request.resource.data);
+
+        allow update: if (
+          isSuperAdmin() ||
+          (
+            isTenantAdmin(tenantId) &&
+            request.resource.data.tenantId == resource.data.tenantId &&
+            request.resource.data.id == resource.data.id &&
+            request.resource.data.createdAt == resource.data.createdAt
+          )
+        ) && isValidAgent(request.resource.data);
+
+        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId);
+      }
+    }
+  }
+}

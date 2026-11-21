@@ -1,0 +1,270 @@
+/* ==============================================================================
+   PlotFlow — Google Material Design 3 / Material You Design System
+   ============================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces & Backgrounds */
+  --ef-bg-canvas: #f8f9fa;
+  --ef-bg-surface: #ffffff;
+  --ef-bg-surface-elevated: #ffffff;
+  --ef-bg-surface-hover: #f1f3f4;
+  --ef-bg-surface-active: #e8f0fe;
+
+  /* Google Blue Accents */
+  --ef-primary: #1a73e8;
+  --ef-primary-hover: #1765cc;
+  --ef-primary-active: #1558b0;
+  --ef-primary-tint: #e8f0fe;
+  --ef-primary-contrast: #ffffff;
+
+  /* Semantic Status Accents */
+  --ef-success: #1e8e3e;
+  --ef-success-tint: #e6f4ea;
+  --ef-success-border: #ceead6;
+
+  --ef-warning: #f9ab00;
+  --ef-warning-tint: #fef7e0;
+  --ef-warning-border: #feefc3;
+
+  --ef-danger: #d93025;
+  --ef-danger-tint: #fce8e6;
+  --ef-danger-border: #fad2cf;
+
+  --ef-info: #1a73e8;
+  --ef-info-tint: #e8f0fe;
+  --ef-info-border: #d2e3fc;
+
+  /* Neutral Typography & Borders */
+  --ef-text-main: #202124;
+  --ef-text-secondary: #5f6368;
+  --ef-text-tertiary: #80868b;
+  --ef-text-disabled: #bdc1c6;
+
+  --ef-border-subtle: #e8eaed;
+  --ef-border-medium: #dadce0;
+  --ef-border-focus: #1a73e8;
+
+  /* Radii & Shadows */
+  --ef-radius-sm: 8px;
+  --ef-radius-md: 12px;
+  --ef-radius-lg: 16px;
+  --ef-radius-pill: 9999px;
+
+  --ef-shadow-card: 0 1px 3px rgba(60, 64, 67, 0.12), 0 1px 2px rgba(60, 64, 67, 0.08);
+  --ef-shadow-elevated: 0 4px 12px rgba(60, 64, 67, 0.15), 0 1px 3px rgba(60, 64, 67, 0.1);
+  --ef-shadow-modal: 0 12px 32px rgba(60, 64, 67, 0.25);
+
+  /* Layout Measurements */
+  --ef-drawer-width: 260px;
+  --ef-header-height: 64px;
+  --ef-bottom-nav-height: 60px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  background-color: var(--ef-bg-canvas);
+  color: var(--ef-text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(128, 134, 139, 0.3);
+  border-radius: var(--ef-radius-pill);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 134, 139, 0.6);
+}
+
+/* ==============================================================================
+   ANIMATIONS
+   ============================================================================== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(26, 115, 232, 0.4); }
+  70% { transform: scale(1.02); box-shadow: 0 0 0 8px rgba(26, 115, 232, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(26, 115, 232, 0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.2, 0, 0, 1) forwards;
+}
+
+/* ==============================================================================
+   SEMANTIC STATUS BADGES & PILLS
+   ============================================================================== */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--ef-radius-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+
+  &.success {
+    background-color: var(--ef-success-tint);
+    color: var(--ef-success);
+    border: 1px solid var(--ef-success-border);
+  }
+
+  &.warning {
+    background-color: var(--ef-warning-tint);
+    color: #b06000;
+    border: 1px solid var(--ef-warning-border);
+  }
+
+  &.danger {
+    background-color: var(--ef-danger-tint);
+    color: var(--ef-danger);
+    border: 1px solid var(--ef-danger-border);
+  }
+
+  &.info {
+    background-color: var(--ef-info-tint);
+    color: var(--ef-info);
+    border: 1px solid var(--ef-info-border);
+  }
+}
+
+/* ==============================================================================
+   BUTTON UTILITIES
+   ============================================================================== */
+.ef-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--ef-radius-pill);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+
+  &.ef-btn-primary {
+    background-color: var(--ef-primary);
+    color: #ffffff;
+    box-shadow: 0 1px 2px rgba(26, 115, 232, 0.3);
+
+    &:hover {
+      background-color: var(--ef-primary-hover);
+      box-shadow: 0 2px 6px rgba(26, 115, 232, 0.4);
+    }
+
+    &:active {
+      background-color: var(--ef-primary-active);
+    }
+  }
+
+  &.ef-btn-tonal {
+    background-color: var(--ef-primary-tint);
+    color: var(--ef-primary);
+
+    &:hover {
+      background-color: #d2e3fc;
+    }
+  }
+
+  &.ef-btn-outlined {
+    background-color: transparent;
+    border: 1px solid var(--ef-border-medium);
+    color: var(--ef-text-main);
+
+    &:hover {
+      background-color: var(--ef-bg-surface-hover);
+      border-color: var(--ef-text-tertiary);
+    }
+  }
+
+  &.ef-btn-sm {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+}
+
+/* ==============================================================================
+   FORM CONTROLS (Material Outline)
+   ============================================================================== */
+.ef-form-group {
+  margin-bottom: 16px;
+
+  label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ef-text-secondary);
+    margin-bottom: 6px;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: var(--ef-radius-sm);
+    border: 1px solid var(--ef-border-medium);
+    background-color: #ffffff;
+    color: var(--ef-text-main);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &:focus {
+      border-color: var(--ef-primary);
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+    }
+
+    &::placeholder {
+      color: var(--ef-text-tertiary);
+    }
+  }
+}
+
+/* ==============================================================================
+   CONFETTI CANVAS OVERLAY
+   ============================================================================== */
+.confetti-canvas-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 99999;
+}
+

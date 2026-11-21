@@ -1,0 +1,18 @@
+<div class="app-container">
+  <!-- Top Navigation Bar -->
+  <app-navbar (onToggleSidebar)="toggleSidebar()"></app-navbar>
+
+  <div class="app-body">
+    <!-- Desktop Collapsible Navigation Drawer -->
+    <app-sidebar [collapsed]="sidebarCollapsed"></app-sidebar>
+
+    <!-- Main Dynamic Workspace View -->
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <!-- Mobile Bottom Tab Bar (Visible on Android / < 992px) -->
+  <app-bottom-tabs></app-bottom-tabs>
+</div>
+

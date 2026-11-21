@@ -1,0 +1,57 @@
+{
+  "name": "plotflow-crm",
+  "version": "1.0.0",
+  "description": "PlotFlow — Multi-Tenant Real Estate Broker CRM & Property Management SaaS Application",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve --port 4200",
+    "dev": "ng serve --port 4200",
+    "build": "ng build",
+    "build:prod": "ng build --configuration production",
+    "watch": "ng build --watch --configuration development",
+    "cap:sync": "npm run build && npx cap sync android",
+    "cap:open": "npx cap open android",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "deploy:rules": "npx firebase-tools deploy --only firestore:rules"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "^18.2.0",
+    "@angular/cdk": "^18.2.14",
+    "@angular/common": "^18.2.0",
+    "@angular/compiler": "^18.2.0",
+    "@angular/core": "^18.2.0",
+    "@angular/forms": "^18.2.0",
+    "@angular/platform-browser": "^18.2.0",
+    "@angular/platform-browser-dynamic": "^18.2.0",
+    "@angular/router": "^18.2.0",
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/camera": "^8.2.5",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/filesystem": "^8.1.4",
+    "@capacitor/local-notifications": "^8.0.0",
+    "@capacitor/share": "^8.0.3",
+    "@ionic/angular": "^9.0.4",
+    "browser-image-compression": "^2.0.2",
+    "firebase": "^12.19.0",
+    "html2canvas": "^1.4.1",
+    "ionicons": "^8.1.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.14.10"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^18.2.21",
+    "@angular/cli": "^18.2.21",
+    "@angular/compiler-cli": "^18.2.0",
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^20.0.0",
+    "playwright": "^1.49.0",
+    "typescript": "~5.5.2"
+  }
+}
+
