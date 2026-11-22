@@ -1,0 +1,202 @@
+<div class="drawer-backdrop" (click)="onClose.emit()">
+  <div class="drawer-card animate-fade-in" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="drawer-header">
+      <div class="header-left">
+        <div class="status-row">
+          <app-status-pill [status]="property.status"></app-status-pill>
+          <span class="type-tag">{{ property.propertyType | uppercase }} • {{ property.listingType | uppercase }}</span>
+        </div>
+        <h2 class="property-title">{{ property.title }}</h2>
+        <p class="property-loc">📍 {{ property.location.address || property.location.locality }}, {{ property.location.city }}</p>
+      </div>
+      <button class="close-btn" (click)="onClose.emit()">&times;</button>
+    </div>
+
+    <!-- Scrollable Body -->
+    <div class="drawer-body">
+      <!-- 1. Financial Intelligence Box -->
+      <div class="analytics-section">
+        <h3 class="section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+          <span>Price & Brokerage Intelligence</span>
+        </h3>
+
+        <!-- Realized Financials (If Deal is Closed) -->
+        <div class="financial-grid realized" *ngIf="intel.financials.isClosed">
+          <div class="fin-box highlight">
+            <span class="lbl">Final Sale Value</span>
+            <span class="val">{{ (intel.financials.realizedDealValue || property.price) | currencyFormat }}</span>
+            <span class="sub">Closed Transaction</span>
+          </div>
+          <div class="fin-box">
+            <span class="lbl">Gross Brokerage</span>
+            <span class="val text-primary">{{ intel.financials.realizedGrossBrokerage | currencyFormat }}</span>
+            <span class="sub">Commission Collected</span>
+          </div>
+          <div class="fin-box">
+            <span class="lbl">Agent Split</span>
+            <span class="val">{{ intel.financials.realizedAgentCommission | currencyFormat }}</span>
+            <span class="sub">Paid to Associate</span>
+          </div>
+          <div class="fin-box profit">
+            <span class="lbl">Net Agency Profit</span>
+            <span class="val text-success">{{ intel.financials.realizedNetProfit | currencyFormat }}</span>
+            <span class="sub">After 18% GST & Split</span>
+          </div>
+        </div>
+
+        <!-- Projected Financials (If Available / Under Offer) -->
+        <div class="financial-grid projected" *ngIf="!intel.financials.isClosed">
+          <div class="fin-box">
+            <span class="lbl">Listed Price</span>
+            <span class="val">{{ property.price | currencyFormat }}</span>
+            <span class="sub">₹{{ intel.financials.pricePerUnit }}/{{ property.areaUnit }}</span>
+          </div>
+          <div class="fin-box">
+            <span class="lbl">Area & Size</span>
+            <span class="val">{{ property.area | areaFormat:property.areaUnit }}</span>
+            <span class="sub">{{ property.bhk || 'Residential' }}</span>
+          </div>
+          <div class="fin-box">
+            <span class="lbl">Projected Gross (4%)</span>
+            <span class="val text-primary">{{ intel.financials.projectedGrossBrokerage | currencyFormat }}</span>
+            <span class="sub">2% Buyer + 2% Seller</span>
+          </div>
+          <div class="fin-box profit">
+            <span class="lbl">Estimated Net Profit</span>
+            <span class="val text-success">{{ intel.financials.projectedNetProfit | currencyFormat }}</span>
+            <span class="sub">Est. Net in Pocket</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Funnel Conversion Progress -->
+      <div class="analytics-section">
+        <h3 class="section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+          </svg>
+          <span>Pipeline & Conversion Funnel</span>
+        </h3>
+
+        <div class="funnel-bar">
+          <div class="funnel-step active">
+            <span class="step-num">1</span>
+            <div class="step-info">
+              <strong>Active Listing</strong>
+              <span>Published In Inventory</span>
+            </div>
+          </div>
+          <div class="funnel-arrow">➔</div>
+          <div class="funnel-step" [class.active]="intel.matchedLeads.length > 0">
+            <span class="step-num">{{ intel.matchedLeads.length }}</span>
+            <div class="step-info">
+              <strong>Qualified Leads</strong>
+              <span>Budget & Area Matched</span>
+            </div>
+          </div>
+          <div class="funnel-arrow">➔</div>
+          <div class="funnel-step" [class.active]="intel.visits.length > 0">
+            <span class="step-num">{{ intel.visits.length }}</span>
+            <div class="step-info">
+              <strong>Site Inspections</strong>
+              <span>{{ intel.completedVisitsCount }} Completed</span>
+            </div>
+          </div>
+          <div class="funnel-arrow">➔</div>
+          <div class="funnel-step" [class.active]="intel.financials.isClosed">
+            <span class="step-num">🏆</span>
+            <div class="step-info">
+              <strong>{{ intel.financials.isClosed ? 'Closed Won' : 'Pending Close' }}</strong>
+              <span>{{ intel.financials.isClosed ? 'Deal Finalized' : 'In Negotiation' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Matched Prospect Clients (Interested Buyers) -->
+      <div class="analytics-section">
+        <div class="section-header-row">
+          <h3 class="section-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>Interested Clients & Inquiries ({{ intel.matchedLeads.length }})</span>
+          </h3>
+          <span class="pill-count" *ngIf="intel.matchedLeads.length > 0">High Purchase Intent</span>
+        </div>
+
+        <div class="matched-leads-list" *ngIf="intel.matchedLeads.length > 0">
+          <div class="lead-item-row animate-fade-in" *ngFor="let lead of intel.matchedLeads">
+            <div class="lead-avatar" [ngClass]="lead.priority">{{ lead.name.slice(0, 2).toUpperCase() }}</div>
+            <div class="lead-details">
+              <div class="name-row">
+                <strong>{{ lead.name }}</strong>
+                <app-status-pill [status]="lead.stage"></app-status-pill>
+              </div>
+              <div class="budget-row" *ngIf="lead.requirement">
+                Budget: {{ lead.requirement.budgetMin | currencyFormat }} - {{ lead.requirement.budgetMax | currencyFormat }}
+                • Loc: {{ lead.requirement.preferredLocations.join(', ') || 'Any' }}
+              </div>
+            </div>
+            <div class="lead-pitch-actions">
+              <a [href]="getWhatsAppPitchUrl(lead)" target="_blank" class="ef-btn ef-btn-primary ef-btn-sm" title="Send WhatsApp Listing Pitch">
+                💬 Pitch
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-intel-note" *ngIf="intel.matchedLeads.length === 0">
+          <p>No active buyer leads in your CRM currently match this property's budget ({{ property.price | currencyFormat }}) and locality.</p>
+        </div>
+      </div>
+
+      <!-- 4. Site Inspection History -->
+      <div class="analytics-section">
+        <h3 class="section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+          </svg>
+          <span>Site Inspection Visits ({{ intel.visits.length }})</span>
+        </h3>
+
+        <div class="visits-history-list" *ngIf="intel.visits.length > 0">
+          <div class="visit-history-row" *ngFor="let v of intel.visits">
+            <div class="visit-date">
+              <span class="d">{{ v.scheduledTime | date:'mediumDate' }}</span>
+              <span class="t">{{ v.scheduledTime | date:'shortTime' }}</span>
+            </div>
+            <div class="visit-client">
+              <strong>{{ v.leadName }}</strong>
+              <span class="advisor">Advisor: {{ v.agentName }}</span>
+            </div>
+            <app-status-pill [status]="v.status"></app-status-pill>
+          </div>
+        </div>
+
+        <div class="empty-intel-note" *ngIf="intel.visits.length === 0">
+          <p>No physical site visits have been logged for this property yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="drawer-footer">
+      <button class="ef-btn ef-btn-outlined" (click)="onClose.emit()">Close</button>
+      <button class="ef-btn ef-btn-primary" (click)="onCloseDeal.emit(property)" *ngIf="property.status !== 'sold'">
+        <span>🎊 Close Deal for this Property</span>
+      </button>
+    </div>
+  </div>
+</div>
+

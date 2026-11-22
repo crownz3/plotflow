@@ -1,24 +1,89 @@
+.auth-only-wrapper {
+  height: 100%;
+  height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.support-context-banner {
+  background: #1a73e8;
+  color: #ffffff;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+
+  .banner-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .icon {
+      font-size: 1rem;
+    }
+
+    strong {
+      color: #ffffff;
+      font-weight: 700;
+      text-decoration: underline;
+    }
+  }
+
+  .exit-banner-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #ffffff;
+    border-radius: var(--ef-radius-pill);
+    padding: 3px 12px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.35);
+    }
+  }
+}
+
 .app-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100%;
+  height: 100dvh;
+  width: 100%;
+  overflow: hidden;
   background-color: var(--ef-bg-canvas);
 }
 
 .app-body {
   display: flex;
   flex: 1;
+  min-height: 0; /* Crucial for inner child flex scrolling */
+  overflow: hidden;
   position: relative;
 }
 
 .main-content {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  min-width: 0;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
   padding-bottom: 24px;
+  box-sizing: border-box;
 
   @media (max-width: 991px) {
     padding-bottom: calc(var(--ef-bottom-nav-height) + env(safe-area-inset-bottom) + 24px);
   }
 }
-

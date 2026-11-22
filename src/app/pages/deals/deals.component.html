@@ -5,9 +5,40 @@
       <p class="sub-desc">Track closed brokerage transactions, GST splits, and agent payouts.</p>
     </div>
 
-    <button class="ef-btn ef-btn-primary" (click)="openDealModal.set(true)">
-      <span>🎊 New Deal Closing Calculator</span>
-    </button>
+    <div class="header-right-actions">
+      <!-- Table vs Card View Toggle (Mobile Friendly) -->
+      <div class="view-toggle-group" *ngIf="dealService.tenantDeals().length > 0">
+        <button
+          class="view-toggle-btn"
+          [class.active]="viewMode() === 'cards'"
+          (click)="toggleView('cards')"
+          title="Card View (Mobile Optimized)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <span>Cards</span>
+        </button>
+        <button
+          class="view-toggle-btn"
+          [class.active]="viewMode() === 'table'"
+          (click)="toggleView('table')"
+          title="Dense Table View">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+          <span>Table</span>
+        </button>
+      </div>
+
+      <button class="ef-btn ef-btn-primary" (click)="openDealModal.set(true)">
+        <span>🎊 New Deal Calculator</span>
+      </button>
+    </div>
   </div>
 
   <!-- Financial Totals Bar -->
@@ -26,9 +57,77 @@
     </div>
   </div>
 
-  <!-- Deals Table -->
-  <div class="deals-card">
-    <div class="table-responsive">
+  <!-- Deals Container -->
+  <div class="deals-card" *ngIf="dealService.tenantDeals().length > 0">
+    <!-- 1. CARD VIEW (Mobile-Optimized Touch Cards) -->
+    <div class="deals-cards-grid animate-fade-in" *ngIf="viewMode() === 'cards'">
+      <div class="deal-item-card" *ngFor="let deal of dealService.tenantDeals()">
+        <div class="card-top-row">
+          <div class="deal-heading">
+            <h3>{{ deal.dealTitle }}</h3>
+            <span class="deal-date">{{ deal.closingDate | date:'mediumDate' }}</span>
+          </div>
+          <app-status-pill [status]="deal.status"></app-status-pill>
+        </div>
+
+        <div class="deal-context-info">
+          <div class="info-pill">
+            <span class="label">Property:</span>
+            <strong>{{ deal.propertyTitle }}</strong>
+          </div>
+          <div class="info-pill">
+            <span class="label">Client:</span>
+            <span>{{ deal.clientName }}</span>
+          </div>
+          <div class="info-pill">
+            <span class="label">Advisor:</span>
+            <span class="agent-accent">{{ deal.agentName }}</span>
+          </div>
+        </div>
+
+        <!-- Financial Metrics 4-Box Grid -->
+        <div class="deal-metrics-box">
+          <div class="metric-cell">
+            <span class="m-lbl">Deal Value</span>
+            <span class="m-val">{{ deal.dealValue | currencyFormat }}</span>
+          </div>
+          <div class="metric-cell">
+            <span class="m-lbl">Gross Brokerage</span>
+            <span class="m-val">{{ deal.grossBrokerage | currencyFormat }}</span>
+          </div>
+          <div class="metric-cell">
+            <span class="m-lbl">Agent Payout</span>
+            <span class="m-val text-primary">{{ deal.agentCommissionAmount | currencyFormat }}</span>
+          </div>
+          <div class="metric-cell">
+            <span class="m-lbl">Net Profit</span>
+            <span class="m-val text-success">{{ deal.netAgencyBrokerage | currencyFormat }}</span>
+          </div>
+        </div>
+
+        <div class="receivable-notice" *ngIf="deal.balanceReceivable > 0">
+          ⚠️ Balance Due: <strong>{{ deal.balanceReceivable | currencyFormat }}</strong>
+        </div>
+
+        <div class="card-bottom-actions">
+          <button
+            class="ef-btn ef-btn-tonal ef-btn-sm"
+            *ngIf="deal.balanceReceivable > 0"
+            (click)="markPaidInFull(deal)">
+            ✔ Mark Paid In Full
+          </button>
+          <button
+            class="ef-btn ef-btn-outlined ef-btn-sm"
+            (click)="deleteDeal(deal)"
+            style="color: var(--ef-danger);">
+            🗑 Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. TABLE VIEW (Desktop Dense Rows) -->
+    <div class="table-responsive animate-fade-in" *ngIf="viewMode() === 'table'">
       <table class="deals-table">
         <thead>
           <tr>
@@ -70,7 +169,7 @@
                 <button
                   class="ef-btn ef-btn-outlined ef-btn-sm delete-deal-btn"
                   (click)="deleteDeal(deal)"
-                  style="color: var(--ef-status-urgent);">
+                  style="color: var(--ef-danger);">
                   🗑 Delete
                 </button>
               </div>
@@ -81,10 +180,19 @@
     </div>
   </div>
 
+  <!-- EMPTY STATE FOR DEALS TABLE / LIST -->
+  <app-empty-state
+    *ngIf="dealService.tenantDeals().length === 0"
+    type="deals"
+    title="No Deals in Ledger Yet"
+    description="Your agency has not recorded any transactions. Use the financial deal calculator to close a deal with GST splits and celebration confetti."
+    actionText="🎊 New Deal Closing Calculator"
+    (onAction)="openDealModal.set(true)">
+  </app-empty-state>
+
   <!-- Deal Modal with Confetti -->
   <app-deal-modal
     *ngIf="openDealModal()"
     (onClose)="openDealModal.set(false)">
   </app-deal-modal>
 </div>
-

@@ -6,6 +6,7 @@ import { CurrencyFormatPipe } from '../../pipes/currency-format.pipe';
 import { AreaFormatPipe } from '../../pipes/area-format.pipe';
 import { BrochureService } from '../../../core/services/brochure.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { PropertyAnalyticsService, PropertyIntelligence } from '../../../core/services/property-analytics.service';
 
 @Component({
   selector: 'app-property-card',
@@ -19,12 +20,18 @@ export class PropertyCardComponent {
   @Output() onSelect = new EventEmitter<Property>();
   @Output() onEdit = new EventEmitter<Property>();
   @Output() onDelete = new EventEmitter<Property>();
+  @Output() onViewStats = new EventEmitter<Property>();
 
   auth = inject(AuthService);
   private brochureService = inject(BrochureService);
+  private analyticsService = inject(PropertyAnalyticsService);
 
   isSharing = false;
   defaultImg = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80';
+
+  get intel(): PropertyIntelligence {
+    return this.analyticsService.getPropertyIntelligence(this.property);
+  }
 
   async shareBrochure(): Promise<void> {
     if (this.isSharing) return;
@@ -38,4 +45,3 @@ export class PropertyCardComponent {
     }
   }
 }
-

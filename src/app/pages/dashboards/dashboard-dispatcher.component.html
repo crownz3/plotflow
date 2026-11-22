@@ -1,6 +1,13 @@
-<ng-container [ngSwitch]="auth.currentRole()">
-  <app-super-admin-dashboard *ngSwitchCase="'super_admin'"></app-super-admin-dashboard>
-  <app-agent-dashboard *ngSwitchCase="'agent'"></app-agent-dashboard>
-  <app-agency-admin-dashboard *ngSwitchDefault></app-agency-admin-dashboard>
+<ng-container *ngIf="auth.isSupportContext(); else standardRoleView">
+  <app-agency-admin-dashboard></app-agency-admin-dashboard>
 </ng-container>
+
+<ng-template #standardRoleView>
+  <ng-container [ngSwitch]="auth.currentRole()">
+    <app-super-admin-dashboard *ngSwitchCase="'super_admin'"></app-super-admin-dashboard>
+    <app-agent-dashboard *ngSwitchCase="'agent'"></app-agent-dashboard>
+    <app-agency-admin-dashboard *ngSwitchDefault></app-agency-admin-dashboard>
+  </ng-container>
+</ng-template>
+
 

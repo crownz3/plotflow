@@ -6,13 +6,72 @@
       <p class="header-desc">Monitor global tenant agencies, system health, and cross-platform broker activity.</p>
     </div>
 
-    <div class="header-actions">
-      <button class="ef-btn ef-btn-outlined ef-btn-sm" (click)="auth.loginDemo('agency_admin')">
-        Switch to Agency Admin View
-      </button>
-      <button class="ef-btn ef-btn-outlined ef-btn-sm" (click)="auth.loginDemo('agent')">
-        Switch to Agent View
-      </button>
+    <div *ngIf="tenantService.pendingTenants().length > 0" class="pending-queue-badge">
+      <span class="pulse-dot"></span>
+      <span>{{ tenantService.pendingTenants().length }} {{ tenantService.pendingTenants().length === 1 ? 'Agency' : 'Agencies' }} Pending Approval</span>
+    </div>
+  </div>
+
+  <!-- Real-time Approval Notification Toast -->
+  <div *ngIf="approvalAlert()" class="brand-alert success animate-fade-in" style="margin-bottom: 20px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+    <span>{{ approvalAlert() }}</span>
+  </div>
+
+  <!-- PRIORITY SECTION: Pending Brokerage Registrations -->
+  <div class="content-card pending-approvals-card animate-fade-in" *ngIf="tenantService.pendingTenants().length > 0">
+    <div class="card-header">
+      <div class="header-with-badge">
+        <span class="urgent-dot"></span>
+        <div>
+          <h2>Pending Brokerage Onboarding Approvals</h2>
+          <span class="card-meta">Agencies waiting for Super Admin license verification before platform access is granted</span>
+        </div>
+      </div>
+      <span class="queue-count-pill">{{ tenantService.pendingTenants().length }} Under Review</span>
+    </div>
+
+    <div class="pending-cards-grid">
+      <div class="pending-agency-card animate-fade-in" *ngFor="let pending of tenantService.pendingTenants()">
+        <div class="card-top">
+          <div class="agency-title-box">
+            <h3>{{ pending.agencyName }}</h3>
+            <span class="territory-tag">📍 {{ pending.operatingCity || pending.address }}</span>
+          </div>
+          <span class="status-chip-amber">⏳ Pending Review</span>
+        </div>
+
+        <div class="agency-details-grid">
+          <div class="detail-item">
+            <span class="label">RERA Registration</span>
+            <span class="value highlight-rera">{{ pending.reraNumber || 'Applied / Pending' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Applicant Contact</span>
+            <span class="value">{{ pending.email }}</span>
+            <small class="sub-phone">{{ pending.phone }}</small>
+          </div>
+          <div class="detail-item">
+            <span class="label">Agency Size</span>
+            <span class="value">{{ pending.teamSize || '1-5 Agents' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Submitted Date</span>
+            <span class="value">{{ pending.submittedAt || pending.createdAt | date:'mediumDate' }}</span>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="ef-btn ef-btn-primary approve-btn" (click)="approveAgency(pending.id)">
+            <span>✓ Accept &amp; Activate Brokerage</span>
+          </button>
+          <button class="ef-btn ef-btn-outlined decline-btn" (click)="rejectAgency(pending.id)">
+            <span>✕ Decline</span>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -34,7 +93,7 @@
       title="Total Platform Listings"
       [value]="propertyService.allProperties().length"
       subtitle="Across all tenant agencies"
-      badgeText="+14% MoM"
+      badgeText="Live"
       badgeColor="green"
       iconColor="green">
       <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -45,9 +104,9 @@
 
     <app-stat-card
       title="Active Broker Agents"
-      value="18"
+      [value]="totalAgentsCount()"
       subtitle="Sub-brokers & associates"
-      badgeText="98% Daily Active"
+      badgeText="Registered"
       badgeColor="blue"
       iconColor="amber">
       <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -99,30 +158,26 @@
           <input
             type="text"
             [(ngModel)]="platformNameInput"
-            name="platformNameInput"
-            placeholder="e.g. PlotFlow"
-            required>
-          <small class="field-hint">Updates navbar logo, mobile app title, login header, and PDF brochures.</small>
+            name="platformName"
+            placeholder="e.g. PlotFlow, Bayt Al Mal, PrimeBroker">
         </div>
 
         <div class="ef-form-group">
-          <label>Marketing Tagline</label>
+          <label>Platform Tagline / Slogan</label>
           <input
             type="text"
             [(ngModel)]="taglineInput"
-            name="taglineInput"
-            placeholder="e.g. Multi-Tenant Real Estate Broker CRM & SaaS">
-          <small class="field-hint">Appears on login screens and tenant onboarding portal.</small>
+            name="tagline"
+            placeholder="e.g. Multi-Tenant Real Estate Broker CRM">
         </div>
 
-        <div class="ef-form-group">
-          <label>Global Support Email</label>
+        <div class="ef-form-group col-span-2">
+          <label>Global Enterprise Support Email</label>
           <input
             type="email"
             [(ngModel)]="emailInput"
-            name="emailInput"
-            placeholder="mohamedibrahim040125@gmail.com">
-          <small class="field-hint">Default escalation contact shown to agency principals.</small>
+            name="supportEmail"
+            placeholder="support@plotflow.com">
         </div>
       </div>
 
@@ -142,8 +197,15 @@
   <!-- Tenant Organizations Directory -->
   <div class="content-card">
     <div class="card-header">
-      <h2>Registered Real Estate Agencies (Tenants)</h2>
-      <span class="card-meta">Strict Data Scoping & Isolated Subcollections</span>
+      <div>
+        <h2>Registered Real Estate Agencies (Tenants)</h2>
+        <span class="card-meta">Strict Data Scoping & Isolated Subcollections</span>
+      </div>
+
+      <!-- Action: Provision New Test Agency -->
+      <button class="ef-btn ef-btn-primary ef-btn-sm" (click)="openProvisionModal.set(true)">
+        <span>+ Provision New Test Agency</span>
+      </button>
     </div>
 
     <div class="table-responsive">
@@ -151,34 +213,106 @@
         <thead>
           <tr>
             <th>Agency Name</th>
-            <th>RERA Registration</th>
-            <th>Plan Status</th>
-            <th>Active Listings</th>
-            <th>Team Agents</th>
-            <th>Support Action</th>
+            <th>Contact Email & Phone</th>
+            <th>RERA Number</th>
+            <th>Approval Status</th>
+            <th>Plan</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let tenant of tenantService.tenants()">
             <td>
               <strong>{{ tenant.agencyName }}</strong>
-              <div class="sub-text">{{ tenant.address }}</div>
+              <div class="sub-text">📍 {{ tenant.operatingCity || tenant.address }}</div>
+            </td>
+            <td>
+              <div>{{ tenant.email }}</div>
+              <small style="color: var(--ef-text-tertiary);">{{ tenant.phone }}</small>
             </td>
             <td>{{ tenant.reraNumber || 'Pending' }}</td>
             <td>
+              <span *ngIf="tenant.status === 'active'" class="status-pill-badge green">Active & Approved</span>
+              <span *ngIf="tenant.status === 'pending_approval'" class="status-pill-badge amber">Pending Review</span>
+              <span *ngIf="tenant.status === 'rejected'" class="status-pill-badge red">Declined</span>
+            </td>
+            <td>
               <app-status-pill [status]="tenant.subscriptionPlan"></app-status-pill>
             </td>
-            <td><strong>{{ tenant.totalListingsCount }}</strong> listings</td>
-            <td>{{ tenant.totalAgentsCount }} agents</td>
             <td>
-              <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="supportContext(tenant.id)">
-                Switch Context
-              </button>
+              <div class="table-actions-cell">
+                <ng-container *ngIf="tenant.status === 'pending_approval'">
+                  <button class="ef-btn ef-btn-primary ef-btn-sm" (click)="approveAgency(tenant.id)">
+                    ✓ Accept
+                  </button>
+                  <button class="ef-btn ef-btn-outlined ef-btn-sm text-red" (click)="rejectAgency(tenant.id)">
+                    ✕
+                  </button>
+                </ng-container>
+
+                <ng-container *ngIf="tenant.status === 'active'">
+                  <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="supportContext(tenant.id)">
+                    🔍 Inspect & Test Flow
+                  </button>
+                </ng-container>
+
+                <ng-container *ngIf="tenant.status === 'rejected'">
+                  <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="approveAgency(tenant.id)">
+                    Re-Approve
+                  </button>
+                </ng-container>
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
-</div>
 
+  <!-- Provision New Test Tenant Modal -->
+  <div class="modal-backdrop" *ngIf="openProvisionModal()" (click)="openProvisionModal.set(false)">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Provision New Test Agency Tenant</h2>
+        <button class="close-btn" (click)="openProvisionModal.set(false)">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="ef-form-group col-span-2">
+            <label>Agency Organization Name</label>
+            <input type="text" [(ngModel)]="newTenantForm.agencyName" placeholder="e.g. Metro Gold Realty">
+          </div>
+          <div class="ef-form-group">
+            <label>Admin Work Email (&#64;gmail.com)</label>
+            <input type="email" [(ngModel)]="newTenantForm.email" placeholder="metrogold.broker@gmail.com">
+          </div>
+          <div class="ef-form-group">
+            <label>Phone Number</label>
+            <input type="text" [(ngModel)]="newTenantForm.phone" placeholder="+91 98888 11111">
+          </div>
+          <div class="ef-form-group">
+            <label>RERA Registration Number</label>
+            <input type="text" [(ngModel)]="newTenantForm.reraNumber" placeholder="TN/01/TEST/2026/789">
+          </div>
+          <div class="ef-form-group">
+            <label>Subscription Tier</label>
+            <select [(ngModel)]="newTenantForm.subscriptionPlan">
+              <option value="trial">14-Day Free Trial</option>
+              <option value="starter">Starter Agency</option>
+              <option value="pro">Pro Agency</option>
+              <option value="enterprise">Enterprise</option>
+            </select>
+          </div>
+          <div class="ef-form-group col-span-2">
+            <label>Office Address / Locality</label>
+            <input type="text" [(ngModel)]="newTenantForm.address" placeholder="e.g. Business Bay, OMR, Chennai">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="ef-btn ef-btn-outlined" (click)="openProvisionModal.set(false)">Cancel</button>
+        <button class="ef-btn ef-btn-primary" (click)="provisionTestTenant()">Create & Inspect Agency</button>
+      </div>
+    </div>
+  </div>
+</div>

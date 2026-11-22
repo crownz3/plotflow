@@ -1,23 +1,34 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LeadService } from '../../core/services/lead.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Lead, LeadStage, Property } from '../../core/models/models';
 import { StatusPillComponent } from '../../shared/components/status-pill/status-pill.component';
 import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
 import { DealModalComponent } from '../../shared/components/deal-modal/deal-modal.component';
 import { LeadCardComponent } from '../../shared/components/lead-card/lead-card.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { fireConfetti } from '../../core/utils/confetti.util';
 
 @Component({
   selector: 'app-leads',
   standalone: true,
-  imports: [CommonModule, FormsModule, StatusPillComponent, CurrencyFormatPipe, DealModalComponent, LeadCardComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    StatusPillComponent,
+    CurrencyFormatPipe,
+    DealModalComponent,
+    LeadCardComponent,
+    EmptyStateComponent
+  ],
   templateUrl: './leads.component.html',
   styleUrl: './leads.component.scss'
 })
 export class LeadsComponent {
   leadService = inject(LeadService);
+  auth = inject(AuthService);
 
   readonly stages: { id: LeadStage; title: string }[] = [
     { id: 'new', title: 'New Leads' },
@@ -26,6 +37,35 @@ export class LeadsComponent {
     { id: 'negotiation', title: 'Negotiation' },
     { id: 'closed_won', title: 'Closed Won' }
   ];
+
+  // View Mode: Cards vs Kanban vs Table
+  readonly viewMode = signal<'kanban' | 'cards' | 'table'>(
+    typeof window !== 'undefined' && window.innerWidth < 992 ? 'cards' : 'kanban'
+  );
+
+  toggleView(mode: 'kanban' | 'cards' | 'table') {
+    this.viewMode.set(mode);
+  }
+
+  searchQuery = '';
+  selectedFilterStage = signal<string>('all');
+
+  filteredLinearLeads = computed(() => {
+    let list = this.leadService.tenantLeads();
+    const st = this.selectedFilterStage();
+    if (st !== 'all') {
+      list = list.filter(l => l.stage === st);
+    }
+    if (this.searchQuery.trim()) {
+      const q = this.searchQuery.toLowerCase();
+      list = list.filter(l =>
+        l.name.toLowerCase().includes(q) ||
+        l.phone.includes(q) ||
+        (l.requirement?.preferredLocations && l.requirement.preferredLocations.some(loc => loc.toLowerCase().includes(q)))
+      );
+    }
+    return list;
+  });
 
   selectedLeadForMatch = signal<Lead | null>(null);
   matchedProperties = signal<Property[]>([]);
@@ -70,7 +110,7 @@ export class LeadsComponent {
   saveLead() {
     if (!this.newLead.name) return;
     this.leadService.addLead({
-      tenantId: 'tenant_prime_properties',
+      tenantId: this.auth.activeTenantId(),
       name: this.newLead.name,
       phone: this.newLead.phone,
       source: this.newLead.source,

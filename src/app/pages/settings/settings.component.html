@@ -95,7 +95,7 @@
 
   <!-- Invite Agent Modal -->
   <div class="modal-backdrop" *ngIf="openInviteModal()" (click)="openInviteModal.set(false)">
-    <div class="modal-card animate-fade-in" (click)="$event.stopPropagation()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Invite Associate Broker to Agency</h2>
         <button class="close-btn" (click)="openInviteModal.set(false)">&times;</button>

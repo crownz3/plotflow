@@ -2,26 +2,76 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PropertyService } from '../../core/services/property.service';
+import { PropertyAnalyticsService } from '../../core/services/property-analytics.service';
 import { PropertyCardComponent } from '../../shared/components/property-card/property-card.component';
+import { StatusPillComponent } from '../../shared/components/status-pill/status-pill.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { PropertyStatsDrawerComponent } from '../../shared/components/property-stats-drawer/property-stats-drawer.component';
+import { DealModalComponent } from '../../shared/components/deal-modal/deal-modal.component';
+import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
+import { AreaFormatPipe } from '../../shared/pipes/area-format.pipe';
 import { Property } from '../../core/models/models';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-properties',
   standalone: true,
-  imports: [CommonModule, FormsModule, PropertyCardComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    PropertyCardComponent,
+    StatusPillComponent,
+    EmptyStateComponent,
+    PropertyStatsDrawerComponent,
+    DealModalComponent,
+    CurrencyFormatPipe,
+    AreaFormatPipe
+  ],
   templateUrl: './properties.component.html',
   styleUrl: './properties.component.scss'
 })
 export class PropertiesComponent {
   propertyService = inject(PropertyService);
+  analyticsService = inject(PropertyAnalyticsService);
   auth = inject(AuthService);
 
   searchQuery = '';
   selectedType = signal<string>('all');
   selectedProperty = signal<Property | null>(null);
+  selectedPropertyForStats = signal<Property | null>(null);
+  dealModalOpen = signal(false);
+  dealModalProp?: Property;
+
   openAddModal = signal(false);
   editingProperty = signal<Property | null>(null);
+
+  // View Mode Toggle (Cards vs Table)
+  readonly viewMode = signal<'cards' | 'table'>(
+    typeof window !== 'undefined' && window.innerWidth < 768 ? 'cards' : 'cards'
+  );
+
+  toggleView(mode: 'cards' | 'table') {
+    this.viewMode.set(mode);
+  }
+
+  resetFilters() {
+    this.selectedType.set('all');
+    this.searchQuery = '';
+  }
+
+  openStatsDrawer(prop: Property) {
+    this.selectedPropertyForStats.set(prop);
+  }
+
+  handleCloseDeal(prop: Property) {
+    this.selectedPropertyForStats.set(null);
+    this.dealModalProp = prop;
+    this.dealModalOpen.set(true);
+  }
+
+  getIntel(prop: Property) {
+    return this.analyticsService.getPropertyIntelligence(prop);
+  }
 
   editForm = {
     title: '',
@@ -64,7 +114,7 @@ export class PropertiesComponent {
     this.propertyService.addProperty({
       tenantId: this.auth.activeTenantId(),
       title: this.newProp.title,
-      description: 'Newly ingested verified real estate property listing with direct road connectivity.',
+      description: 'Verified real estate property listing with direct road connectivity.',
       propertyType: this.newProp.propertyType,
       listingType: this.newProp.listingType,
       status: 'available',
@@ -78,14 +128,14 @@ export class PropertiesComponent {
         city: this.newProp.city,
         locality: this.newProp.locality
       },
-      amenities: ['Covered Parking', '24/7 Security', 'Elevator', 'Power Backup'],
+      amenities: ['Covered Parking', '24/7 Security', 'Power Backup'],
       images: ['https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80'],
       ownerDetails: {
         name: this.newProp.ownerName || 'Verified Owner',
         phone: this.newProp.ownerPhone || '+91 98888 77777'
       },
       assignedAgentId: this.auth.currentUser()?.uid || 'user_agent_01',
-      assignedAgentName: this.auth.currentUser()?.displayName || 'Arun Kumar',
+      assignedAgentName: this.auth.currentUser()?.displayName || 'Advisor',
       createdBy: this.auth.currentUser()?.uid || 'user_admin_01'
     });
 

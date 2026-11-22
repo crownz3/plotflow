@@ -6,12 +6,13 @@ import { PropertyService } from '../../core/services/property.service';
 import { LeadService } from '../../core/services/lead.service';
 import { AuthService } from '../../core/services/auth.service';
 import { StatusPillComponent } from '../../shared/components/status-pill/status-pill.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { SiteVisit } from '../../core/models/models';
 
 @Component({
   selector: 'app-site-visits',
   standalone: true,
-  imports: [CommonModule, FormsModule, StatusPillComponent],
+  imports: [CommonModule, FormsModule, StatusPillComponent, EmptyStateComponent],
   templateUrl: './site-visits.component.html',
   styleUrl: './site-visits.component.scss'
 })
@@ -26,9 +27,18 @@ export class SiteVisitsComponent {
   editVisitStatus: any = 'scheduled';
   editVisitDateTime = '';
 
-  selectedLeadId = 'lead_01';
-  selectedPropertyId = 'prop_01';
+  // Smart Mobile View Mode Toggle
+  readonly viewMode = signal<'cards' | 'table'>(
+    typeof window !== 'undefined' && window.innerWidth < 768 ? 'cards' : 'table'
+  );
+
+  selectedLeadId = '';
+  selectedPropertyId = '';
   scheduledDateTime = '';
+
+  toggleView(mode: 'cards' | 'table') {
+    this.viewMode.set(mode);
+  }
 
   markCompleted(id: string) {
     this.siteVisitService.updateStatus(id, 'completed', 'Client inspected property, follow-up scheduled.');
@@ -62,16 +72,16 @@ export class SiteVisitsComponent {
     const lead = leads.find(l => l.id === this.selectedLeadId) || leads[0];
     const prop = props.find(p => p.id === this.selectedPropertyId) || props[0];
 
-    const leadName = lead ? lead.name : 'Karthik Narayanan';
-    const leadPhone = lead ? lead.phone : '+91 97911 33445';
+    const leadName = lead ? lead.name : 'Walk-in Prospect';
+    const leadPhone = lead ? lead.phone : '+91 90000 00000';
     const leadId = lead ? lead.id : `lead_${Date.now()}`;
 
-    const propTitle = prop ? prop.title : 'Modern Gated Community Villa';
-    const propLoc = prop ? `${prop.location.locality}, ${prop.location.city}` : 'Sholinganallur, OMR';
+    const propTitle = prop ? prop.title : 'Direct Site Inspection';
+    const propLoc = prop ? `${prop.location.locality}, ${prop.location.city}` : 'Property Site';
     const propId = prop ? prop.id : `prop_${Date.now()}`;
 
     this.siteVisitService.scheduleVisit({
-      tenantId: this.auth.activeTenantId() || 'tenant_prime_properties',
+      tenantId: this.auth.activeTenantId(),
       leadId,
       leadName,
       leadPhone,
@@ -79,7 +89,7 @@ export class SiteVisitsComponent {
       propertyTitle: propTitle,
       propertyLocation: propLoc,
       agentId: this.auth.currentUser()?.uid || 'user_agent_01',
-      agentName: this.auth.currentUser()?.displayName || 'Arun Kumar',
+      agentName: this.auth.currentUser()?.displayName || 'Advisor',
       scheduledTime: this.scheduledDateTime ? new Date(this.scheduledDateTime).getTime() : Date.now() + 86400000,
       status: 'scheduled'
     });

@@ -171,4 +171,199 @@
   }
 }
 
+.pending-queue-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fef7e0;
+  border: 1px solid #fcebb8;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #b06000;
+
+  .pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f9ab00;
+    box-shadow: 0 0 0 3px rgba(249, 171, 0, 0.3);
+  }
+}
+
+.pending-approvals-card {
+  border: 1px solid #fed7aa;
+  background: #fffdfa;
+
+  .header-with-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .urgent-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #f97316;
+      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.25);
+    }
+  }
+
+  .queue-count-pill {
+    padding: 4px 12px;
+    background: #ea580c;
+    color: #fff;
+    border-radius: 20px;
+    font-size: 0.76rem;
+    font-weight: 700;
+  }
+}
+
+.pending-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.pending-agency-card {
+  background: #ffffff;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    .agency-title-box {
+      h3 {
+        margin: 0 0 4px 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1e293b;
+      }
+      .territory-tag {
+        font-size: 0.78rem;
+        color: #64748b;
+      }
+    }
+
+    .status-chip-amber {
+      padding: 3px 10px;
+      background: #fef3c7;
+      color: #92400e;
+      border-radius: 12px;
+      font-size: 0.74rem;
+      font-weight: 700;
+    }
+  }
+
+  .agency-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    background: #f8fafc;
+    padding: 12px 14px;
+    border-radius: 8px;
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .label {
+        font-size: 0.7rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+
+      .value {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #1e293b;
+
+        &.highlight-rera {
+          color: #0284c7;
+        }
+      }
+
+      .sub-phone {
+        font-size: 0.75rem;
+        color: #64748b;
+      }
+    }
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 10px;
+
+    .approve-btn {
+      flex: 1;
+      background: #16a34a;
+      border-color: #16a34a;
+      font-weight: 700;
+      font-size: 0.84rem;
+
+      &:hover {
+        background: #15803d;
+      }
+    }
+
+    .decline-btn {
+      color: #dc2626;
+      border-color: #fca5a5;
+      font-size: 0.84rem;
+
+      &:hover {
+        background: #fef2f2;
+      }
+    }
+  }
+}
+
+.status-pill-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+
+  &.green {
+    background: #dcfce7;
+    color: #166534;
+  }
+  &.amber {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  &.red {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+}
+
+.table-actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .text-red {
+    color: #dc2626;
+    border-color: #fca5a5;
+    &:hover {
+      background: #fef2f2;
+    }
+  }
+}
+
 

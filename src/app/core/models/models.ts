@@ -10,9 +10,12 @@ export interface UserProfile {
   agencyName?: string;
   role: UserRole;
   isActive: boolean;
+  onboardingCompleted?: boolean;
   assignedPropertyIds?: string[];
   createdAt: number;
 }
+
+export type TenantStatus = 'pending_approval' | 'active' | 'suspended' | 'rejected';
 
 export interface Tenant {
   id: string;
@@ -23,6 +26,12 @@ export interface Tenant {
   phone: string;
   email: string;
   address: string;
+  operatingCity?: string;
+  teamSize?: string;
+  status: TenantStatus;
+  rejectionReason?: string;
+  submittedAt?: number;
+  approvedAt?: number;
   currency: 'INR' | 'USD' | 'AED' | 'EUR';
   defaultAreaUnit: 'sqft' | 'cent' | 'acre' | 'ground' | 'guntha';
   subscriptionPlan: 'trial' | 'starter' | 'pro' | 'enterprise';
@@ -31,6 +40,21 @@ export interface Tenant {
   totalListingsCount: number;
   createdAt: number;
   updatedAt: number;
+}
+
+export interface TenantApprovalNotification {
+  id: string;
+  tenantId: string;
+  agencyName: string;
+  applicantEmail: string;
+  applicantName: string;
+  phone: string;
+  reraNumber?: string;
+  address: string;
+  operatingCity?: string;
+  teamSize?: string;
+  submittedAt: number;
+  read: boolean;
 }
 
 export interface Property {

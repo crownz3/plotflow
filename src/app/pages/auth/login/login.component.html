@@ -1,8 +1,9 @@
 <div class="login-wrapper">
   <div class="login-card animate-fade-in">
+    <!-- Brand Header -->
     <div class="brand-header">
       <div class="brand-icon">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
           <polyline points="9 22 9 12 15 12 15 22"></polyline>
         </svg>
@@ -11,72 +12,235 @@
       <p class="tagline">{{ platformConfig.tagline() }}</p>
     </div>
 
-    <!-- Real Firebase Google Sign-In Button -->
-    <div class="google-auth-box">
-      <button type="button" class="google-signin-btn" (click)="signInWithGoogle()" [disabled]="isLoggingIn">
-        <svg class="google-icon" viewBox="0 0 24 24" width="22" height="22">
-          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
-          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
-          <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.17 0 9.99 0 12s.45 3.83 1.25 5.42l4.03-3.15z"/>
-          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+    <!-- Segmented Auth Tabs -->
+    <div class="auth-tabs" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        class="auth-tab-btn"
+        [class.active]="activeTab() === 'signin'"
+        (click)="setTab('signin')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+          <polyline points="10 17 15 12 10 7"></polyline>
+          <line x1="15" y1="12" x2="3" y2="12"></line>
         </svg>
-        <span>{{ isLoggingIn ? 'Connecting to Google...' : 'Sign in with Google' }}</span>
+        <span>Sign In</span>
       </button>
-      <span class="auth-pill-badge">Google Workspace &amp; Gmail Only</span>
+
+      <button
+        type="button"
+        role="tab"
+        class="auth-tab-btn"
+        [class.active]="activeTab() === 'register'"
+        (click)="setTab('register')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="8.5" cy="7" r="4"></circle>
+          <line x1="20" y1="8" x2="20" y2="14"></line>
+          <line x1="23" y1="11" x2="17" y2="11"></line>
+        </svg>
+        <span>Register Agency</span>
+      </button>
     </div>
 
-    <div class="divider">
-      <span>OR INSTANT EVALUATION ACCESS</span>
-    </div>
+    <!-- ==================== TAB 1: SIGN IN ==================== -->
+    <div *ngIf="activeTab() === 'signin'" class="tab-pane animate-fade-in">
+      <!-- Real Firebase Google Sign-In Button -->
+      <div class="google-auth-box">
+        <button type="button" class="google-signin-btn" (click)="signInWithGoogle()" [disabled]="isLoggingIn">
+          <svg class="google-icon" viewBox="0 0 24 24" width="20" height="20">
+            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
+            <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.17 0 9.99 0 12s.45 3.83 1.25 5.42l4.03-3.15z"/>
+            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+          </svg>
+          <span>{{ isLoggingIn ? 'Connecting...' : 'Sign in with Google' }}</span>
+        </button>
+        <span class="auth-pill-badge">Google Workspace &amp; Professional Accounts</span>
+      </div>
 
-    <!-- 1-Click Fast Role Sign-In Bar (For instant testing & evaluation) -->
-    <div class="demo-login-box">
-      <span class="demo-label">⚡ Fast One-Click Demo Access:</span>
-      <div class="demo-buttons">
-        <button class="demo-btn agency-admin" (click)="quickLogin('agency_admin')">
-          <strong>Principal Broker (Agency Admin)</strong>
-          <span>primeproperties.broker&#64;gmail.com</span>
+      <div class="divider">
+        <span>OR SIGN IN WITH WORK EMAIL</span>
+      </div>
+
+      <form class="login-form" (submit)="handleLogin($event)">
+        <div class="ef-form-group">
+          <label>Work Email Address</label>
+          <input type="email" [(ngModel)]="email" name="email" placeholder="broker.realty&#64;company.com">
+          <div *ngIf="errorMessage" class="error-banner">
+            {{ errorMessage }}
+          </div>
+        </div>
+
+        <div class="ef-form-group">
+          <label>Password</label>
+          <input type="password" [(ngModel)]="password" name="password" placeholder="••••••••">
+        </div>
+
+        <button type="submit" class="ef-btn ef-btn-primary login-btn">
+          Sign In
         </button>
-        <button class="demo-btn agent" (click)="quickLogin('agent')">
-          <strong>Associate Agent</strong>
-          <span>primeproperties.agent&#64;gmail.com</span>
-        </button>
-        <button class="demo-btn super-admin" (click)="quickLogin('super_admin')">
-          <strong>SaaS Super Admin</strong>
-          <span>Mohamed Ibrahim (mohamedibrahim040125&#64;gmail.com)</span>
-        </button>
+      </form>
+
+      <div class="login-footer">
+        <p>
+          New Brokerage?
+          <button type="button" class="link-btn" (click)="setTab('register')">
+            Register Agency &rarr;
+          </button>
+        </p>
       </div>
     </div>
 
-    <div class="divider">
-      <span>OR SIGN IN WITH CREDENTIALS</span>
-    </div>
+    <!-- ==================== TAB 2: REGISTER AGENCY (ANIMATED COMPACT STEPPER) ==================== -->
+    <div *ngIf="activeTab() === 'register'" class="tab-pane animate-fade-in register-stepper-container">
+      <!-- Top Stepper Progress Header -->
+      <div class="stepper-header">
+        <div class="stepper-info">
+          <span class="step-badge">Step {{ regStep() }} of 3</span>
+          <span class="step-title" *ngIf="regStep() === 1">Agency Identity</span>
+          <span class="step-title" *ngIf="regStep() === 2">Contact Information</span>
+          <span class="step-title" *ngIf="regStep() === 3">Verification &amp; Security</span>
+        </div>
 
-    <form class="login-form" (submit)="handleLogin($event)">
-      <div class="ef-form-group">
-        <label>Google Work Mail (&#64;gmail.com)</label>
-        <input type="email" [(ngModel)]="email" name="email" placeholder="broker.realty@gmail.com">
-        <small class="field-hint" style="color: var(--ef-text-tertiary); font-size: 0.74rem; margin-top: 4px; display: block;">
-          PlotFlow requires authenticated Google Mail (&#64;gmail.com) accounts for all tenants.
-        </small>
-        <div *ngIf="errorMessage" style="color: #d93025; font-size: 0.8rem; margin-top: 6px; font-weight: 500;">
-          {{ errorMessage }}
+        <!-- Animated Progress Dots Bar -->
+        <div class="stepper-dots-bar">
+          <div class="step-dot" [class.done]="regStep() > 1" [class.active]="regStep() === 1" (click)="goToRegStep(1)">
+            <span>1</span>
+          </div>
+          <div class="dot-connector" [class.done]="regStep() >= 2"></div>
+          <div class="step-dot" [class.done]="regStep() > 2" [class.active]="regStep() === 2" (click)="goToRegStep(2)">
+            <span>2</span>
+          </div>
+          <div class="dot-connector" [class.done]="regStep() >= 3"></div>
+          <div class="step-dot" [class.active]="regStep() === 3">
+            <span>3</span>
+          </div>
         </div>
       </div>
 
-      <div class="ef-form-group">
-        <label>Password</label>
-        <input type="password" [(ngModel)]="password" name="password" placeholder="••••••••">
+      <!-- Step Panes Wrapper (Zero Vertical Scroll) -->
+      <div class="stepper-content-box">
+        <!-- STEP 1: AGENCY IDENTITY -->
+        <div *ngIf="regStep() === 1" class="step-slide-pane" [ngClass]="regDirection() === 'forward' ? 'slide-in-right' : 'slide-in-left'">
+          <div class="ef-form-group">
+            <label>Agency / Firm Name *</label>
+            <input
+              type="text"
+              [(ngModel)]="regAgencyName"
+              name="regAgencyName"
+              placeholder="e.g. Royal Palms Realty"
+              (keyup.enter)="nextRegStep()"
+              autofocus>
+          </div>
+
+          <div class="ef-form-group">
+            <label>Principal Broker / Director Full Name *</label>
+            <input
+              type="text"
+              [(ngModel)]="regBrokerName"
+              name="regBrokerName"
+              placeholder="e.g. Vikram Sharma"
+              (keyup.enter)="nextRegStep()">
+          </div>
+
+          <div *ngIf="regErrorMessage" class="error-banner">
+            {{ regErrorMessage }}
+          </div>
+
+          <div class="stepper-actions">
+            <button type="button" class="ef-btn ef-btn-primary stepper-next-btn" (click)="nextRegStep()">
+              Continue &rarr;
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 2: CONTACT INFORMATION -->
+        <div *ngIf="regStep() === 2" class="step-slide-pane" [ngClass]="regDirection() === 'forward' ? 'slide-in-right' : 'slide-in-left'">
+          <div class="ef-form-group">
+            <label>Official Work Email *</label>
+            <input
+              type="email"
+              [(ngModel)]="regEmail"
+              name="regEmail"
+              placeholder="director&#64;royalpalms.com"
+              (keyup.enter)="nextRegStep()"
+              autofocus>
+          </div>
+
+          <div class="ef-form-group">
+            <label>Direct Phone / WhatsApp *</label>
+            <input
+              type="tel"
+              [(ngModel)]="regPhone"
+              name="regPhone"
+              placeholder="+91 98765 43210"
+              (keyup.enter)="nextRegStep()">
+          </div>
+
+          <div *ngIf="regErrorMessage" class="error-banner">
+            {{ regErrorMessage }}
+          </div>
+
+          <div class="stepper-actions row-split">
+            <button type="button" class="ef-btn ef-btn-subtle stepper-back-btn" (click)="prevRegStep()">
+              &larr; Back
+            </button>
+            <button type="button" class="ef-btn ef-btn-primary stepper-next-btn" (click)="nextRegStep()">
+              Continue &rarr;
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3: VERIFICATION & SECURITY -->
+        <div *ngIf="regStep() === 3" class="step-slide-pane" [ngClass]="regDirection() === 'forward' ? 'slide-in-right' : 'slide-in-left'">
+          <div class="ef-form-group">
+            <label>RERA Number / License *</label>
+            <input
+              type="text"
+              [(ngModel)]="regReraNumber"
+              name="regReraNumber"
+              placeholder="e.g. TN/01/AGENT/2024/0089"
+              autofocus>
+          </div>
+
+          <div class="ef-form-group">
+            <label>Operating City / Market *</label>
+            <input
+              type="text"
+              [(ngModel)]="regCity"
+              name="regCity"
+              placeholder="e.g. Chennai, Mumbai">
+          </div>
+
+          <div *ngIf="regErrorMessage" class="error-banner">
+            {{ regErrorMessage }}
+          </div>
+
+          <div class="stepper-actions row-split">
+            <button type="button" class="ef-btn ef-btn-subtle stepper-back-btn" (click)="prevRegStep()" [disabled]="isRegistering">
+              &larr; Back
+            </button>
+            <button type="button" class="ef-btn ef-btn-primary stepper-next-btn submit-btn" (click)="handleRegister()" [disabled]="isRegistering">
+              <span *ngIf="!isRegistering">🚀 Submit Application</span>
+              <span *ngIf="isRegistering">Submitting...</span>
+            </button>
+          </div>
+        </div>
       </div>
 
-      <button type="submit" class="ef-btn ef-btn-primary login-btn">
-        Sign In
-      </button>
-    </form>
-
-    <div class="login-footer">
-      <p>New Brokerage? <a (click)="quickRegister()" class="register-link">Start 14-Day Free Agency Trial</a></p>
+      <!-- Compact Footer -->
+      <div class="stepper-footer">
+        <p>
+          Already registered?
+          <button type="button" class="link-btn" (click)="setTab('signin')">
+            Sign In here
+          </button>
+          &bull;
+          <a routerLink="/onboarding" class="register-link">Full Wizard &rarr;</a>
+        </p>
+      </div>
     </div>
   </div>
 </div>
-

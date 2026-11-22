@@ -108,6 +108,48 @@
   color: var(--ef-text-secondary);
 }
 
+.intel-pill-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+
+  .intel-pill {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--ef-radius-pill);
+    background: var(--ef-bg-canvas);
+    color: var(--ef-text-secondary);
+    border: 1px solid var(--ef-border-subtle);
+
+    &.leads {
+      background: #fef7e0;
+      color: #b06000;
+      border-color: #feefc3;
+    }
+
+    &.visits {
+      background: #e8f0fe;
+      color: #1a73e8;
+      border-color: #d2e3fc;
+    }
+
+    &.profit {
+      background: #e6f4ea;
+      color: #1e8e3e;
+      border-color: #ceead6;
+
+      &.realized {
+        background: #1e8e3e;
+        color: #ffffff;
+        border-color: #1e8e3e;
+      }
+    }
+  }
+}
+
 .owner-pill-row {
   margin-bottom: 12px;
 }

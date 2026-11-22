@@ -16,11 +16,11 @@
     </div>
   </div>
 
-  <!-- Agent KPI Cards -->
+  <!-- Agent KPI Cards (100% REAL & DYNAMIC) -->
   <div class="kpi-grid">
     <app-stat-card
       title="My Assigned Leads"
-      [value]="leadService.tenantLeads().length"
+      [value]="myAssignedLeads().length"
       subtitle="In active pipeline"
       badgeText="Active"
       badgeColor="green"
@@ -32,10 +32,10 @@
     </app-stat-card>
 
     <app-stat-card
-      title="My Site Visits Today"
-      value="1"
-      subtitle="Sholinganallur Villa"
-      badgeText="Today 5 PM"
+      title="My Site Visits"
+      [value]="myTodayVisits().length"
+      subtitle="Scheduled appointments"
+      [badgeText]="myTodayVisits().length > 0 ? 'Upcoming' : 'None'"
       badgeColor="blue"
       iconColor="amber">
       <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -47,9 +47,9 @@
 
     <app-stat-card
       title="My Closed Deals"
-      value="2"
-      subtitle="This Month"
-      badgeText="Top 10%"
+      [value]="myClosedDeals().length"
+      subtitle="Recorded transactions"
+      [badgeText]="myClosedDeals().length + ' Closed'"
       badgeColor="green"
       iconColor="green">
       <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -59,8 +59,8 @@
 
     <app-stat-card
       title="My Commission Payout"
-      value="₹2,05,000"
-      subtitle="Earned this month"
+      [value]="myCommissionPayout() | currencyFormat"
+      subtitle="Total commission earned"
       badgeText="Net Payout"
       badgeColor="green"
       iconColor="green">
@@ -75,21 +75,21 @@
   <div class="content-card">
     <div class="card-header">
       <h2>My Priority Call & Follow-up Queue</h2>
-      <span class="card-meta">Action Required Today</span>
+      <span class="card-meta">{{ myAssignedLeads().length }} Prospects Assigned</span>
     </div>
 
-    <div class="queue-list">
-      <div class="queue-item" *ngFor="let lead of leadService.tenantLeads()">
+    <div class="queue-list" *ngIf="myAssignedLeads().length > 0">
+      <div class="queue-item animate-fade-in" *ngFor="let lead of myAssignedLeads()">
         <div class="queue-avatar" [ngClass]="lead.priority">{{ lead.name.slice(0, 2).toUpperCase() }}</div>
         <div class="queue-info">
           <div class="queue-title-row">
             <strong>{{ lead.name }}</strong>
             <app-status-pill [status]="lead.stage"></app-status-pill>
           </div>
-          <div class="queue-req">
+          <div class="queue-req" *ngIf="lead.requirement">
             Looking for: {{ lead.requirement.propertyTypes.join(', ') }} • Budget: {{ lead.requirement.budgetMin | currencyFormat }} - {{ lead.requirement.budgetMax | currencyFormat }}
           </div>
-          <div class="queue-notes" *ngIf="lead.notes[0]">
+          <div class="queue-notes" *ngIf="lead.notes && lead.notes[0]">
             💬 "{{ lead.notes[0].text }}"
           </div>
         </div>
@@ -104,6 +104,15 @@
         </div>
       </div>
     </div>
+
+    <app-empty-state
+      *ngIf="myAssignedLeads().length === 0"
+      type="leads"
+      title="No Leads in Queue"
+      description="You currently have no prospects assigned in your queue. Ingest a new prospect to begin follow-up."
+      actionText="+ Ingest Prospect"
+      (onAction)="navigateToLeads()">
+    </app-empty-state>
   </div>
 
   <!-- Deal Closing Modal with Confetti -->
@@ -112,4 +121,3 @@
     (onClose)="openDealModal.set(false)">
   </app-deal-modal>
 </div>
-

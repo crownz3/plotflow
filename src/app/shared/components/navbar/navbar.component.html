@@ -30,19 +30,35 @@
       <span class="tenant-name">{{ tenantService.activeTenant().agencyName }}</span>
     </div>
 
-    <!-- Quick Role Switcher for Testing -->
-    <div class="role-switcher">
-      <select [ngModel]="auth.currentRole()" (ngModelChange)="switchRole($event)">
-        <option value="agency_admin">Role: Principal Broker</option>
-        <option value="agent">Role: Associate Agent</option>
-        <option value="super_admin">Role: Platform Super-Admin</option>
-      </select>
+    <!-- Super Admin Indicator Pill -->
+    <div class="super-pill" *ngIf="auth.isSuperAdmin()">
+      <span>SUPER ADMIN</span>
     </div>
 
-    <!-- User Profile Avatar -->
-    <div class="user-avatar-btn">
-      <div class="avatar-circle">{{ userInitials }}</div>
+    <!-- User Profile Avatar with Clickable Dropdown Menu -->
+    <div class="user-profile-menu-container">
+      <div class="user-avatar-btn" (click)="showUserMenu.set(!showUserMenu())">
+        <div class="avatar-circle">{{ userInitials }}</div>
+      </div>
+
+      <div class="user-dropdown-menu animate-fade-in" *ngIf="showUserMenu()">
+        <div class="dropdown-header">
+          <strong>{{ auth.currentUser()?.displayName }}</strong>
+          <span class="email-sub">{{ auth.currentUser()?.email }}</span>
+          <span class="role-pill">{{ (auth.currentUser()?.role || 'agent') | uppercase }}</span>
+        </div>
+
+        <div class="dropdown-divider"></div>
+
+        <button class="menu-item-btn logout" (click)="logout()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          <span>Sign Out</span>
+        </button>
+      </div>
     </div>
   </div>
 </header>
-

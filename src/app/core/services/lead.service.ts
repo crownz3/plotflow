@@ -2,7 +2,6 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { Lead, LeadStage, Property } from '../models/models';
 import { AuthService } from './auth.service';
 import { PropertyService } from './property.service';
-import { DEMO_LEADS } from './demo-data';
 
 @Injectable({
   providedIn: 'root'
@@ -10,12 +9,17 @@ import { DEMO_LEADS } from './demo-data';
 export class LeadService {
   private auth = inject(AuthService);
   private propertyService = inject(PropertyService);
+  private storageKey = 'pf_leads';
 
-  readonly allLeads = signal<Lead[]>(DEMO_LEADS);
+  readonly allLeads = signal<Lead[]>(this.loadInitial());
 
   // Scoped strictly by active tenant
   readonly tenantLeads = computed(() => {
     const tId = this.auth.activeTenantId();
+    if (!tId) return [];
+    if (this.auth.isSuperAdmin() && tId === 'platform_global') {
+      return this.allLeads();
+    }
     return this.allLeads().filter(l => l.tenantId === tId);
   });
 
@@ -43,6 +47,23 @@ export class LeadService {
     this.tenantLeads().filter(l => l.priority === 'hot' && l.stage !== 'closed_won' && l.stage !== 'closed_lost').length
   );
 
+  private loadInitial(): Lead[] {
+    try {
+      const saved = localStorage.getItem(this.storageKey);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private save(): void {
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify(this.allLeads()));
+    } catch (e) {
+      console.warn('Failed to persist leads:', e);
+    }
+  }
+
   addLead(data: Omit<Lead, 'id' | 'createdAt' | 'updatedAt' | 'notes'>): Lead {
     const newLead: Lead = {
       ...data,
@@ -52,6 +73,7 @@ export class LeadService {
       updatedAt: Date.now()
     };
     this.allLeads.update(list => [newLead, ...list]);
+    this.save();
     return newLead;
   }
 
@@ -59,6 +81,7 @@ export class LeadService {
     this.allLeads.update(list =>
       list.map(l => l.id === leadId ? { ...l, stage: newStage, updatedAt: Date.now() } : l)
     );
+    this.save();
   }
 
   addNote(leadId: string, text: string): void {
@@ -79,16 +102,19 @@ export class LeadService {
         return l;
       })
     );
+    this.save();
   }
 
   updateLead(leadId: string, updates: Partial<Lead>): void {
     this.allLeads.update(list =>
       list.map(l => l.id === leadId ? { ...l, ...updates, updatedAt: Date.now() } : l)
     );
+    this.save();
   }
 
   deleteLead(leadId: string): void {
     this.allLeads.update(list => list.filter(l => l.id !== leadId));
+    this.save();
   }
 
   /**
@@ -139,4 +165,3 @@ export class LeadService {
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
   }
 }
-

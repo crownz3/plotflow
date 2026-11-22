@@ -131,25 +131,34 @@
   }
 }
 
-.role-switcher select {
-  padding: 6px 10px;
+
+.super-pill {
+  background: #fce8e6;
+  color: #d93025;
+  border: 1px solid #fad2cf;
+  padding: 4px 10px;
   border-radius: var(--ef-radius-pill);
-  border: 1px solid var(--ef-primary);
-  background: var(--ef-primary-tint);
-  color: var(--ef-primary);
-  font-size: 0.78rem;
-  font-weight: 700;
-  outline: none;
-  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.user-profile-menu-container {
+  position: relative;
 }
 
 .user-avatar-btn {
   cursor: pointer;
+  transition: transform 0.15s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
 }
 
 .avatar-circle {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--ef-primary);
   color: #ffffff;
@@ -158,5 +167,80 @@
   justify-content: center;
   font-size: 0.82rem;
   font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.user-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: #ffffff;
+  border: 1px solid var(--ef-border-subtle);
+  border-radius: var(--ef-radius-md);
+  box-shadow: var(--ef-shadow-elevated);
+  min-width: 240px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+
+  .dropdown-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-bottom: 10px;
+
+    strong {
+      font-size: 0.92rem;
+      color: var(--ef-text-main);
+    }
+
+    .email-sub {
+      font-size: 0.78rem;
+      color: var(--ef-text-tertiary);
+      word-break: break-all;
+    }
+
+    .role-pill {
+      align-self: flex-start;
+      margin-top: 4px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--ef-primary);
+      background: var(--ef-primary-tint);
+      padding: 2px 8px;
+      border-radius: var(--ef-radius-pill);
+    }
+  }
+
+  .dropdown-divider {
+    height: 1px;
+    background: var(--ef-border-subtle);
+    margin: 4px 0 8px 0;
+  }
+
+  .menu-item-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: var(--ef-radius-sm);
+    border: none;
+    background: transparent;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    text-align: left;
+    width: 100%;
+
+    &.logout {
+      color: var(--ef-danger);
+
+      &:hover {
+        background: var(--ef-danger-tint);
+      }
+    }
+  }
 }
 

@@ -1,24 +1,45 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { SiteVisit } from '../models/models';
 import { AuthService } from './auth.service';
-import { DEMO_VISITS } from './demo-data';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SiteVisitService {
   private auth = inject(AuthService);
+  private storageKey = 'pf_visits';
 
-  readonly allVisits = signal<SiteVisit[]>(DEMO_VISITS);
+  readonly allVisits = signal<SiteVisit[]>(this.loadInitial());
 
   readonly tenantVisits = computed(() => {
-    const tId = this.auth.activeTenantId() || 'tenant_prime_properties';
+    const tId = this.auth.activeTenantId();
+    if (!tId) return [];
+    if (this.auth.isSuperAdmin() && tId === 'platform_global') {
+      return this.allVisits();
+    }
     return this.allVisits().filter(v => v.tenantId === tId);
   });
 
   readonly upcomingCount = computed(() =>
     this.tenantVisits().filter(v => v.status === 'scheduled').length
   );
+
+  private loadInitial(): SiteVisit[] {
+    try {
+      const saved = localStorage.getItem(this.storageKey);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private save(): void {
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify(this.allVisits()));
+    } catch (e) {
+      console.warn('Failed to persist visits:', e);
+    }
+  }
 
   scheduleVisit(data: Omit<SiteVisit, 'id' | 'createdAt'>): SiteVisit {
     const newVisit: SiteVisit = {
@@ -27,6 +48,7 @@ export class SiteVisitService {
       createdAt: Date.now()
     };
     this.allVisits.update(list => [newVisit, ...list]);
+    this.save();
     return newVisit;
   }
 
@@ -34,16 +56,18 @@ export class SiteVisitService {
     this.allVisits.update(list =>
       list.map(v => v.id === visitId ? { ...v, status, feedback } : v)
     );
+    this.save();
   }
 
   updateVisit(visitId: string, updates: Partial<SiteVisit>): void {
     this.allVisits.update(list =>
       list.map(v => v.id === visitId ? { ...v, ...updates } : v)
     );
+    this.save();
   }
 
   deleteVisit(visitId: string): void {
     this.allVisits.update(list => list.filter(v => v.id !== visitId));
+    this.save();
   }
 }
-

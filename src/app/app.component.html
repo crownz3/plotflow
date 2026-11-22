@@ -1,4 +1,21 @@
-<div class="app-container">
+<!-- When Not Authenticated OR in Onboarding / Pending Approval: Render Clean Standalone View -->
+<div class="auth-only-wrapper" *ngIf="!isFullAppShell()">
+  <router-outlet></router-outlet>
+</div>
+
+<!-- When Authenticated & Active: Render Full PlotFlow Application Shell -->
+<div class="app-container" *ngIf="isFullAppShell()">
+  <!-- Super Admin Active Tenant Inspection Banner -->
+  <div class="support-context-banner" *ngIf="auth.isSupportContext()">
+    <div class="banner-content">
+      <span class="icon">🔍</span>
+      <span>Super Admin Inspection Mode: Active Tenant <strong>{{ tenantService.activeTenant().agencyName }}</strong> ({{ auth.activeTenantId() }})</span>
+    </div>
+    <button class="exit-banner-btn" (click)="exitSupportContext()">
+      Return to Super Admin Console ✕
+    </button>
+  </div>
+
   <!-- Top Navigation Bar -->
   <app-navbar (onToggleSidebar)="toggleSidebar()"></app-navbar>
 
@@ -15,4 +32,3 @@
   <!-- Mobile Bottom Tab Bar (Visible on Android / < 992px) -->
   <app-bottom-tabs></app-bottom-tabs>
 </div>
-

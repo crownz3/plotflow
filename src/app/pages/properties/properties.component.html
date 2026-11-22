@@ -1,13 +1,105 @@
-<div class="properties-page animate-fade-in">
+<div class="properties-page">
   <div class="page-header">
     <div>
-      <h1>Property Inventory</h1>
-      <p class="sub-desc">Browse, manage, and share verified listings with prospective buyers.</p>
+      <h1>Property Inventory & Analytics</h1>
+      <p class="sub-desc">Track property valuations, matched buyer leads, site inspections, and profit margins.</p>
     </div>
 
-    <button class="ef-btn ef-btn-primary" (click)="openAddModal.set(true)">
-      <span>+ Add New Property</span>
-    </button>
+    <div class="header-right-actions">
+      <!-- Table vs Card View Toggle (Mobile Friendly) -->
+      <div class="view-toggle-group" *ngIf="propertyService.tenantProperties().length > 0">
+        <button
+          class="view-toggle-btn"
+          [class.active]="viewMode() === 'cards'"
+          (click)="toggleView('cards')"
+          title="Card View (Mobile Optimized)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <span>Cards</span>
+        </button>
+        <button
+          class="view-toggle-btn"
+          [class.active]="viewMode() === 'table'"
+          (click)="toggleView('table')"
+          title="Dense Table View">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+          <span>Table</span>
+        </button>
+      </div>
+
+      <button class="ef-btn ef-btn-primary" (click)="openAddModal.set(true)">
+        <span>+ Add New Property</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Portfolio Macro Valuation & Analytics Bar -->
+  <div class="portfolio-analytics-cards" *ngIf="propertyService.tenantProperties().length > 0">
+    <div class="analytics-stat-card">
+      <div class="stat-icon-wrap blue">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <span class="stat-lbl">Total Portfolio Value</span>
+        <span class="stat-val">{{ analyticsService.portfolioStats().totalInventoryValue | currencyFormat }}</span>
+        <span class="stat-sub">{{ analyticsService.portfolioStats().totalPropertiesCount }} Total Listings</span>
+      </div>
+    </div>
+
+    <div class="analytics-stat-card">
+      <div class="stat-icon-wrap amber">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <span class="stat-lbl">Active Inventory for Sale</span>
+        <span class="stat-val text-primary">{{ analyticsService.portfolioStats().activeInventoryValue | currencyFormat }}</span>
+        <span class="stat-sub">{{ analyticsService.portfolioStats().activePropertiesCount }} Ready for Purchase</span>
+      </div>
+    </div>
+
+    <div class="analytics-stat-card">
+      <div class="stat-icon-wrap green">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <span class="stat-lbl">Projected Brokerage (4%)</span>
+        <span class="stat-val text-success">{{ analyticsService.portfolioStats().totalProjectedBrokerage | currencyFormat }}</span>
+        <span class="stat-sub">Est. Net Profit: {{ analyticsService.portfolioStats().totalProjectedNetProfit | currencyFormat }}</span>
+      </div>
+    </div>
+
+    <div class="analytics-stat-card">
+      <div class="stat-icon-wrap purple">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <span class="stat-lbl">Inspection Site Visits</span>
+        <span class="stat-val">{{ analyticsService.portfolioStats().totalVisitsCount }}</span>
+        <span class="stat-sub">Across All Properties</span>
+      </div>
+    </div>
   </div>
 
   <!-- Filter Controls Bar -->
@@ -54,27 +146,130 @@
     </div>
   </div>
 
-  <!-- Properties Grid -->
-  <div class="properties-grid" *ngIf="filteredProperties().length > 0">
+  <!-- 1. CARDS VIEW (Mobile-Friendly & Interactive) -->
+  <div class="properties-grid animate-fade-in" *ngIf="viewMode() === 'cards' && filteredProperties().length > 0">
     <app-property-card
       *ngFor="let prop of filteredProperties()"
       [property]="prop"
       (onSelect)="selectedProperty.set($event)"
+      (onViewStats)="openStatsDrawer($event)"
       (onEdit)="startEditProperty($event)"
       (onDelete)="deleteProperty($event)">
     </app-property-card>
   </div>
 
-  <div class="empty-state" *ngIf="filteredProperties().length === 0">
-    <p>No properties match your active filter.</p>
-    <button class="ef-btn ef-btn-outlined ef-btn-sm" (click)="selectedType.set('all'); searchQuery = ''">
-      Reset Filters
-    </button>
+  <!-- 2. TABLE VIEW (Dense Tabular Spreadsheet with Analytical Columns) -->
+  <div class="properties-table-card animate-fade-in" *ngIf="viewMode() === 'table' && filteredProperties().length > 0">
+    <div class="table-responsive">
+      <table class="properties-table">
+        <thead>
+          <tr>
+            <th>Property Title</th>
+            <th>Type / BHK</th>
+            <th>Locality & City</th>
+            <th>Area & Rate</th>
+            <th>Price</th>
+            <th>Qualified Clients</th>
+            <th>Visits</th>
+            <th>Est. Net Profit</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let prop of filteredProperties()" [class.closed-row]="prop.status === 'sold'">
+            <td>
+              <strong>{{ prop.title }}</strong>
+              <div class="prop-sub-id">{{ prop.id }}</div>
+            </td>
+            <td>
+              <span class="type-tag">{{ prop.propertyType | uppercase }}</span>
+              <span *ngIf="prop.bhk" class="bhk-tag">{{ prop.bhk }}</span>
+            </td>
+            <td>
+              <span>📍 {{ prop.location.locality }}</span>
+            </td>
+            <td>
+              <div>{{ prop.area }} {{ prop.areaUnit }}</div>
+              <small class="rate-sub" *ngIf="getIntel(prop) as intel">₹{{ intel.financials.pricePerUnit }}/{{ prop.areaUnit }}</small>
+            </td>
+            <td>
+              <strong class="price-text">{{ prop.price | currencyFormat }}</strong>
+            </td>
+            <td>
+              <span class="analytics-badge leads" *ngIf="getIntel(prop) as intel" (click)="openStatsDrawer(prop)">
+                👥 {{ intel.matchedLeads.length }} Leads
+              </span>
+            </td>
+            <td>
+              <span class="analytics-badge visits" *ngIf="getIntel(prop) as intel" (click)="openStatsDrawer(prop)">
+                📅 {{ intel.visits.length }} Visits
+              </span>
+            </td>
+            <td>
+              <span class="profit-val text-success" *ngIf="getIntel(prop) as intel">
+                {{ intel.financials.isClosed ? (intel.financials.realizedNetProfit | currencyFormat) : (intel.financials.projectedNetProfit | currencyFormat) }}
+              </span>
+            </td>
+            <td>
+              <app-status-pill [status]="prop.status"></app-status-pill>
+            </td>
+            <td>
+              <div class="actions-row">
+                <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="openStatsDrawer(prop)" title="Property Analytics & Matched Clients">
+                  📊 Stats
+                </button>
+                <button class="ef-btn ef-btn-outlined ef-btn-sm" (click)="startEditProperty(prop)">
+                  ✏
+                </button>
+                <button class="ef-btn ef-btn-outlined ef-btn-sm" (click)="deleteProperty(prop)" style="color: var(--ef-danger);">
+                  🗑
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
+
+  <!-- EMPTY STATE FOR PROPERTIES -->
+  <app-empty-state
+    *ngIf="filteredProperties().length === 0 && propertyService.tenantProperties().length > 0"
+    type="search"
+    title="No Matching Properties"
+    description="No property listings match your active filters or search terms."
+    actionText="Reset Filters"
+    (onAction)="resetFilters()">
+  </app-empty-state>
+
+  <app-empty-state
+    *ngIf="propertyService.tenantProperties().length === 0"
+    type="properties"
+    title="No Properties in Inventory"
+    description="Your agency has not ingested any properties yet. Add verified apartments, villas, plots, or commercial spaces."
+    actionText="+ Ingest First Property"
+    (onAction)="openAddModal.set(true)">
+  </app-empty-state>
+
+  <!-- Property Deep-Dive Analytics & Intelligence Drawer -->
+  <app-property-stats-drawer
+    *ngIf="selectedPropertyForStats()"
+    [property]="selectedPropertyForStats()!"
+    (onClose)="selectedPropertyForStats.set(null)"
+    (onCloseDeal)="handleCloseDeal($event)">
+  </app-property-stats-drawer>
+
+  <!-- Deal Closing Modal -->
+  <app-deal-modal
+    *ngIf="dealModalOpen()"
+    [property]="dealModalProp"
+    (onClose)="dealModalOpen.set(false)">
+  </app-deal-modal>
 
   <!-- Add Property Modal -->
   <div class="modal-backdrop" *ngIf="openAddModal()" (click)="openAddModal.set(false)">
-    <div class="modal-card animate-fade-in" (click)="$event.stopPropagation()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Ingest New Property Listing</h2>
         <button class="close-btn" (click)="openAddModal.set(false)">&times;</button>
@@ -133,7 +328,7 @@
 
   <!-- Edit Property Modal -->
   <div class="modal-backdrop" *ngIf="editingProperty()" (click)="editingProperty.set(null)">
-    <div class="modal-card animate-fade-in" (click)="$event.stopPropagation()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Edit Property Listing</h2>
         <button class="close-btn" (click)="editingProperty.set(null)">&times;</button>
@@ -170,4 +365,3 @@
     </div>
   </div>
 </div>
-

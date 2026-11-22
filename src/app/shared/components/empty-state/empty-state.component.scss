@@ -1,0 +1,77 @@
+.empty-state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 24px;
+  background-color: var(--ef-bg-surface);
+  border: 1px dashed var(--ef-border-medium);
+  border-radius: var(--ef-radius-lg);
+  margin: 16px 0;
+  width: 100%;
+  box-sizing: border-box;
+
+  .empty-icon-bubble {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    background-color: var(--ef-primary-tint);
+    color: var(--ef-primary);
+    transition: transform 0.2s ease;
+
+    &.properties {
+      background-color: #e8f0fe;
+      color: #1a73e8;
+    }
+
+    &.leads {
+      background-color: #fef7e0;
+      color: #b06000;
+    }
+
+    &.deals {
+      background-color: #e6f4ea;
+      color: #1e8e3e;
+    }
+
+    &.visits, &.agenda {
+      background-color: #e8f0fe;
+      color: #1a73e8;
+    }
+
+    &.leaderboard {
+      background-color: #fce8e6;
+      color: #d93025;
+    }
+
+    &.search {
+      background-color: #f1f3f4;
+      color: #5f6368;
+    }
+  }
+
+  .empty-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--ef-text-main);
+    margin: 0 0 8px 0;
+  }
+
+  .empty-desc {
+    font-size: 0.9rem;
+    color: var(--ef-text-secondary);
+    max-width: 420px;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+
+  .empty-action-wrap {
+    margin-top: 4px;
+  }
+}
+

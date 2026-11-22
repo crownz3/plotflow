@@ -68,7 +68,7 @@
       title="Gross Brokerage Earned"
       [value]="dealService.totalGrossBrokerage() | currencyFormat"
       subtitle="Closed deals volume"
-      badgeText="+18% Growth"
+      [badgeText]="dealService.tenantDeals().length + ' Deals'"
       badgeColor="green"
       iconColor="green">
       <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -114,11 +114,11 @@
           <span class="badge-pill-count">{{ siteVisitService.tenantVisits().length }} Active</span>
         </div>
 
-        <div class="agenda-list">
+        <div class="agenda-list" *ngIf="siteVisitService.tenantVisits().length > 0">
           <div class="agenda-item animate-fade-in" *ngFor="let visit of siteVisitService.tenantVisits()">
             <div class="agenda-time">
               <span class="time-hour">{{ visit.scheduledTime | date:'shortTime' }}</span>
-              <span class="time-label">Today</span>
+              <span class="time-label">{{ visit.scheduledTime | date:'MMM d' }}</span>
             </div>
 
             <div class="agenda-content">
@@ -146,42 +146,48 @@
             </div>
           </div>
         </div>
+
+        <app-empty-state
+          *ngIf="siteVisitService.tenantVisits().length === 0"
+          type="visits"
+          title="No Inspection Visits Scheduled"
+          description="Your agency has no upcoming site visits. Schedule one to start showing properties."
+          actionText="+ Schedule Site Visit"
+          (onAction)="scheduleInitialVisit()">
+        </app-empty-state>
       </div>
     </div>
 
-    <!-- RIGHT: Agent Performance Leaderboard -->
+    <!-- RIGHT: Agent Performance Leaderboard (REAL & DYNAMIC) -->
     <div class="leaderboard-column">
       <div class="content-card">
         <div class="card-header">
           <h2>Agent Performance & Payouts</h2>
-          <span class="card-meta">This Month</span>
+          <span class="card-meta">Real Closed Deals</span>
         </div>
 
-        <div class="leaderboard-list">
-          <div class="agent-row">
-            <div class="agent-avatar">AK</div>
+        <div class="leaderboard-list" *ngIf="agentLeaderboard().length > 0">
+          <div class="agent-row animate-fade-in" *ngFor="let agent of agentLeaderboard()">
+            <div class="agent-avatar">{{ agent.initials }}</div>
             <div class="agent-info">
-              <strong>Arun Kumar</strong>
-              <span>Associate Broker • 2 Deals Closed</span>
+              <strong>{{ agent.agentName }}</strong>
+              <span>Associate Broker • {{ agent.dealsClosed }} {{ agent.dealsClosed === 1 ? 'Deal' : 'Deals' }} Closed</span>
             </div>
             <div class="agent-stats">
-              <span class="payout-num">₹2,05,000</span>
-              <span class="payout-lbl">Earned Commission</span>
-            </div>
-          </div>
-
-          <div class="agent-row">
-            <div class="agent-avatar rs">RS</div>
-            <div class="agent-info">
-              <strong>Rajesh Sharma</strong>
-              <span>Principal Broker • 1 Deal Closed</span>
-            </div>
-            <div class="agent-stats">
-              <span class="payout-num">₹1,88,600</span>
+              <span class="payout-num">{{ agent.commissionEarned | currencyFormat }}</span>
               <span class="payout-lbl">Earned Commission</span>
             </div>
           </div>
         </div>
+
+        <app-empty-state
+          *ngIf="agentLeaderboard().length === 0"
+          type="leaderboard"
+          title="No Closed Deals Yet"
+          description="Agent commissions and rankings will appear here automatically when transactions close."
+          actionText="🎊 Close Deal & Calculate Commission"
+          (onAction)="openDealModal.set(true)">
+        </app-empty-state>
       </div>
     </div>
   </div>
