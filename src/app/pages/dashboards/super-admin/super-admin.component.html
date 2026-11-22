@@ -38,9 +38,9 @@
         <div class="card-top">
           <div class="agency-title-box">
             <h3>{{ pending.agencyName }}</h3>
-            <span class="territory-tag">📍 {{ pending.operatingCity || pending.address }}</span>
+            <span class="territory-tag">{{ pending.operatingCity || pending.address }}</span>
           </div>
-          <span class="status-chip-amber">⏳ Pending Review</span>
+          <span class="status-chip-amber">Pending Review</span>
         </div>
 
         <div class="agency-details-grid">
@@ -224,7 +224,7 @@
           <tr *ngFor="let tenant of tenantService.tenants()">
             <td>
               <strong>{{ tenant.agencyName }}</strong>
-              <div class="sub-text">📍 {{ tenant.operatingCity || tenant.address }}</div>
+              <div class="sub-text">{{ tenant.operatingCity || tenant.address }}</div>
             </td>
             <td>
               <div>{{ tenant.email }}</div>
@@ -252,7 +252,7 @@
 
                 <ng-container *ngIf="tenant.status === 'active'">
                   <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="supportContext(tenant.id)">
-                    🔍 Inspect & Test Flow
+                    Inspect & Test Flow
                   </button>
                 </ng-container>
 

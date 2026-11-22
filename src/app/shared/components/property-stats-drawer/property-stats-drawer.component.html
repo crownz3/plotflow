@@ -8,7 +8,7 @@
           <span class="type-tag">{{ property.propertyType | uppercase }} • {{ property.listingType | uppercase }}</span>
         </div>
         <h2 class="property-title">{{ property.title }}</h2>
-        <p class="property-loc">📍 {{ property.location.address || property.location.locality }}, {{ property.location.city }}</p>
+        <p class="property-loc">{{ property.location.address || property.location.locality }}, {{ property.location.city }}</p>
       </div>
       <button class="close-btn" (click)="onClose.emit()">&times;</button>
     </div>
@@ -109,7 +109,7 @@
           </div>
           <div class="funnel-arrow">➔</div>
           <div class="funnel-step" [class.active]="intel.financials.isClosed">
-            <span class="step-num">🏆</span>
+            <span class="step-num">4</span>
             <div class="step-info">
               <strong>{{ intel.financials.isClosed ? 'Closed Won' : 'Pending Close' }}</strong>
               <span>{{ intel.financials.isClosed ? 'Deal Finalized' : 'In Negotiation' }}</span>
@@ -148,7 +148,7 @@
             </div>
             <div class="lead-pitch-actions">
               <a [href]="getWhatsAppPitchUrl(lead)" target="_blank" class="ef-btn ef-btn-primary ef-btn-sm" title="Send WhatsApp Listing Pitch">
-                💬 Pitch
+                Pitch
               </a>
             </div>
           </div>
@@ -194,7 +194,7 @@
     <div class="drawer-footer">
       <button class="ef-btn ef-btn-outlined" (click)="onClose.emit()">Close</button>
       <button class="ef-btn ef-btn-primary" (click)="onCloseDeal.emit(property)" *ngIf="property.status !== 'sold'">
-        <span>🎊 Close Deal for this Property</span>
+        <span>Close Deal for this Property</span>
       </button>
     </div>
   </div>

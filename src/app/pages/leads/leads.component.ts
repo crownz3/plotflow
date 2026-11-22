@@ -99,7 +99,7 @@ export class LeadsComponent {
 
   markAsWon(lead: Lead) {
     this.leadService.updateStage(lead.id, 'closed_won');
-    fireConfetti(3000); // 🎊 Celebrate closed won!
+    fireConfetti(3000); // Celebrate closed won!
   }
 
   closeDealWithProp(prop: Property) {

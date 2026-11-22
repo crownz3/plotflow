@@ -14,23 +14,23 @@
 
   <!-- Quick Action Row -->
   <div class="lead-actions" (click)="$event.stopPropagation()">
-    <a [href]="'tel:' + lead.phone" class="action-btn" title="Call">📞 Call</a>
-    <a [href]="leadService.getWhatsAppShareUrl(lead)" target="_blank" class="action-btn wa" title="WhatsApp">💬 WhatsApp</a>
+    <a [href]="'tel:' + lead.phone" class="action-btn" title="Call">Call</a>
+    <a [href]="leadService.getWhatsAppShareUrl(lead)" target="_blank" class="action-btn wa" title="WhatsApp">WhatsApp</a>
     <button class="action-btn match" (click)="onOpenMatcher.emit(lead)" title="Smart Property Matcher">
-      🏡 Match
+      Match
     </button>
     <button class="action-btn edit-lead-btn" (click)="onEdit.emit(lead)" title="Edit Lead">
-      ✏
+      Edit
     </button>
     <button class="action-btn delete-lead-btn" (click)="onDelete.emit(lead)" title="Delete Lead" style="color: var(--ef-status-urgent);">
-      🗑
+      Delete
     </button>
     <button
       class="action-btn won"
       *ngIf="lead.stage !== 'closed_won'"
       (click)="onMarkWon.emit(lead)"
       title="Mark as Closed Won">
-      🏆 Won
+      Won
     </button>
   </div>
 </div>

@@ -59,13 +59,13 @@
             <div class="avatar">{{ visit.leadName.slice(0, 2).toUpperCase() }}</div>
             <div class="client-info">
               <strong>{{ visit.leadName }}</strong>
-              <a [href]="'tel:' + visit.leadPhone" class="phone-link">📞 {{ visit.leadPhone }}</a>
+              <a [href]="'tel:' + visit.leadPhone" class="phone-link">{{ visit.leadPhone }}</a>
             </div>
           </div>
 
           <div class="property-block">
-            <span class="prop-title">🏡 {{ visit.propertyTitle }}</span>
-            <span class="prop-loc">📍 {{ visit.propertyLocation }}</span>
+            <span class="prop-title">{{ visit.propertyTitle }}</span>
+            <span class="prop-loc">{{ visit.propertyLocation }}</span>
           </div>
 
           <div class="agent-block">
@@ -79,16 +79,16 @@
             class="ef-btn ef-btn-tonal ef-btn-sm"
             *ngIf="visit.status === 'scheduled'"
             (click)="markCompleted(visit.id)">
-            ✔ Done
+            Done
           </button>
           <button class="ef-btn ef-btn-outlined ef-btn-sm" (click)="startEditVisit(visit)">
-            ✏ Reschedule
+            Reschedule
           </button>
           <a [href]="'https://wa.me/' + visit.leadPhone.replace(' ', '')" target="_blank" class="ef-btn ef-btn-outlined ef-btn-sm">
-            💬 WhatsApp
+            WhatsApp
           </a>
           <button class="ef-btn ef-btn-outlined ef-btn-sm" (click)="deleteVisit(visit)" style="color: var(--ef-danger);">
-            🗑 Cancel
+            Cancel
           </button>
         </div>
       </div>
@@ -121,7 +121,7 @@
             </td>
             <td>
               <strong>{{ visit.propertyTitle }}</strong>
-              <div class="sub-loc">📍 {{ visit.propertyLocation }}</div>
+              <div class="sub-loc">{{ visit.propertyLocation }}</div>
             </td>
             <td>{{ visit.agentName }}</td>
             <td>
@@ -133,16 +133,16 @@
                   class="ef-btn ef-btn-tonal ef-btn-sm"
                   *ngIf="visit.status === 'scheduled'"
                   (click)="markCompleted(visit.id)">
-                  ✔ Mark Done
+                  Mark Done
                 </button>
                 <button class="ef-btn ef-btn-outlined ef-btn-sm edit-visit-btn" (click)="startEditVisit(visit)">
-                  ✏ Reschedule
+                  Reschedule
                 </button>
                 <button class="ef-btn ef-btn-outlined ef-btn-sm delete-visit-btn" (click)="deleteVisit(visit)" style="color: var(--ef-danger);">
-                  🗑 Cancel
+                  Cancel
                 </button>
                 <a [href]="'https://wa.me/' + visit.leadPhone.replace(' ', '')" target="_blank" class="ef-btn ef-btn-outlined ef-btn-sm">
-                  💬 Reminder
+                  Reminder
                 </a>
               </div>
             </td>

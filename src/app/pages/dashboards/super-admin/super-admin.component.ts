@@ -39,7 +39,7 @@ export class SuperAdminDashboardComponent {
   approveAgency(tenantId: string): void {
     const tenant = this.tenantService.getTenantById(tenantId);
     this.tenantService.approveTenant(tenantId);
-    this.approvalAlert.set(`✓ Agency "${tenant?.agencyName || tenantId}" has been approved and activated! The tenant can now access the full platform.`);
+    this.approvalAlert.set(`Agency "${tenant?.agencyName || tenantId}" has been approved and activated! The tenant can now access the full platform.`);
     setTimeout(() => this.approvalAlert.set(null), 5000);
   }
 

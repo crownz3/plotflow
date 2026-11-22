@@ -11,7 +11,7 @@
 
     <div class="quick-action-bar">
       <button class="ef-btn ef-btn-primary" (click)="openDealModal.set(true)">
-        <span>🎊 Close Deal & Calculator</span>
+        <span>Close Deal & Calculator</span>
       </button>
       <a routerLink="/properties" class="ef-btn ef-btn-tonal">
         <span>+ Add Property</span>
@@ -127,8 +127,8 @@
                 <span class="agenda-prop">{{ visit.propertyTitle }}</span>
               </div>
               <div class="agenda-meta">
-                <span>📍 {{ visit.propertyLocation }}</span>
-                <span>👤 Advisor: {{ visit.agentName }}</span>
+                <span>{{ visit.propertyLocation }}</span>
+                <span>Advisor: {{ visit.agentName }}</span>
               </div>
             </div>
 
@@ -185,7 +185,7 @@
           type="leaderboard"
           title="No Closed Deals Yet"
           description="Agent commissions and rankings will appear here automatically when transactions close."
-          actionText="🎊 Close Deal & Calculate Commission"
+          actionText="Close Deal & Calculate Commission"
           (onAction)="openDealModal.set(true)">
         </app-empty-state>
       </div>

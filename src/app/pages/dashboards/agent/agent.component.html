@@ -8,7 +8,7 @@
 
     <div class="quick-action-bar">
       <button class="ef-btn ef-btn-primary" (click)="openDealModal.set(true)">
-        <span>🎊 Close My Deal & Celebrate</span>
+        <span>Close My Deal & Calculate Commission</span>
       </button>
       <a routerLink="/leads" class="ef-btn ef-btn-tonal">
         <span>My Leads & Pipeline</span>
@@ -90,16 +90,16 @@
             Looking for: {{ lead.requirement.propertyTypes.join(', ') }} • Budget: {{ lead.requirement.budgetMin | currencyFormat }} - {{ lead.requirement.budgetMax | currencyFormat }}
           </div>
           <div class="queue-notes" *ngIf="lead.notes && lead.notes[0]">
-            💬 "{{ lead.notes[0].text }}"
+            "{{ lead.notes[0].text }}"
           </div>
         </div>
 
         <div class="queue-actions">
           <a [href]="'tel:' + lead.phone" class="ef-btn ef-btn-outlined ef-btn-sm">
-            📞 Call
+            Call
           </a>
           <a [href]="leadService.getWhatsAppShareUrl(lead)" target="_blank" class="ef-btn ef-btn-primary ef-btn-sm">
-            💬 WhatsApp
+            WhatsApp
           </a>
         </div>
       </div>

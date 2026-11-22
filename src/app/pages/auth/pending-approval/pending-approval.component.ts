@@ -40,7 +40,7 @@ export class PendingApprovalComponent {
 
       if (current?.status === 'active') {
         fireConfetti();
-        this.checkFeedback.set('🎉 Congratulations! Your agency has been approved and activated by Super Admin. Redirecting to your workspace...');
+        this.checkFeedback.set('Congratulations! Your agency has been approved and activated by Super Admin. Redirecting to your workspace...');
         setTimeout(() => {
           this.router.navigate(['/dashboard']);
         }, 1500);

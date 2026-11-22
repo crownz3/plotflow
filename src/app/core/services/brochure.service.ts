@@ -115,8 +115,8 @@ export class BrochureService {
 
     // Group into 2 columns
     const half = Math.ceil(infraList.length / 2);
-    const infraCol1 = infraList.slice(0, half).map(item => `✔ ${item}`);
-    const infraCol2 = infraList.slice(half).map(item => `✔ ${item}`);
+    const infraCol1 = infraList.slice(0, half).map(item => `• ${item}`);
+    const infraCol2 = infraList.slice(half).map(item => `• ${item}`);
     const infraTableData: string[][] = [];
     for (let i = 0; i < Math.max(infraCol1.length, infraCol2.length); i++) {
       infraTableData.push([infraCol1[i] || '', infraCol2[i] || '']);
@@ -171,7 +171,7 @@ export class BrochureService {
     doc.setTextColor(26, 115, 232);
     doc.setFontSize(8.5);
     doc.setFont('helvetica', 'bold');
-    doc.text(`📍 Google Maps Location: ${mapLocationUrl}`, 14, currentY + 5 + (splitDesc.length * 4.5) + 4);
+    doc.text(`Google Maps Location: ${mapLocationUrl}`, 14, currentY + 5 + (splitDesc.length * 4.5) + 4);
 
     // 7. Direct Agent Contact Footer (Confidential - Masks Owner Contact)
     const footerY = 270;
@@ -232,20 +232,20 @@ export class BrochureService {
 
     let typeDetails = '';
     if (property.propertyType === 'plot') {
-      typeDetails = `📐 *Dimensions:* ${property.plotDetails?.dimensions || `${property.area} ${property.areaUnit}`}\n` +
-        `🛣 *Road Width:* ${property.plotDetails?.roadWidthFt ? `${property.plotDetails.roadWidthFt} Ft Road` : 'Wide Access Road'}\n` +
-        `🏛 *Approval:* ${property.plotDetails?.approvalStatus || 'DTCP / RERA Approved'}\n` +
-        `🚩 *Corner Plot:* ${property.plotDetails?.isCornerPlot ? 'Yes (2-side road)' : 'Standard Plot'}`;
+      typeDetails = `*Dimensions:* ${property.plotDetails?.dimensions || `${property.area} ${property.areaUnit}`}\n` +
+        `*Road Width:* ${property.plotDetails?.roadWidthFt ? `${property.plotDetails.roadWidthFt} Ft Road` : 'Wide Access Road'}\n` +
+        `*Approval:* ${property.plotDetails?.approvalStatus || 'DTCP / RERA Approved'}\n` +
+        `*Corner Plot:* ${property.plotDetails?.isCornerPlot ? 'Yes (2-side road)' : 'Standard Plot'}`;
     } else if (property.propertyType === 'villa') {
-      typeDetails = `🏡 *Configuration:* ${property.bhk || property.villaDetails?.bedrooms || 3} BHK Luxury Villa\n` +
-        `🏢 *Floors:* ${property.villaDetails?.floors || 'G+1 Duplex'}\n` +
-        `🚗 *Car Parking:* ${property.villaDetails?.carParking ? `${property.villaDetails.carParking} Covered Slots` : 'Available'}\n` +
-        `🧭 *Facing:* ${property.facing || property.villaDetails?.facing || 'East Facing'}`;
+      typeDetails = `*Configuration:* ${property.bhk || property.villaDetails?.bedrooms || 3} BHK Luxury Villa\n` +
+        `*Floors:* ${property.villaDetails?.floors || 'G+1 Duplex'}\n` +
+        `*Car Parking:* ${property.villaDetails?.carParking ? `${property.villaDetails.carParking} Covered Slots` : 'Available'}\n` +
+        `*Facing:* ${property.facing || property.villaDetails?.facing || 'East Facing'}`;
     } else if (property.propertyType === 'apartment') {
-      typeDetails = `🏢 *Configuration:* ${property.bhk || '3 BHK'} Apartment\n` +
-        `🏬 *Floor:* ${property.apartmentDetails?.floorNumber ? `Floor ${property.apartmentDetails.floorNumber} of ${property.apartmentDetails.totalFloors || '—'}` : 'Mid Floor'}\n` +
-        `🧭 *Facing:* ${property.facing || 'East'}\n` +
-        `🌿 *UDS:* ${property.apartmentDetails?.udsSqFt ? `${property.apartmentDetails.udsSqFt} Sq.ft` : 'Substantial'}`;
+      typeDetails = `*Configuration:* ${property.bhk || '3 BHK'} Apartment\n` +
+        `*Floor:* ${property.apartmentDetails?.floorNumber ? `Floor ${property.apartmentDetails.floorNumber} of ${property.apartmentDetails.totalFloors || '—'}` : 'Mid Floor'}\n` +
+        `*Facing:* ${property.facing || 'East'}\n` +
+        `*UDS:* ${property.apartmentDetails?.udsSqFt ? `${property.apartmentDetails.udsSqFt} Sq.ft` : 'Substantial'}`;
     }
 
     const services = (property.infrastructure && property.infrastructure.length > 0)
@@ -253,23 +253,23 @@ export class BrochureService {
       : '24/7 Security, Metro Water, Wide Blacktop Road, Power Backup';
 
     const mapsLine = property.mapsUrl
-      ? `\n📍 *Google Maps Location:* ${property.mapsUrl}`
-      : `\n📍 *Google Maps Location:* https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.location.address || ''} ${property.location.locality}, ${property.location.city}`.trim())}`;
+      ? `\n*Google Maps Location:* ${property.mapsUrl}`
+      : `\n*Google Maps Location:* https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.location.address || ''} ${property.location.locality}, ${property.location.city}`.trim())}`;
 
     const agentName = property.assignedAgentName || agent?.displayName || 'Senior Property Consultant';
     const agentPhone = agent?.phoneNumber || tenant.phone;
 
-    return `✨ *VERIFIED PROPERTY OPPORTUNITY* ✨\n\n` +
-      `🏡 *${property.title}*\n` +
-      `📍 *Location:* ${property.location.locality}, ${property.location.city}${mapsLine}\n` +
-      `💰 *Price:* ${formattedPrice} ${property.negotiable ? '(Negotiable)' : ''}\n` +
-      `📏 *Area:* ${property.area} ${property.areaUnit.toUpperCase()}\n` +
+    return `*VERIFIED PROPERTY OPPORTUNITY*\n\n` +
+      `*${property.title}*\n` +
+      `*Location:* ${property.location.locality}, ${property.location.city}${mapsLine}\n` +
+      `*Price:* ${formattedPrice} ${property.negotiable ? '(Negotiable)' : ''}\n` +
+      `*Area:* ${property.area} ${property.areaUnit.toUpperCase()}\n` +
       (typeDetails ? `\n${typeDetails}\n` : '') +
-      `\n⚡ *On-Site Services:* ${services}\n` +
-      `\n📝 *Overview:* ${property.description || 'Premium investment option ready for immediate site inspection.'}\n\n` +
-      `📞 *Book Site Visit / Inquiries:*\n` +
-      `👤 *${agentName}* — ${agentPhone}\n` +
-      `🏢 *${tenant.agencyName}* (RERA: ${tenant.reraNumber || 'Verified'})`;
+      `\n*On-Site Services:* ${services}\n` +
+      `\n*Overview:* ${property.description || 'Premium investment option ready for immediate site inspection.'}\n\n` +
+      `*Book Site Visit / Inquiries:*\n` +
+      `*${agentName}* — ${agentPhone}\n` +
+      `*${tenant.agencyName}* (RERA: ${tenant.reraNumber || 'Verified'})`;
   }
 
   /**

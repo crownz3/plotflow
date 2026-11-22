@@ -9,10 +9,10 @@
     <!-- Media Indicators (Photos count & Video tour badge) -->
     <div class="media-badges">
       <span class="media-pill" *ngIf="property.images && property.images.length > 0">
-        📷 {{ property.images.length }}
+        {{ property.images.length }} Photos
       </span>
       <span class="media-pill video" *ngIf="property.media?.videoTourUrl">
-        ▶ Tour
+        Video Tour
       </span>
     </div>
   </div>
@@ -48,36 +48,36 @@
       <!-- Plot specific -->
       <ng-container *ngIf="property.propertyType === 'plot'">
         <span class="spec-tag approval" *ngIf="property.plotDetails?.approvalStatus">
-          🏛 {{ property.plotDetails?.approvalStatus }} Approved
+          {{ property.plotDetails?.approvalStatus }} Approved
         </span>
         <span class="spec-tag" *ngIf="property.plotDetails?.dimensions">
-          📐 {{ property.plotDetails?.dimensions }} ft
+          {{ property.plotDetails?.dimensions }} ft
         </span>
         <span class="spec-tag" *ngIf="property.plotDetails?.roadWidthFt">
-          🛣 {{ property.plotDetails?.roadWidthFt }}ft Road
+          {{ property.plotDetails?.roadWidthFt }}ft Road
         </span>
       </ng-container>
 
       <!-- Villa specific -->
       <ng-container *ngIf="property.propertyType === 'villa'">
         <span class="spec-tag floors" *ngIf="property.villaDetails?.floors">
-          🏢 {{ property.villaDetails?.floors }}
+          {{ property.villaDetails?.floors }}
         </span>
         <span class="spec-tag" *ngIf="property.villaDetails?.hasGarden">
-          🌿 Private Garden
+          Private Garden
         </span>
         <span class="spec-tag" *ngIf="property.villaDetails?.carParking">
-          🚗 {{ property.villaDetails?.carParking }} Parking
+          {{ property.villaDetails?.carParking }} Parking
         </span>
       </ng-container>
 
       <!-- Apartment specific -->
       <ng-container *ngIf="property.propertyType === 'apartment'">
         <span class="spec-tag" *ngIf="property.apartmentDetails?.floorNumber">
-          🏬 Floor {{ property.apartmentDetails?.floorNumber }} of {{ property.apartmentDetails?.totalFloors || '—' }}
+          Floor {{ property.apartmentDetails?.floorNumber }} of {{ property.apartmentDetails?.totalFloors || '—' }}
         </span>
         <span class="spec-tag" *ngIf="property.apartmentDetails?.udsSqFt">
-          🌿 {{ property.apartmentDetails?.udsSqFt }} Sq.ft UDS
+          {{ property.apartmentDetails?.udsSqFt }} Sq.ft UDS
         </span>
       </ng-container>
     </div>
@@ -85,26 +85,26 @@
     <!-- Quick Intelligence Row: Matched Clients, Visits, Projected/Realized Profit -->
     <div class="intel-pill-row">
       <span class="intel-pill leads" title="Qualified Matched Buyer Leads">
-        👥 {{ intel.matchedLeads.length }} Leads
+        {{ intel.matchedLeads.length }} Leads
       </span>
       <span class="intel-pill visits" title="Inspection Visits">
-        📅 {{ intel.visits.length }} Visits
+        {{ intel.visits.length }} Visits
       </span>
       <span class="intel-pill profit" [class.realized]="intel.financials.isClosed" title="Estimated or Realized Net Agency Profit">
-        {{ intel.financials.isClosed ? '🏆 ' + (intel.financials.realizedNetProfit | currencyFormat) : '💰 Est ' + (intel.financials.projectedNetProfit | currencyFormat) }}
+        {{ intel.financials.isClosed ? 'Closed: ' + (intel.financials.realizedNetProfit | currencyFormat) : 'Est: ' + (intel.financials.projectedNetProfit | currencyFormat) }}
       </span>
     </div>
 
     <!-- Privacy Guarded Direct Owner Row (Visible only to Agency Admin) -->
     <div class="owner-pill-row" *ngIf="auth.isAgencyAdmin() && property.ownerDetails && property.ownerDetails.name">
       <span class="owner-badge">
-        🔒 Owner: {{ property.ownerDetails.name }} ({{ property.ownerDetails.phone }})
+        Owner: {{ property.ownerDetails.name }} ({{ property.ownerDetails.phone }})
       </span>
     </div>
 
     <div class="property-card-actions" (click)="$event.stopPropagation()">
       <a class="ef-btn ef-btn-tonal ef-btn-sm map-action-btn" [href]="getMapsUrl()" target="_blank" title="View Pin on Google Maps">
-        📍 Map
+        Map
       </a>
 
       <button class="ef-btn ef-btn-tonal ef-btn-sm share-btn" (click)="openShare($event)">
@@ -129,15 +129,15 @@
       </button>
 
       <button class="ef-btn ef-btn-tonal ef-btn-sm stats-btn" (click)="onViewStats.emit(property)">
-        📊 Stats
+        Stats
       </button>
 
       <button class="ef-btn ef-btn-outlined ef-btn-sm edit-prop-btn" (click)="onEdit.emit(property)">
-        ✏ Edit
+        Edit
       </button>
 
       <button class="ef-btn ef-btn-outlined ef-btn-sm delete-prop-btn" (click)="onDelete.emit(property)" style="color: var(--ef-danger, #d93025);">
-        🗑
+        Delete
       </button>
     </div>
   </div>

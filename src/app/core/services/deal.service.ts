@@ -79,7 +79,7 @@ export class DealService {
   }
 
   /**
-   * Close a deal, add to ledger, and trigger celebration confetti! 🎊
+   * Close a deal, add to ledger, and trigger celebration confetti!
    */
   closeDeal(data: Omit<Deal, 'id' | 'createdAt'>): Deal {
     const newDeal: Deal = {
@@ -92,7 +92,7 @@ export class DealService {
     this.allDeals.update(list => [newDeal, ...list]);
     this.save();
 
-    // Fire celebratory confetti! 🎊
+    // Fire celebratory confetti!
     try {
       fireConfetti(3000);
     } catch (e) {

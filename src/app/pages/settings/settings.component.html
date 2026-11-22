@@ -86,7 +86,7 @@
             *ngIf="member.role !== 'agency_admin'"
             (click)="removeMember(member.uid)"
             style="color: var(--ef-status-urgent); margin-left: 8px;">
-            🗑 Remove
+            Remove
           </button>
         </div>
       </div>
@@ -133,6 +133,6 @@
   </div>
 
   <div class="toast-notice" *ngIf="savedNotice()">
-    ✔ Settings saved successfully!
+    Settings saved successfully!
   </div>
 </div>

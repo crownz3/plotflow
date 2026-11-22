@@ -193,7 +193,7 @@
             </td>
             <td>
               <a [href]="getMapsUrlForProp(prop)" target="_blank" class="map-table-link" title="Open in Google Maps">
-                📍 {{ prop.location.locality }} ↗
+                {{ prop.location.locality }} ↗
               </a>
             </td>
             <td>
@@ -205,12 +205,12 @@
             </td>
             <td>
               <span class="analytics-badge leads" *ngIf="getIntel(prop) as intel" (click)="openStatsDrawer(prop)">
-                👥 {{ intel.matchedLeads.length }} Leads
+                {{ intel.matchedLeads.length }} Leads
               </span>
             </td>
             <td>
               <span class="analytics-badge visits" *ngIf="getIntel(prop) as intel" (click)="openStatsDrawer(prop)">
-                📅 {{ intel.visits.length }} Visits
+                {{ intel.visits.length }} Visits
               </span>
             </td>
             <td>
@@ -224,16 +224,16 @@
             <td>
               <div class="actions-row">
                 <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="openShareModal(prop)" title="Share PDF or WhatsApp Pitch">
-                  📤 Share
+                  Share
                 </button>
                 <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="openStatsDrawer(prop)" title="Property Analytics &amp; Matched Clients">
-                  📊 Stats
+                  Stats
                 </button>
                 <button class="ef-btn ef-btn-outlined ef-btn-sm" (click)="startEditProperty(prop)">
-                  ✏
+                  Edit
                 </button>
                 <button class="ef-btn ef-btn-outlined ef-btn-sm" (click)="deleteProperty(prop)" style="color: var(--ef-danger);">
-                  🗑
+                  Delete
                 </button>
               </div>
             </td>
@@ -340,7 +340,7 @@
 
         <!-- 2. CONDITIONAL SPECIFICATIONS: PLOT / LAND -->
         <div class="form-section highlight-box" *ngIf="newProp.propertyType === 'plot'">
-          <h3 class="section-heading">📐 2. Plot &amp; Land Specific Details</h3>
+          <h3 class="section-heading">2. Plot &amp; Land Specific Details</h3>
           <div class="form-grid">
             <div class="ef-form-group">
               <label>Plot Dimensions (Length &times; Breadth)</label>
@@ -388,7 +388,7 @@
 
         <!-- 2. CONDITIONAL SPECIFICATIONS: VILLA / HOUSE -->
         <div class="form-section highlight-box" *ngIf="newProp.propertyType === 'villa'">
-          <h3 class="section-heading">🏡 2. Villa / Independent House Details</h3>
+          <h3 class="section-heading">2. Villa / Independent House Details</h3>
           <div class="form-grid">
             <div class="ef-form-group">
               <label>Built-up Area (Sq.ft)</label>
@@ -449,7 +449,7 @@
 
         <!-- 2. CONDITIONAL SPECIFICATIONS: APARTMENT -->
         <div class="form-section highlight-box" *ngIf="newProp.propertyType === 'apartment'">
-          <h3 class="section-heading">🏢 2. Apartment / High-Rise Details</h3>
+          <h3 class="section-heading">2. Apartment / High-Rise Details</h3>
           <div class="form-grid">
             <div class="ef-form-group">
               <label>Floor Number &amp; Total Floors</label>
@@ -483,7 +483,7 @@
 
         <!-- 3. ON-SITE INFRASTRUCTURE & SERVICES -->
         <div class="form-section">
-          <h3 class="section-heading">⚡ 3. On-Site Infrastructure &amp; Amenities</h3>
+          <h3 class="section-heading">3. On-Site Infrastructure &amp; Amenities</h3>
           <p class="section-sub">Select verified facilities available on the property site:</p>
           <div class="infra-chips-grid">
             <button
@@ -500,7 +500,7 @@
 
         <!-- 4. LOCATION & VICINITY CONNECTIVITY -->
         <div class="form-section">
-          <h3 class="section-heading">📍 4. Location &amp; Vicinity Connectivity</h3>
+          <h3 class="section-heading">4. Location &amp; Vicinity Connectivity</h3>
           <div class="form-grid">
             <div class="ef-form-group">
               <label>Locality / Neighborhood *</label>
@@ -520,7 +520,7 @@
                     Auto-Set from Locality
                   </button>
                   <button type="button" class="btn-micro" (click)="useCurrentGpsLocation('new')">
-                    📍 Current GPS
+                    Current GPS
                   </button>
                   <a *ngIf="newProp.mapsUrl" [href]="newProp.mapsUrl" target="_blank" class="btn-micro link-micro">
                     Preview Pin ↗
@@ -545,7 +545,7 @@
 
         <!-- 5. MEDIA & SITE PHOTOS -->
         <div class="form-section">
-          <h3 class="section-heading">📷 5. Media of the Site (Photos &amp; Video Tour)</h3>
+          <h3 class="section-heading">5. Media of the Site (Photos &amp; Video Tour)</h3>
           
           <div class="media-upload-box">
             <label class="upload-dropzone">
@@ -578,7 +578,7 @@
 
         <!-- 6. CONFIDENTIAL OWNER DETAILS -->
         <div class="form-section confidential-box">
-          <h3 class="section-heading">🔒 6. Confidential Owner Details (Protected from Buyers)</h3>
+          <h3 class="section-heading">6. Confidential Owner Details (Protected from Buyers)</h3>
           <p class="section-sub">These details remain strictly private to your agency. Client brochures and shared summaries will NEVER display owner contact info.</p>
           <div class="form-grid">
             <div class="ef-form-group">
@@ -649,7 +649,7 @@
                   Auto-Set from Locality
                 </button>
                 <button type="button" class="btn-micro" (click)="useCurrentGpsLocation('edit')">
-                  📍 Current GPS
+                  Current GPS
                 </button>
                 <a *ngIf="editForm.mapsUrl" [href]="editForm.mapsUrl" target="_blank" class="btn-micro link-micro">
                   Preview ↗
@@ -770,7 +770,7 @@
       <div class="modal-header">
         <div class="modal-header-title" *ngIf="detailedProperty() as prop">
           <h2>{{ prop.title }}</h2>
-          <span class="header-sub">📍 {{ prop.location.locality }}, {{ prop.location.city }} &bull; {{ prop.price | currencyFormat }}</span>
+          <span class="header-sub">{{ prop.location.locality }}, {{ prop.location.city }} &bull; {{ prop.price | currencyFormat }}</span>
         </div>
         <button class="close-btn" (click)="detailedProperty.set(null)">&times;</button>
       </div>
@@ -813,7 +813,7 @@
         <div class="dossier-section" *ngIf="prop.infrastructure && prop.infrastructure.length > 0">
           <h3>On-Site Infrastructure &amp; Services</h3>
           <div class="infra-tags-list">
-            <span class="infra-badge" *ngFor="let item of prop.infrastructure">✔ {{ item }}</span>
+            <span class="infra-badge" *ngFor="let item of prop.infrastructure">{{ item }}</span>
           </div>
         </div>
 
@@ -822,15 +822,15 @@
           <h3>Connectivity &amp; Distance</h3>
           <div class="vicinity-grid">
             <div class="vicinity-item" *ngIf="prop.vicinity.metroDistance">
-              <span>🚇 Nearest Metro:</span>
+              <span>Nearest Metro:</span>
               <strong>{{ prop.vicinity.metroDistance }}</strong>
             </div>
             <div class="vicinity-item" *ngIf="prop.vicinity.highwayDistance">
-              <span>🛣 Highway / Road:</span>
+              <span>Highway / Road:</span>
               <strong>{{ prop.vicinity.highwayDistance }}</strong>
             </div>
             <div class="vicinity-item" *ngIf="prop.vicinity.schoolDistance">
-              <span>🏫 Schools:</span>
+              <span>Schools:</span>
               <strong>{{ prop.vicinity.schoolDistance }}</strong>
             </div>
           </div>
@@ -846,16 +846,16 @@
         <div class="dossier-section" *ngIf="prop.media?.videoTourUrl">
           <h3>Walkthrough Video</h3>
           <a [href]="prop.media?.videoTourUrl" target="_blank" class="video-tour-btn">
-            ▶ Watch Video Tour on YouTube &rarr;
+            Watch Video Tour on YouTube &rarr;
           </a>
         </div>
       </div>
 
       <div class="modal-footer" *ngIf="detailedProperty() as prop">
-        <a [href]="getMapsUrlForProp(prop)" target="_blank" class="ef-btn ef-btn-subtle" title="Open Google Maps Location">📍 Maps Pin ↗</a>
+        <a [href]="getMapsUrlForProp(prop)" target="_blank" class="ef-btn ef-btn-subtle" title="Open Google Maps Location">Maps Pin ↗</a>
         <button class="ef-btn ef-btn-outlined" (click)="detailedProperty.set(null)">Close</button>
-        <button class="ef-btn ef-btn-tonal" (click)="openShareModal(prop)">📤 Share Brochure</button>
-        <button class="ef-btn ef-btn-primary" (click)="handleCloseDeal(prop)">🤝 Record Deal</button>
+        <button class="ef-btn ef-btn-tonal" (click)="openShareModal(prop)">Share Brochure</button>
+        <button class="ef-btn ef-btn-primary" (click)="handleCloseDeal(prop)">Record Deal</button>
       </div>
     </div>
   </div>

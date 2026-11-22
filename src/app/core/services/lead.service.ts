@@ -157,7 +157,7 @@ export class LeadService {
 
     let text = `Hello ${lead.name}! This is ${agent} from ${agency}.`;
     if (property) {
-      text += `\n\nI found a prime verified property matching your exact requirements:\n\n🏡 *${property.title}*\n📍 Location: ${property.location.locality}, ${property.location.city}\n💰 Price: ₹${(property.price / 100000).toFixed(2)} Lakhs\n📐 Area: ${property.area} ${property.areaUnit}\n\nWould you be free for an inspection visit this week?`;
+      text += `\n\nI found a prime verified property matching your exact requirements:\n\n*${property.title}*\nLocation: ${property.location.locality}, ${property.location.city}\nPrice: ₹${(property.price / 100000).toFixed(2)} Lakhs\nArea: ${property.area} ${property.areaUnit}\n\nWould you be free for an inspection visit this week?`;
     } else {
       text += `\n\nFollowing up regarding your property requirement. When would be a good time for a quick 2-minute call?`;
     }

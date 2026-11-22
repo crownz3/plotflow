@@ -36,7 +36,7 @@
       </div>
 
       <button class="ef-btn ef-btn-primary" (click)="openDealModal.set(true)">
-        <span>🎊 New Deal Calculator</span>
+        <span>New Deal Calculator</span>
       </button>
     </div>
   </div>
@@ -106,7 +106,7 @@
         </div>
 
         <div class="receivable-notice" *ngIf="deal.balanceReceivable > 0">
-          ⚠️ Balance Due: <strong>{{ deal.balanceReceivable | currencyFormat }}</strong>
+          Balance Due: <strong>{{ deal.balanceReceivable | currencyFormat }}</strong>
         </div>
 
         <div class="card-bottom-actions">
@@ -114,13 +114,13 @@
             class="ef-btn ef-btn-tonal ef-btn-sm"
             *ngIf="deal.balanceReceivable > 0"
             (click)="markPaidInFull(deal)">
-            ✔ Mark Paid In Full
+            Mark Paid In Full
           </button>
           <button
             class="ef-btn ef-btn-outlined ef-btn-sm"
             (click)="deleteDeal(deal)"
             style="color: var(--ef-danger);">
-            🗑 Delete
+            Delete
           </button>
         </div>
       </div>
@@ -145,7 +145,7 @@
           <tr *ngFor="let deal of dealService.tenantDeals()">
             <td>
               <strong>{{ deal.dealTitle }}</strong>
-              <div class="deal-prop">🏡 {{ deal.propertyTitle }} • Client: {{ deal.clientName }}</div>
+              <div class="deal-prop">{{ deal.propertyTitle }} • Client: {{ deal.clientName }}</div>
             </td>
             <td>{{ deal.closingDate | date:'mediumDate' }}</td>
             <td><strong>{{ deal.dealValue | currencyFormat }}</strong></td>
@@ -164,13 +164,13 @@
                   class="ef-btn ef-btn-tonal ef-btn-sm mark-paid-btn"
                   *ngIf="deal.balanceReceivable > 0"
                   (click)="markPaidInFull(deal)">
-                  ✔ Paid Full
+                  Paid Full
                 </button>
                 <button
                   class="ef-btn ef-btn-outlined ef-btn-sm delete-deal-btn"
                   (click)="deleteDeal(deal)"
                   style="color: var(--ef-danger);">
-                  🗑 Delete
+                  Delete
                 </button>
               </div>
             </td>
@@ -186,7 +186,7 @@
     type="deals"
     title="No Deals in Ledger Yet"
     description="Your agency has not recorded any transactions. Use the financial deal calculator to close a deal with GST splits and celebration confetti."
-    actionText="🎊 New Deal Closing Calculator"
+    actionText="New Deal Closing Calculator"
     (onAction)="openDealModal.set(true)">
   </app-empty-state>
 

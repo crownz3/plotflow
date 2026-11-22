@@ -112,7 +112,7 @@
             <tr *ngFor="let lead of filteredLinearLeads()">
               <td>
                 <strong>{{ lead.name }}</strong>
-                <div class="phone-link"><a [href]="'tel:' + lead.phone">📞 {{ lead.phone }}</a></div>
+                <div class="phone-link"><a [href]="'tel:' + lead.phone">{{ lead.phone }}</a></div>
               </td>
               <td>
                 <app-status-pill [status]="lead.stage"></app-status-pill>
@@ -129,16 +129,16 @@
               <td>
                 <div class="actions-row">
                   <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="openMatcher(lead)">
-                    🔍 Match
+                    Match
                   </button>
                   <a [href]="leadService.getWhatsAppShareUrl(lead)" target="_blank" class="ef-btn ef-btn-outlined ef-btn-sm">
-                    💬 WhatsApp
+                    WhatsApp
                   </a>
                   <button class="ef-btn ef-btn-outlined ef-btn-sm" (click)="startEditLead(lead)">
-                    ✏ Edit
+                    Edit
                   </button>
                   <button class="ef-btn ef-btn-outlined ef-btn-sm" (click)="deleteLead(lead)" style="color: var(--ef-danger);">
-                    🗑
+                    Delete
                   </button>
                 </div>
               </td>
@@ -182,8 +182,8 @@
               <strong>{{ prop.title }}</strong>
               <div class="match-meta">
                 <span class="match-price">{{ prop.price | currencyFormat }}</span>
-                <span>📍 {{ prop.location.locality }}</span>
-                <span>📐 {{ prop.area }} {{ prop.areaUnit }}</span>
+                <span>{{ prop.location.locality }}</span>
+                <span>{{ prop.area }} {{ prop.areaUnit }}</span>
               </div>
             </div>
 
@@ -192,10 +192,10 @@
                 [href]="leadService.getWhatsAppShareUrl(selectedLeadForMatch()!, prop)"
                 target="_blank"
                 class="ef-btn ef-btn-primary ef-btn-sm">
-                💬 Pitch on WhatsApp
+                Pitch on WhatsApp
               </a>
               <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="closeDealWithProp(prop)">
-                Close Deal 🎊
+                Close Deal
               </button>
             </div>
           </div>
@@ -296,9 +296,9 @@
           <div class="ef-form-group">
             <label>Priority</label>
             <select [(ngModel)]="editLeadForm.priority">
-              <option value="hot">🔥 Hot</option>
-              <option value="warm">⚡ Warm</option>
-              <option value="cold">❄ Cold</option>
+              <option value="hot">Hot</option>
+              <option value="warm">Warm</option>
+              <option value="cold">Cold</option>
             </select>
           </div>
           <div class="ef-form-group">
