@@ -28,13 +28,13 @@
     <h3 class="property-title" title="{{ property.title }}">{{ property.title }}</h3>
 
     <div class="property-meta-row">
-      <span class="meta-item">
+      <a class="meta-item map-link" [href]="getMapsUrl()" target="_blank" (click)="$event.stopPropagation()" title="Open in Google Maps">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
           <circle cx="12" cy="10" r="3"></circle>
         </svg>
-        {{ property.location.locality }}, {{ property.location.city }}
-      </span>
+        <span>{{ property.location.locality }}, {{ property.location.city }} ↗</span>
+      </a>
       <span class="meta-item">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -103,6 +103,10 @@
     </div>
 
     <div class="property-card-actions" (click)="$event.stopPropagation()">
+      <a class="ef-btn ef-btn-tonal ef-btn-sm map-action-btn" [href]="getMapsUrl()" target="_blank" title="View Pin on Google Maps">
+        📍 Map
+      </a>
+
       <button class="ef-btn ef-btn-tonal ef-btn-sm share-btn" (click)="openShare($event)">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
           <circle cx="18" cy="5" r="3"></circle>

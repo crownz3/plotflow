@@ -169,6 +169,40 @@ export class PropertiesComponent {
     return list;
   });
 
+  // Google Maps Location Setters
+  setMapFromAddress(target: 'new' | 'edit') {
+    const form = target === 'new' ? this.newProp : this.editForm;
+    const parts = [form.address, form.locality, form.city].filter(p => p && p.trim());
+    const query = parts.length > 0 ? parts.join(', ') : 'Chennai, India';
+    form.mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+  }
+
+  useCurrentGpsLocation(target: 'new' | 'edit') {
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          const lat = pos.coords.latitude.toFixed(6);
+          const lng = pos.coords.longitude.toFixed(6);
+          const form = target === 'new' ? this.newProp : this.editForm;
+          form.mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+        },
+        err => {
+          console.warn('Geolocation failed or permission denied:', err);
+          this.setMapFromAddress(target);
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    } else {
+      this.setMapFromAddress(target);
+    }
+  }
+
+  getMapsUrlForProp(prop: Property): string {
+    if (prop.mapsUrl && prop.mapsUrl.trim()) return prop.mapsUrl.trim();
+    const query = `${prop.location.address || ''} ${prop.location.locality || ''}, ${prop.location.city || ''}`.trim();
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query || 'Chennai')}`;
+  }
+
   // Toggle on-site infrastructure item
   toggleInfra(item: string, target: 'new' | 'edit') {
     const list = target === 'new' ? this.newProp.infrastructure : this.editForm.infrastructure;

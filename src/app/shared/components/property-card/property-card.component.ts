@@ -34,6 +34,14 @@ export class PropertyCardComponent {
     return this.analyticsService.getPropertyIntelligence(this.property);
   }
 
+  getMapsUrl(): string {
+    if (this.property.mapsUrl && this.property.mapsUrl.trim()) {
+      return this.property.mapsUrl.trim();
+    }
+    const query = `${this.property.location.address || ''} ${this.property.location.locality || ''}, ${this.property.location.city || ''}`.trim();
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query || 'Chennai')}`;
+  }
+
   openShare(event: Event): void {
     event.stopPropagation();
     this.onShare.emit(this.property);

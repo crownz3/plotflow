@@ -192,7 +192,9 @@
               <span *ngIf="prop.bhk" class="bhk-tag">{{ prop.bhk }}</span>
             </td>
             <td>
-              <span>📍 {{ prop.location.locality }}</span>
+              <a [href]="getMapsUrlForProp(prop)" target="_blank" class="map-table-link" title="Open in Google Maps">
+                📍 {{ prop.location.locality }} ↗
+              </a>
             </td>
             <td>
               <div>{{ prop.area }} {{ prop.areaUnit }}</div>
@@ -511,8 +513,22 @@
             </div>
 
             <div class="ef-form-group col-span-2">
-              <label>Google Maps Location Link / Coordinates</label>
-              <input type="url" [(ngModel)]="newProp.mapsUrl" placeholder="https://maps.google.com/?q=...">
+              <div class="label-with-actions">
+                <label>Google Maps Location &amp; Coordinates Pin</label>
+                <div class="map-quick-actions">
+                  <button type="button" class="btn-micro" (click)="setMapFromAddress('new')">
+                    Auto-Set from Locality
+                  </button>
+                  <button type="button" class="btn-micro" (click)="useCurrentGpsLocation('new')">
+                    📍 Current GPS
+                  </button>
+                  <a *ngIf="newProp.mapsUrl" [href]="newProp.mapsUrl" target="_blank" class="btn-micro link-micro">
+                    Preview Pin ↗
+                  </a>
+                </div>
+              </div>
+              <input type="url" [(ngModel)]="newProp.mapsUrl" placeholder="https://maps.google.com/?q=... or https://maps.app.goo.gl/...">
+              <small class="field-hint">Clients will receive this exact Google Maps pin in brochures, WhatsApp pitches, and navigation directions.</small>
             </div>
 
             <div class="ef-form-group">
@@ -624,6 +640,23 @@
           <div class="ef-form-group">
             <label>Locality</label>
             <input type="text" [(ngModel)]="editForm.locality">
+          </div>
+          <div class="ef-form-group col-span-2">
+            <div class="label-with-actions">
+              <label>Google Maps Location Pin</label>
+              <div class="map-quick-actions">
+                <button type="button" class="btn-micro" (click)="setMapFromAddress('edit')">
+                  Auto-Set from Locality
+                </button>
+                <button type="button" class="btn-micro" (click)="useCurrentGpsLocation('edit')">
+                  📍 Current GPS
+                </button>
+                <a *ngIf="editForm.mapsUrl" [href]="editForm.mapsUrl" target="_blank" class="btn-micro link-micro">
+                  Preview ↗
+                </a>
+              </div>
+            </div>
+            <input type="url" [(ngModel)]="editForm.mapsUrl" placeholder="https://maps.google.com/?q=...">
           </div>
         </div>
       </div>
@@ -819,6 +852,7 @@
       </div>
 
       <div class="modal-footer" *ngIf="detailedProperty() as prop">
+        <a [href]="getMapsUrlForProp(prop)" target="_blank" class="ef-btn ef-btn-subtle" title="Open Google Maps Location">📍 Maps Pin ↗</a>
         <button class="ef-btn ef-btn-outlined" (click)="detailedProperty.set(null)">Close</button>
         <button class="ef-btn ef-btn-tonal" (click)="openShareModal(prop)">📤 Share Brochure</button>
         <button class="ef-btn ef-btn-primary" (click)="handleCloseDeal(prop)">🤝 Record Deal</button>

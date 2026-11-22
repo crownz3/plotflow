@@ -167,6 +167,12 @@ export class BrochureService {
     const splitDesc = doc.splitTextToSize(property.description || `${property.title} located in prime ${property.location.locality}, ${property.location.city}. Excellent appreciation potential and ready for immediate possession/registration.`, 182);
     doc.text(splitDesc, 14, currentY + 5);
 
+    const mapLocationUrl = property.mapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.location.address || ''} ${property.location.locality}, ${property.location.city}`.trim())}`;
+    doc.setTextColor(26, 115, 232);
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`📍 Google Maps Location: ${mapLocationUrl}`, 14, currentY + 5 + (splitDesc.length * 4.5) + 4);
+
     // 7. Direct Agent Contact Footer (Confidential - Masks Owner Contact)
     const footerY = 270;
     doc.setFillColor(248, 249, 250);
@@ -246,7 +252,9 @@ export class BrochureService {
       ? property.infrastructure.slice(0, 4).join(', ')
       : '24/7 Security, Metro Water, Wide Blacktop Road, Power Backup';
 
-    const mapsLine = property.mapsUrl ? `\n📍 *Maps Pin:* ${property.mapsUrl}` : '';
+    const mapsLine = property.mapsUrl
+      ? `\n📍 *Google Maps Location:* ${property.mapsUrl}`
+      : `\n📍 *Google Maps Location:* https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.location.address || ''} ${property.location.locality}, ${property.location.city}`.trim())}`;
 
     const agentName = property.assignedAgentName || agent?.displayName || 'Senior Property Consultant';
     const agentPhone = agent?.phoneNumber || tenant.phone;
