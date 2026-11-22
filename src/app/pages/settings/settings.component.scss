@@ -101,18 +101,3 @@
   &.agent { background: var(--ef-success-tint); color: var(--ef-success); }
 }
 
-.toast-notice {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  background: #1e8e3e;
-  color: #ffffff;
-  padding: 12px 24px;
-  border-radius: var(--ef-radius-pill);
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(30, 142, 62, 0.3);
-  z-index: 9999;
-  pointer-events: none;
-  animation: fadeIn 0.3s ease;
-}
-

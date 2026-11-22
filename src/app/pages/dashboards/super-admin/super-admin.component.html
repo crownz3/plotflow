@@ -221,7 +221,12 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let tenant of tenantService.tenants()">
+          <tr *ngIf="agencyTenants().length === 0">
+            <td colspan="6" style="text-align: center; padding: 36px 16px; color: var(--ef-text-secondary); font-size: 0.9rem;">
+              No registered tenant agencies yet. Agencies will appear here once they complete onboarding or registration.
+            </td>
+          </tr>
+          <tr *ngFor="let tenant of agencyTenants()">
             <td>
               <strong>{{ tenant.agencyName }}</strong>
               <div class="sub-text">{{ tenant.operatingCity || tenant.address }}</div>
@@ -232,12 +237,18 @@
             </td>
             <td>{{ tenant.reraNumber || 'Pending' }}</td>
             <td>
-              <span *ngIf="tenant.status === 'active'" class="status-pill-badge green">Active & Approved</span>
+              <span *ngIf="tenant.status === 'active'" class="status-pill-badge green">Active &amp; Approved</span>
               <span *ngIf="tenant.status === 'pending_approval'" class="status-pill-badge amber">Pending Review</span>
               <span *ngIf="tenant.status === 'rejected'" class="status-pill-badge red">Declined</span>
+              <span *ngIf="tenant.status === 'suspended'" class="status-pill-badge red">Cancelled</span>
             </td>
             <td>
-              <app-status-pill [status]="tenant.subscriptionPlan"></app-status-pill>
+              <div class="plan-cell-stack">
+                <app-status-pill [status]="tenant.subscriptionPlan"></app-status-pill>
+                <span class="sub-expiry-badge" [ngClass]="getTenantExpiryBadge(tenant).color">
+                  {{ getTenantExpiryBadge(tenant).label }}
+                </span>
+              </div>
             </td>
             <td>
               <div class="table-actions-cell">
@@ -246,19 +257,31 @@
                     ✓ Accept
                   </button>
                   <button class="ef-btn ef-btn-outlined ef-btn-sm text-red" (click)="rejectAgency(tenant.id)">
-                    ✕
+                    ✕ Decline
                   </button>
                 </ng-container>
 
                 <ng-container *ngIf="tenant.status === 'active'">
-                  <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="supportContext(tenant.id)">
-                    Inspect & Test Flow
+                  <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="supportContext(tenant.id)" title="Inspect tenant workspace">
+                    Inspect
+                  </button>
+                  <button class="ef-btn ef-btn-tonal ef-btn-sm text-green" (click)="extendAgency(tenant.id, 30)" title="Extend subscription by 30 days">
+                    +30d Extend
+                  </button>
+                  <button class="ef-btn ef-btn-outlined ef-btn-sm text-amber" (click)="cancelAgency(tenant.id)" title="Cancel subscription">
+                    Cancel
+                  </button>
+                  <button class="ef-btn ef-btn-outlined ef-btn-sm text-red" (click)="deleteAgency(tenant.id)" title="Delete tenant permanently">
+                    Delete
                   </button>
                 </ng-container>
 
-                <ng-container *ngIf="tenant.status === 'rejected'">
-                  <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="approveAgency(tenant.id)">
-                    Re-Approve
+                <ng-container *ngIf="tenant.status === 'suspended' || tenant.status === 'rejected'">
+                  <button class="ef-btn ef-btn-tonal ef-btn-sm text-green" (click)="extendAgency(tenant.id, 30)">
+                    Reactivate (+30d)
+                  </button>
+                  <button class="ef-btn ef-btn-outlined ef-btn-sm text-red" (click)="deleteAgency(tenant.id)" title="Delete tenant permanently">
+                    Delete
                   </button>
                 </ng-container>
               </div>

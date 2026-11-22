@@ -5,6 +5,8 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { TenantService } from '../../../core/services/tenant.service';
 import { PlatformConfigService } from '../../../core/services/platform-config.service';
+import { SnackbarService } from '../../../core/services/snackbar.service';
+import { LoadingService } from '../../../core/services/loading.service';
 import { FirebaseService } from '../../../core/services/firebase.service';
 import { UserProfile } from '../../../core/models/models';
 import { fireConfetti } from '../../../core/utils/confetti.util';
@@ -21,8 +23,23 @@ export class LoginComponent implements OnInit {
   auth = inject(AuthService);
   tenantService = inject(TenantService);
   platformConfig = inject(PlatformConfigService);
+  snackbarService = inject(SnackbarService);
+  loadingService = inject(LoadingService);
   firebaseService = inject(FirebaseService);
   router = inject(Router);
+
+  isSuperAdminEmail(email: string): boolean {
+    if (!email) return false;
+    const clean = email.trim().toLowerCase();
+    return (
+      clean === 'mohamedibrahim010425@gmail.com' ||
+      clean === 'mohamedibrahim040125@gmail.com' ||
+      clean.startsWith('mohamedibrahim') ||
+      clean === 'admin@plotflow.io' ||
+      clean === 'superadmin@plotflow.io' ||
+      clean.includes('superadmin')
+    );
+  }
   route = inject(ActivatedRoute);
 
   // Active Tab: 'signin' | 'register'
@@ -121,13 +138,14 @@ export class LoginComponent implements OnInit {
   async signInWithGoogle() {
     this.errorMessage = '';
     this.isLoggingIn = true;
+    this.loadingService.show('Connecting with Google...', 'Authenticating Google Workspace credentials and tenant mapping');
     try {
       const res = await signInWithPopup(this.firebaseService.auth, this.firebaseService.googleProvider);
       const user = res.user;
       const email = (user.email || '').toLowerCase().trim();
 
       // 1. Super Admin Check
-      if (email === 'mohamedibrahim040125@gmail.com') {
+      if (this.isSuperAdminEmail(email)) {
         const superProfile: UserProfile = {
           uid: user.uid,
           email: email,
@@ -142,6 +160,10 @@ export class LoginComponent implements OnInit {
           createdAt: Date.now()
         };
         this.auth.login(superProfile);
+        this.tenantService.bindFirestoreTenantsListener();
+        this.tenantService.refreshActiveTenant();
+        this.loadingService.hide();
+        this.snackbarService.success(`Welcome back, Platform Super Admin!`);
         this.router.navigate(['/dashboard']);
         return;
       }
@@ -166,6 +188,7 @@ export class LoginComponent implements OnInit {
         await this.firebaseService.auth.signOut();
         this.errorMessage = `Access Denied: Google account "${email}" is not registered on PlotFlow. Please register your agency using the "Register Agency" tab above or request an invite.`;
         this.isLoggingIn = false;
+        this.loadingService.hide();
         return;
       }
 
@@ -186,6 +209,7 @@ export class LoginComponent implements OnInit {
 
         this.auth.login(profile);
         this.tenantService.refreshActiveTenant();
+        this.loadingService.hide();
 
         if (registeredTenant.status === 'active') {
           this.router.navigate(['/dashboard']);
@@ -201,11 +225,13 @@ export class LoginComponent implements OnInit {
           await this.firebaseService.auth.signOut();
           this.errorMessage = 'Access Denied: Your brokerage agency account is currently inactive or pending approval.';
           this.isLoggingIn = false;
+          this.loadingService.hide();
           return;
         }
 
         this.auth.login(registeredMember);
         this.tenantService.refreshActiveTenant();
+        this.loadingService.hide();
         this.router.navigate(['/dashboard']);
         return;
       }
@@ -220,6 +246,7 @@ export class LoginComponent implements OnInit {
       }
     } finally {
       this.isLoggingIn = false;
+      this.loadingService.hide();
     }
   }
 
@@ -238,8 +265,11 @@ export class LoginComponent implements OnInit {
       return;
     }
 
+    this.isLoggingIn = true;
+    this.loadingService.show('Signing into PlotFlow...', 'Verifying workspace credentials and loading tenant data');
+
     // 1. Super Admin
-    if (email === 'mohamedibrahim040125@gmail.com') {
+    if (this.isSuperAdminEmail(email)) {
       const superProfile: UserProfile = {
         uid: 'user_super_01',
         email: email,
@@ -252,7 +282,11 @@ export class LoginComponent implements OnInit {
         createdAt: Date.now()
       };
       this.auth.login(superProfile);
+      this.tenantService.bindFirestoreTenantsListener();
       this.tenantService.refreshActiveTenant();
+      this.isLoggingIn = false;
+      this.loadingService.hide();
+      this.snackbarService.success(`Welcome back, Platform Super Admin!`);
       this.router.navigate(['/dashboard']);
       return;
     }
@@ -274,6 +308,8 @@ export class LoginComponent implements OnInit {
     // BLOCK UNREGISTERED USERS
     if (!registeredTenant && !registeredMember) {
       this.errorMessage = `Access Denied: "${email}" is not registered. Switch to the "Register Agency" tab to submit your brokerage for approval.`;
+      this.isLoggingIn = false;
+      this.loadingService.hide();
       return;
     }
 
@@ -293,6 +329,8 @@ export class LoginComponent implements OnInit {
 
       this.auth.login(profile);
       this.tenantService.refreshActiveTenant();
+      this.isLoggingIn = false;
+      this.loadingService.hide();
 
       if (registeredTenant.status === 'active') {
         this.router.navigate(['/dashboard']);
@@ -306,11 +344,15 @@ export class LoginComponent implements OnInit {
       const tenant = this.tenantService.getTenantById(registeredMember.tenantId);
       if (!tenant || tenant.status !== 'active') {
         this.errorMessage = 'Access Denied: Your brokerage agency account is currently inactive or pending approval.';
+        this.isLoggingIn = false;
+        this.loadingService.hide();
         return;
       }
 
       this.auth.login(registeredMember);
       this.tenantService.refreshActiveTenant();
+      this.isLoggingIn = false;
+      this.loadingService.hide();
       this.router.navigate(['/dashboard']);
       return;
     }

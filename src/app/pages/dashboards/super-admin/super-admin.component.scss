@@ -352,16 +352,62 @@
   }
 }
 
+.plan-cell-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.sub-expiry-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+
+  &.green {
+    background: #e6f4ea;
+    color: #137333;
+  }
+  &.amber {
+    background: #fef7e0;
+    color: #b06000;
+  }
+  &.red {
+    background: #fce8e6;
+    color: #c5221f;
+  }
+}
+
 .table-actions-cell {
   display: flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
 
   .text-red {
-    color: #dc2626;
-    border-color: #fca5a5;
+    color: #dc2626 !important;
+    border-color: #fca5a5 !important;
     &:hover {
-      background: #fef2f2;
+      background: #fef2f2 !important;
+    }
+  }
+
+  .text-amber {
+    color: #b45309 !important;
+    border-color: #fcd34d !important;
+    &:hover {
+      background: #fffbeb !important;
+    }
+  }
+
+  .text-green {
+    color: #15803d !important;
+    background: #dcfce7 !important;
+    border-color: #86efac !important;
+    &:hover {
+      background: #bbf7d0 !important;
     }
   }
 }

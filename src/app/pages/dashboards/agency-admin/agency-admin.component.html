@@ -1,4 +1,27 @@
 <div class="dashboard-page animate-fade-in">
+  <!-- Smart 1-Week Subscription Expiry & Renewal Warning Banner -->
+  <div *ngIf="expiryInfo().isExpiringSoon" class="subscription-warning-banner" [class.expired]="expiryInfo().isExpired">
+    <div class="banner-content">
+      <div class="banner-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <div class="banner-text">
+        <strong *ngIf="!expiryInfo().isExpired">Subscription Ending Soon:</strong>
+        <strong *ngIf="expiryInfo().isExpired">Subscription Expired:</strong>
+        <span>
+          {{ expiryInfo().isExpired ? 'Your brokerage agency subscription has expired. Please contact platform administration to renew your license.' : 'Your brokerage subscription expires in ' + expiryInfo().daysLeft + (expiryInfo().daysLeft === 1 ? ' day' : ' days') + '. Contact your administrator to extend your plan.' }}
+        </span>
+      </div>
+    </div>
+    <div class="banner-actions">
+      <span class="expiry-chip">{{ expiryInfo().isExpired ? 'Action Required' : expiryInfo().daysLeft + ' Days Remaining' }}</span>
+    </div>
+  </div>
+
   <!-- Dashboard Header -->
   <div class="dashboard-header">
     <div>
@@ -10,184 +33,888 @@
     </div>
 
     <div class="quick-action-bar">
-      <button class="ef-btn ef-btn-primary" (click)="openDealModal.set(true)">
-        <span>Close Deal & Calculator</span>
-      </button>
-      <a routerLink="/properties" class="ef-btn ef-btn-tonal">
-        <span>+ Add Property</span>
+      <a routerLink="/ai" class="ef-btn ef-btn-primary ai-sparkle-btn" title="Open PlotFlow AI Studio">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"></path>
+        </svg>
+        <span>PlotFlow AI</span>
       </a>
-      <a routerLink="/leads" class="ef-btn ef-btn-outlined">
-        <span>+ New Lead</span>
+      <button class="ef-btn ef-btn-tonal" (click)="openDealModal.set(true)">
+        <span>Close Deal &amp; Calculator</span>
+      </button>
+      <button class="ef-btn ef-btn-outlined" (click)="openAddExpenseModal()">
+        <span>+ Record Expense</span>
+      </button>
+      <a routerLink="/properties" class="ef-btn ef-btn-outlined">
+        <span>+ Add Property</span>
       </a>
     </div>
   </div>
 
-  <!-- Executive KPI Cards Grid -->
-  <div class="kpi-grid">
-    <app-stat-card
-      title="Active Listings"
-      [value]="propertyService.activeCount()"
-      subtitle="Ready for inspection"
-      badgeText="Verified"
-      badgeColor="green"
-      iconColor="blue">
-      <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+  <!-- Segmented Navigation Hub Tabs -->
+  <div class="dashboard-nav-tabs" role="tablist">
+    <button
+      type="button"
+      class="nav-tab-btn"
+      [class.active]="activeTab() === 'overview'"
+      (click)="activeTab.set('overview')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="9"></rect>
+        <rect x="14" y="3" width="7" height="5"></rect>
+        <rect x="14" y="12" width="7" height="9"></rect>
+        <rect x="3" y="16" width="7" height="5"></rect>
       </svg>
-    </app-stat-card>
+      <span>Overview &amp; Agenda</span>
+    </button>
 
-    <app-stat-card
-      title="Hot Prospects"
-      [value]="leadService.hotLeadsCount()"
-      subtitle="Ready to close"
-      badgeText="High Intent"
-      badgeColor="green"
-      iconColor="amber">
-      <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <button
+      type="button"
+      class="nav-tab-btn"
+      [class.active]="activeTab() === 'visitors_concerns'"
+      (click)="activeTab.set('visitors_concerns')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
         <circle cx="9" cy="7" r="4"></circle>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
       </svg>
-    </app-stat-card>
+      <span>Buyers &amp; Visitor Concerns</span>
+      <span class="tab-badge" *ngIf="concernStats().nextProjectReady > 0">{{ concernStats().nextProjectReady }} for Next Project</span>
+    </button>
 
-    <app-stat-card
-      title="Site Visits Scheduled"
-      [value]="siteVisitService.upcomingCount()"
-      subtitle="Visits lined up"
-      badgeText="This Week"
-      badgeColor="blue"
-      iconColor="blue">
-      <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-        <line x1="16" y1="2" x2="16" y2="6"></line>
-        <line x1="8" y1="2" x2="8" y2="6"></line>
-        <line x1="3" y1="10" x2="21" y2="10"></line>
-      </svg>
-    </app-stat-card>
-
-    <app-stat-card
-      title="Gross Brokerage Earned"
-      [value]="dealService.totalGrossBrokerage() | currencyFormat"
-      subtitle="Closed deals volume"
-      [badgeText]="dealService.tenantDeals().length + ' Deals'"
-      badgeColor="green"
-      iconColor="green">
-      <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <button
+      type="button"
+      class="nav-tab-btn"
+      [class.active]="activeTab() === 'expenses_reports'"
+      (click)="activeTab.set('expenses_reports')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <line x1="12" y1="1" x2="12" y2="23"></line>
         <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
       </svg>
-    </app-stat-card>
-
-    <app-stat-card
-      title="Net Agency Profit"
-      [value]="(dealService.totalNetBrokerage() - expenseService.totalExpenses()) | currencyFormat"
-      subtitle="After GST & Agent splits"
-      badgeText="Net In Pocket"
-      badgeColor="green"
-      iconColor="green">
-      <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-        <polyline points="17 6 23 6 23 12"></polyline>
-      </svg>
-    </app-stat-card>
-
-    <app-stat-card
-      title="Receivable Balance"
-      [value]="dealService.totalReceivable() | currencyFormat"
-      subtitle="Pending milestone tokens"
-      badgeText="Collect Soon"
-      badgeColor="blue"
-      iconColor="amber">
-      <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"></circle>
-        <polyline points="12 6 12 12 16 14"></polyline>
-      </svg>
-    </app-stat-card>
+      <span>Property Sale Expenses &amp; Reports</span>
+      <span class="tab-badge green">Weekly &amp; Monthly</span>
+    </button>
   </div>
 
-  <!-- Main Two-Column Layout -->
-  <div class="dashboard-split-layout">
-    <!-- LEFT: Today's Action Agenda -->
-    <div class="agenda-column">
-      <div class="content-card">
-        <div class="card-header">
-          <h2>Today's Site Visits & Agenda</h2>
-          <span class="badge-pill-count">{{ siteVisitService.tenantVisits().length }} Active</span>
+  <!-- ========================================================================= -->
+  <!-- TAB 1: EXECUTIVE OVERVIEW & TODAY'S AGENDA                                -->
+  <!-- ========================================================================= -->
+  <div *ngIf="activeTab() === 'overview'" class="tab-content animate-fade-in">
+    <!-- PlotFlow AI Studio Quick Card on Dashboard -->
+    <div class="content-card ai-launcher-banner-card animate-fade-in" style="margin-bottom: 20px;">
+      <div class="ai-banner-content">
+        <div class="ai-banner-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"></path>
+          </svg>
         </div>
-
-        <div class="agenda-list" *ngIf="siteVisitService.tenantVisits().length > 0">
-          <div class="agenda-item animate-fade-in" *ngFor="let visit of siteVisitService.tenantVisits()">
-            <div class="agenda-time">
-              <span class="time-hour">{{ visit.scheduledTime | date:'shortTime' }}</span>
-              <span class="time-label">{{ visit.scheduledTime | date:'MMM d' }}</span>
-            </div>
-
-            <div class="agenda-content">
-              <div class="agenda-client">
-                <strong>{{ visit.leadName }}</strong>
-                <span class="agenda-prop">{{ visit.propertyTitle }}</span>
-              </div>
-              <div class="agenda-meta">
-                <span>{{ visit.propertyLocation }}</span>
-                <span>Advisor: {{ visit.agentName }}</span>
-              </div>
-            </div>
-
-            <div class="agenda-actions">
-              <a [href]="'tel:' + visit.leadPhone" class="icon-btn" title="Call Prospect">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                </svg>
-              </a>
-              <a [href]="'https://wa.me/' + visit.leadPhone.replace(' ', '')" target="_blank" class="icon-btn whatsapp" title="Chat on WhatsApp">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                </svg>
-              </a>
-            </div>
-          </div>
+        <div class="ai-banner-text">
+          <h3>PlotFlow AI Studio</h3>
+          <p>Generate high-converting WhatsApp pitches, resolve buyer objections with micro-market pricing data, and audit sales spend.</p>
         </div>
-
-        <app-empty-state
-          *ngIf="siteVisitService.tenantVisits().length === 0"
-          type="visits"
-          title="No Inspection Visits Scheduled"
-          description="Your agency has no upcoming site visits. Schedule one to start showing properties."
-          actionText="+ Schedule Site Visit"
-          (onAction)="scheduleInitialVisit()">
-        </app-empty-state>
+      </div>
+      <div class="ai-banner-actions">
+        <button type="button" class="ef-btn ef-btn-outlined ef-btn-sm" (click)="promptObjectionAi()">
+          Ask AI Deal Coach
+        </button>
+        <a routerLink="/ai" class="ef-btn ef-btn-primary ef-btn-sm ai-btn">
+          Open PlotFlow AI &rarr;
+        </a>
       </div>
     </div>
 
-    <!-- RIGHT: Agent Performance Leaderboard (REAL & DYNAMIC) -->
-    <div class="leaderboard-column">
-      <div class="content-card">
-        <div class="card-header">
-          <h2>Agent Performance & Payouts</h2>
-          <span class="card-meta">Real Closed Deals</span>
+    <!-- Executive KPI Cards Grid -->
+    <div class="kpi-grid">
+      <app-stat-card
+        title="Active Listings"
+        [value]="propertyService.activeCount()"
+        subtitle="Ready for inspection"
+        badgeText="Verified"
+        badgeColor="green"
+        iconColor="blue">
+        <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        </svg>
+      </app-stat-card>
+
+      <app-stat-card
+        title="Hot Prospects"
+        [value]="leadService.hotLeadsCount()"
+        subtitle="Ready to close"
+        badgeText="High Intent"
+        badgeColor="green"
+        iconColor="amber">
+        <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+        </svg>
+      </app-stat-card>
+
+      <app-stat-card
+        title="Site Visits Scheduled"
+        [value]="siteVisitService.upcomingCount()"
+        subtitle="Visits lined up"
+        badgeText="This Week"
+        badgeColor="blue"
+        iconColor="blue">
+        <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+      </app-stat-card>
+
+      <app-stat-card
+        title="Gross Brokerage Earned"
+        [value]="dealService.totalGrossBrokerage() | currencyFormat"
+        subtitle="Closed deals volume"
+        [badgeText]="dealService.tenantDeals().length + ' Deals'"
+        badgeColor="green"
+        iconColor="green">
+        <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+      </app-stat-card>
+
+      <app-stat-card
+        title="Net Agency Profit"
+        [value]="(dealService.totalNetBrokerage() - expenseService.totalExpenses()) | currencyFormat"
+        subtitle="After Expenses &amp; Splits"
+        badgeText="In Pocket"
+        badgeColor="green"
+        iconColor="green">
+        <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+          <polyline points="17 6 23 6 23 12"></polyline>
+        </svg>
+      </app-stat-card>
+
+      <app-stat-card
+        title="Receivable Balance"
+        [value]="dealService.totalReceivable() | currencyFormat"
+        subtitle="Pending milestone tokens"
+        badgeText="Collect Soon"
+        badgeColor="blue"
+        iconColor="amber">
+        <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </app-stat-card>
+    </div>
+
+    <!-- Main Two-Column Layout -->
+    <div class="dashboard-split-layout">
+      <!-- LEFT: Today's Action Agenda -->
+      <div class="agenda-column">
+        <div class="content-card">
+          <div class="card-header">
+            <h2>Today's Site Visits &amp; Agenda</h2>
+            <span class="badge-pill-count">{{ siteVisitService.tenantVisits().length }} Active</span>
+          </div>
+
+          <div class="agenda-list" *ngIf="siteVisitService.tenantVisits().length > 0">
+            <div class="agenda-item animate-fade-in" *ngFor="let visit of siteVisitService.tenantVisits()">
+              <div class="agenda-time">
+                <span class="time-hour">{{ visit.scheduledTime | date:'shortTime' }}</span>
+                <span class="time-label">{{ visit.scheduledTime | date:'MMM d' }}</span>
+              </div>
+
+              <div class="agenda-content">
+                <div class="agenda-client">
+                  <strong>{{ visit.leadName }}</strong>
+                  <span class="agenda-prop">{{ visit.propertyTitle }}</span>
+                </div>
+                <div class="agenda-meta">
+                  <span>{{ visit.propertyLocation }}</span>
+                  <span>Advisor: {{ visit.agentName }}</span>
+                </div>
+              </div>
+
+              <div class="agenda-actions">
+                <a [href]="'tel:' + visit.leadPhone" class="icon-btn" title="Call Prospect">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                  </svg>
+                </a>
+                <a [href]="'https://wa.me/' + visit.leadPhone.replace(' ', '')" target="_blank" class="icon-btn whatsapp" title="Chat on WhatsApp">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                  </svg>
+                </a>
+                <button class="icon-btn note" (click)="openLogConcernModal(visit)" title="Log Buyer Concern / Objection">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <app-empty-state
+            *ngIf="siteVisitService.tenantVisits().length === 0"
+            type="visits"
+            title="No Inspection Visits Scheduled"
+            description="Your agency has no upcoming site visits. Schedule one to start showing properties."
+            actionText="+ Schedule Site Visit"
+            (onAction)="scheduleInitialVisit()">
+          </app-empty-state>
+        </div>
+      </div>
+
+      <!-- RIGHT: Agent Performance Leaderboard (REAL & DYNAMIC) -->
+      <div class="leaderboard-column">
+        <div class="content-card">
+          <div class="card-header">
+            <h2>Agent Performance &amp; Payouts</h2>
+            <span class="card-meta">Real Closed Deals</span>
+          </div>
+
+          <div class="leaderboard-list" *ngIf="agentLeaderboard().length > 0">
+            <div class="agent-row animate-fade-in" *ngFor="let agent of agentLeaderboard()">
+              <div class="agent-avatar">{{ agent.initials }}</div>
+              <div class="agent-info">
+                <strong>{{ agent.agentName }}</strong>
+                <span>Associate Broker • {{ agent.dealsClosed }} {{ agent.dealsClosed === 1 ? 'Deal' : 'Deals' }} Closed</span>
+              </div>
+              <div class="agent-stats">
+                <span class="payout-num">{{ agent.commissionEarned | currencyFormat }}</span>
+                <span class="payout-lbl">Earned Commission</span>
+              </div>
+            </div>
+          </div>
+
+          <app-empty-state
+            *ngIf="agentLeaderboard().length === 0"
+            type="leaderboard"
+            title="No Closed Deals Yet"
+            description="Agent commissions and rankings will appear here automatically when transactions close."
+            actionText="Close Deal &amp; Calculate Commission"
+            (onAction)="openDealModal.set(true)">
+          </app-empty-state>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- TAB 2: BUYERS & VISITOR CONCERNS (WHY THEY NOT BUY FOR NEXT PROJECT)      -->
+  <!-- ========================================================================= -->
+  <div *ngIf="activeTab() === 'visitors_concerns'" class="tab-content animate-fade-in">
+    <!-- Quick Analytics Stats on Buyer Objections -->
+    <div class="concerns-kpi-row">
+      <div class="kpi-mini-card">
+        <span class="mini-label">Total Site Visitors</span>
+        <span class="mini-value">{{ concernStats().totalVisits }}</span>
+      </div>
+      <div class="kpi-mini-card amber">
+        <span class="mini-label">Logged Objections</span>
+        <span class="mini-value">{{ concernStats().loggedConcerns }}</span>
+      </div>
+      <div class="kpi-mini-card green">
+        <span class="mini-label">Target for Next Project</span>
+        <span class="mini-value">{{ concernStats().nextProjectReady }}</span>
+      </div>
+      <div class="kpi-mini-card red">
+        <span class="mini-label">Budget / Price Mismatch</span>
+        <span class="mini-value">{{ concernStats().budgetIssueCount }}</span>
+      </div>
+      <div class="kpi-mini-card blue">
+        <span class="mini-label">Location / Road Access</span>
+        <span class="mini-value">{{ concernStats().locationIssueCount }}</span>
+      </div>
+    </div>
+
+    <!-- Search & Concern Filter Bar -->
+    <div class="filter-controls-card content-card">
+      <div class="filter-top-row">
+        <div class="search-field">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            type="text"
+            [ngModel]="visitorSearch()"
+            (ngModelChange)="visitorSearch.set($event)"
+            placeholder="Search buyer name, phone number (+91...), property inspected, or objection...">
         </div>
 
-        <div class="leaderboard-list" *ngIf="agentLeaderboard().length > 0">
-          <div class="agent-row animate-fade-in" *ngFor="let agent of agentLeaderboard()">
-            <div class="agent-avatar">{{ agent.initials }}</div>
-            <div class="agent-info">
-              <strong>{{ agent.agentName }}</strong>
-              <span>Associate Broker • {{ agent.dealsClosed }} {{ agent.dealsClosed === 1 ? 'Deal' : 'Deals' }} Closed</span>
+        <button class="ef-btn ef-btn-primary ef-btn-sm" (click)="scheduleInitialVisit()">
+          + Add New Buyer / Visitor
+        </button>
+      </div>
+
+      <!-- Filter Chips -->
+      <div class="chips-scroll-row">
+        <button
+          class="filter-chip"
+          [class.active]="selectedConcernFilter() === 'all'"
+          (click)="selectedConcernFilter.set('all')">
+          All Visitors ({{ concernStats().totalVisits }})
+        </button>
+        <button
+          class="filter-chip chip-green"
+          [class.active]="selectedConcernFilter() === 'next_project'"
+          (click)="selectedConcernFilter.set('next_project')">
+          Interested in Next Project ({{ concernStats().nextProjectReady }})
+        </button>
+        <button
+          class="filter-chip chip-red"
+          [class.active]="selectedConcernFilter() === 'price_budget'"
+          (click)="selectedConcernFilter.set('price_budget')">
+          Budget / Price Issue ({{ concernStats().budgetIssueCount }})
+        </button>
+        <button
+          class="filter-chip chip-amber"
+          [class.active]="selectedConcernFilter() === 'location_connectivity'"
+          (click)="selectedConcernFilter.set('location_connectivity')">
+          Location / Roads ({{ concernStats().locationIssueCount }})
+        </button>
+        <button
+          class="filter-chip chip-blue"
+          [class.active]="selectedConcernFilter() === 'vastu_facing'"
+          (click)="selectedConcernFilter.set('vastu_facing')">
+          Vastu / Facing ({{ concernStats().vastuIssueCount }})
+        </button>
+        <button
+          class="filter-chip chip-amber"
+          [class.active]="selectedConcernFilter() === 'bank_loan_legal'"
+          (click)="selectedConcernFilter.set('bank_loan_legal')">
+          Loan / Legal Documents ({{ concernStats().loanIssueCount }})
+        </button>
+      </div>
+    </div>
+
+    <!-- Visitors & Concerns Directory Grid / Cards -->
+    <div class="visitors-cards-grid" *ngIf="visitorsWithConcerns().length > 0">
+      <div class="visitor-concern-card animate-fade-in" *ngFor="let visit of visitorsWithConcerns()">
+        <div class="visitor-card-header">
+          <div>
+            <h3>{{ visit.leadName }}</h3>
+            <div class="buyer-contact-bar">
+              <a [href]="'tel:' + visit.leadPhone" class="phone-link" title="Call Buyer">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+                <span>{{ visit.leadPhone }}</span>
+              </a>
+
+              <a [href]="'https://wa.me/' + visit.leadPhone.replace(' ', '').replace('+', '')" target="_blank" class="wa-badge" title="WhatsApp Message">
+                <span>WhatsApp</span>
+              </a>
             </div>
-            <div class="agent-stats">
-              <span class="payout-num">{{ agent.commissionEarned | currencyFormat }}</span>
-              <span class="payout-lbl">Earned Commission</span>
+          </div>
+
+          <span class="concern-category-pill" [ngClass]="getConcernBadge(visit.buyerConcernCategory).color">
+            {{ getConcernBadge(visit.buyerConcernCategory).label }}
+          </span>
+        </div>
+
+        <div class="property-visited-row">
+          <span class="prop-label">Visited Property:</span>
+          <strong>{{ visit.propertyTitle }}</strong>
+          <small>({{ visit.propertyLocation }})</small>
+        </div>
+
+        <!-- The Specific Reason / Concern Why They Did Not Buy -->
+        <div class="concern-reason-box">
+          <div class="reason-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span>Why Buyer Did Not Purchase:</span>
+          </div>
+          <p class="reason-text">
+            {{ visit.buyerConcernNotes || visit.feedback || 'No specific objection logged yet. Click "Log Concern" to record their feedback.' }}
+          </p>
+        </div>
+
+        <!-- Next Project Retargeting Preferences -->
+        <div class="next-project-box" [class.interested]="visit.interestedInNextProject">
+          <div class="next-proj-header">
+            <span class="next-badge">
+              {{ visit.interestedInNextProject ? 'Target for Upcoming / Next Project' : 'Not Interested in Next Project' }}
+            </span>
+          </div>
+
+          <div class="next-proj-details" *ngIf="visit.interestedInNextProject && visit.nextProjectPreferences">
+            <div class="pref-item" *ngIf="visit.nextProjectPreferences.targetBudget">
+              <span class="pref-label">Target Budget:</span>
+              <strong class="pref-val">₹{{ visit.nextProjectPreferences.targetBudget | currencyFormat }}</strong>
+            </div>
+            <div class="pref-item" *ngIf="visit.nextProjectPreferences.preferredLocality">
+              <span class="pref-label">Preferred Locality:</span>
+              <strong class="pref-val">{{ visit.nextProjectPreferences.preferredLocality }}</strong>
+            </div>
+            <div class="pref-item" *ngIf="visit.nextProjectPreferences.preferredSize">
+              <span class="pref-label">Desired Size:</span>
+              <strong class="pref-val">{{ visit.nextProjectPreferences.preferredSize }}</strong>
             </div>
           </div>
         </div>
 
-        <app-empty-state
-          *ngIf="agentLeaderboard().length === 0"
-          type="leaderboard"
-          title="No Closed Deals Yet"
-          description="Agent commissions and rankings will appear here automatically when transactions close."
-          actionText="Close Deal & Calculate Commission"
-          (onAction)="openDealModal.set(true)">
-        </app-empty-state>
+        <div class="visitor-card-footer">
+          <small class="visit-date">Visited: {{ visit.scheduledTime | date:'mediumDate' }} • Advisor: {{ visit.agentName }}</small>
+          <div class="footer-btns">
+            <button class="ef-btn ef-btn-tonal ef-btn-sm ai-ask-btn" (click)="askAiForConcern(visit)" title="Generate AI Objection Battlecard">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"></path>
+              </svg>
+              <span>Ask AI Coach</span>
+            </button>
+            <button class="ef-btn ef-btn-outlined ef-btn-sm" (click)="openLogConcernModal(visit)">
+              Edit Concern
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <app-empty-state
+      *ngIf="visitorsWithConcerns().length === 0"
+      type="search"
+      title="No Visitor Objections Match Filter"
+      description="No site visitors match your search term. Clear filters to view all visitors."
+      actionText="Reset Filters"
+      (onAction)="visitorSearch.set(''); selectedConcernFilter.set('all')">
+    </app-empty-state>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- TAB 3: PROPERTY EXPENSES & WEEKLY/MONTHLY COMPARISON REPORTS             -->
+  <!-- ========================================================================= -->
+  <div *ngIf="activeTab() === 'expenses_reports'" class="tab-content animate-fade-in">
+    <!-- Reports Header & Period Toggle -->
+    <div class="reports-top-bar content-card">
+      <div>
+        <h2>Property Marketing &amp; Sales Expense Reports</h2>
+        <span class="card-meta">Track agency costs per property sale and compare weekly &amp; monthly ROI</span>
+      </div>
+
+      <div class="report-controls-group">
+        <!-- Period Switcher: Weekly vs Monthly -->
+        <div class="period-toggle-pill">
+          <button
+            type="button"
+            class="period-btn"
+            [class.active]="reportPeriod() === 'weekly'"
+            (click)="reportPeriod.set('weekly')">
+            Weekly Report
+          </button>
+          <button
+            type="button"
+            class="period-btn"
+            [class.active]="reportPeriod() === 'monthly'"
+            (click)="reportPeriod.set('monthly')">
+            Monthly Report
+          </button>
+        </div>
+
+        <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="askAiForExpenseAudit()" title="Run AI Audit on expenses vs brokerage">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"></path>
+          </svg>
+          <span>Run AI Audit</span>
+        </button>
+
+        <button class="ef-btn ef-btn-primary ef-btn-sm" (click)="openAddExpenseModal()">
+          + Record Sale Expense
+        </button>
+      </div>
+    </div>
+
+    <!-- WEEKLY COMPARISON REPORT VIEW -->
+    <ng-container *ngIf="reportPeriod() === 'weekly'">
+      <div class="kpi-grid">
+        <app-stat-card
+          title="This Week's Property Expenses"
+          [value]="weeklyComparisonData().exp.thisWeekTotal | currencyFormat"
+          [subtitle]="'Prior Week: ' + (weeklyComparisonData().exp.lastWeekTotal | currencyFormat)"
+          [badgeText]="(weeklyComparisonData().exp.isIncrease ? '+' : '') + weeklyComparisonData().exp.percentChange + '% vs Last Week'"
+          [badgeColor]="weeklyComparisonData().exp.isIncrease ? 'blue' : 'green'"
+          iconColor="amber">
+          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+        </app-stat-card>
+
+        <app-stat-card
+          title="This Week's Gross Brokerage"
+          [value]="weeklyComparisonData().sales.thisWeekRevenue | currencyFormat"
+          [subtitle]="'Prior Week: ' + (weeklyComparisonData().sales.lastWeekRevenue | currencyFormat)"
+          [badgeText]="(weeklyComparisonData().sales.isIncrease ? '+' : '') + weeklyComparisonData().sales.percentChange + '% vs Last Week'"
+          badgeColor="green"
+          iconColor="green">
+          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+            <polyline points="17 6 23 6 23 12"></polyline>
+          </svg>
+        </app-stat-card>
+
+        <app-stat-card
+          title="Weekly Net Brokerage Margin"
+          [value]="weeklyComparisonData().netThisWeek | currencyFormat"
+          subtitle="Brokerage minus Sales Expenses"
+          badgeText="Net Cash Flow"
+          badgeColor="green"
+          iconColor="blue">
+          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+        </app-stat-card>
+
+        <app-stat-card
+          title="Cost of Sales Acquisition Ratio"
+          [value]="weeklyComparisonData().roiRatio + '%'"
+          subtitle="Expenses / Brokerage Volume"
+          badgeText="Healthy ROI"
+          badgeColor="blue"
+          iconColor="amber">
+          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        </app-stat-card>
+      </div>
+    </ng-container>
+
+    <!-- MONTHLY COMPARISON REPORT VIEW -->
+    <ng-container *ngIf="reportPeriod() === 'monthly'">
+      <div class="kpi-grid">
+        <app-stat-card
+          title="This Month's Property Expenses"
+          [value]="monthlyComparisonData().exp.thisMonthTotal | currencyFormat"
+          [subtitle]="'Prior Month: ' + (monthlyComparisonData().exp.lastMonthTotal | currencyFormat)"
+          [badgeText]="(monthlyComparisonData().exp.isIncrease ? '+' : '') + monthlyComparisonData().exp.percentChange + '% vs Last Month'"
+          [badgeColor]="monthlyComparisonData().exp.isIncrease ? 'blue' : 'green'"
+          iconColor="amber">
+          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+        </app-stat-card>
+
+        <app-stat-card
+          title="This Month's Gross Brokerage"
+          [value]="monthlyComparisonData().sales.thisMonthRevenue | currencyFormat"
+          [subtitle]="'Prior Month: ' + (monthlyComparisonData().sales.lastMonthRevenue | currencyFormat)"
+          [badgeText]="(monthlyComparisonData().sales.isIncrease ? '+' : '') + monthlyComparisonData().sales.percentChange + '% vs Last Month'"
+          badgeColor="green"
+          iconColor="green">
+          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+            <polyline points="17 6 23 6 23 12"></polyline>
+          </svg>
+        </app-stat-card>
+
+        <app-stat-card
+          title="Monthly Net Brokerage Margin"
+          [value]="monthlyComparisonData().netThisMonth | currencyFormat"
+          subtitle="Brokerage minus Sales Expenses"
+          badgeText="Net In Pocket"
+          badgeColor="green"
+          iconColor="blue">
+          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+        </app-stat-card>
+
+        <app-stat-card
+          title="Cost of Sales Acquisition Ratio"
+          [value]="monthlyComparisonData().roiRatio + '%'"
+          subtitle="Expenses / Brokerage Volume"
+          badgeText="Healthy ROI"
+          badgeColor="blue"
+          iconColor="amber">
+          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        </app-stat-card>
+      </div>
+    </ng-container>
+
+    <!-- Detailed Expense Breakdown Grids -->
+    <div class="dashboard-split-layout">
+      <!-- Category Expense Allocation -->
+      <div class="agenda-column">
+        <div class="content-card">
+          <div class="card-header">
+            <h2>Expense Breakdown by Category</h2>
+            <span class="card-meta">Total: {{ expenseService.totalExpenses() | currencyFormat }}</span>
+          </div>
+
+          <div class="category-bars-list" *ngIf="expenseService.expensesByCategory().length > 0">
+            <div class="category-bar-item" *ngFor="let cat of expenseService.expensesByCategory()">
+              <div class="bar-labels">
+                <span class="cat-title">{{ cat.label }}</span>
+                <span class="cat-amount">{{ cat.amount | currencyFormat }} ({{ cat.percentage }}%)</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" [style.width.%]="cat.percentage"></div>
+              </div>
+            </div>
+          </div>
+
+          <app-empty-state
+            *ngIf="expenseService.expensesByCategory().length === 0"
+            type="general"
+            title="No Expenses Recorded Yet"
+            description="Record site visit fuel, client refreshments, or digital advertising costs to populate breakdown."
+            actionText="+ Record Property Expense"
+            (onAction)="openAddExpenseModal()">
+          </app-empty-state>
+        </div>
+      </div>
+
+      <!-- Property-Wise Marketing & Sales Cost Allocation -->
+      <div class="leaderboard-column">
+        <div class="content-card">
+          <div class="card-header">
+            <h2>Property-Wise Sales Expense Allocation</h2>
+            <span class="card-meta">Cost Incurred per Project</span>
+          </div>
+
+          <div class="table-responsive" *ngIf="expenseService.expensesByProperty().length > 0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Property / Project</th>
+                  <th>Expenses Logged</th>
+                  <th>Total Spent</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let prop of expenseService.expensesByProperty()">
+                  <td>
+                    <strong>{{ prop.propertyTitle }}</strong>
+                  </td>
+                  <td>{{ prop.count }} Entries</td>
+                  <td>
+                    <strong class="text-amber">{{ prop.total | currencyFormat }}</strong>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <app-empty-state
+            *ngIf="expenseService.expensesByProperty().length === 0"
+            type="general"
+            title="No Property Expenses"
+            description="Assign expenses to specific listings to analyze property sale costs."
+            actionText="+ Record Expense"
+            (onAction)="openAddExpenseModal()">
+          </app-empty-state>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Expenses Ledger Table -->
+    <div class="content-card" style="margin-top: 24px;">
+      <div class="card-header">
+        <div>
+          <h2>Recent Sales &amp; Marketing Expenses Ledger</h2>
+          <span class="card-meta">Live Cloud Firestore Audit Trail</span>
+        </div>
+        <button class="ef-btn ef-btn-outlined ef-btn-sm" (click)="openAddExpenseModal()">
+          + Add Entry
+        </button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Expense Title</th>
+              <th>Category</th>
+              <th>Property Association</th>
+              <th>Amount</th>
+              <th>Logged By</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="expenseService.tenantExpenses().length === 0">
+              <td colspan="7" style="text-align: center; padding: 36px 16px; color: var(--ef-text-secondary); font-size: 0.9rem;">
+                No expenses logged yet. Click "+ Record Sale Expense" above to start tracking property sales costs.
+              </td>
+            </tr>
+            <tr *ngFor="let exp of expenseService.tenantExpenses()">
+              <td>{{ exp.date | date:'mediumDate' }}</td>
+              <td>
+                <strong>{{ exp.title }}</strong>
+                <div *ngIf="exp.notes" class="sub-text">{{ exp.notes }}</div>
+              </td>
+              <td>
+                <span class="status-pill-badge blue">{{ exp.category }}</span>
+              </td>
+              <td>{{ exp.propertyTitle || 'General Agency' }}</td>
+              <td>
+                <strong>{{ exp.amount | currencyFormat }}</strong>
+              </td>
+              <td>
+                <small>{{ exp.loggedBy }}</small>
+              </td>
+              <td>
+                <button class="ef-btn ef-btn-outlined ef-btn-sm text-red" (click)="deleteExpense(exp.id)">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 1: RECORD BUYER CONCERN & NEXT PROJECT PREFERENCES                 -->
+  <!-- ========================================================================= -->
+  <div class="modal-backdrop" *ngIf="openConcernModal()" (click)="openConcernModal.set(false)">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h2>Log Buyer Objection &amp; Next Project Notes</h2>
+          <span class="card-meta">{{ selectedVisit()?.leadName }} ({{ selectedVisit()?.leadPhone }})</span>
+        </div>
+        <button class="close-btn" (click)="openConcernModal.set(false)">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="ef-form-group col-span-2">
+            <label>Why Did the Buyer Not Purchase? (Main Concern)</label>
+            <select [(ngModel)]="concernForm.category">
+              <option value="price_budget">Budget / Price is too high</option>
+              <option value="location_connectivity">Location / Road Access / Distance from City</option>
+              <option value="vastu_facing">Vastu / Facing Preference (Needs East/North)</option>
+              <option value="bank_loan_legal">Bank Loan Approval / Patta / Legal Documents</option>
+              <option value="size_layout">Plot Dimensions / Size Mismatch</option>
+              <option value="timeline">Timeline / Possession Delayed</option>
+              <option value="other">Other Specific Requirement</option>
+            </select>
+          </div>
+
+          <div class="ef-form-group col-span-2">
+            <label>Detailed Feedback &amp; Conversation Notes</label>
+            <textarea
+              rows="3"
+              [(ngModel)]="concernForm.notes"
+              placeholder="e.g. Buyer loved the locality but their approved bank loan was only 40L while property was 52L. Looking for smaller plot or upcoming phase.">
+            </textarea>
+          </div>
+
+          <div class="ef-form-group col-span-2 checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="concernForm.interestedInNextProject">
+              <span><strong>Mark as Target Buyer for Next / Upcoming Project</strong></span>
+            </label>
+            <small class="sub-text">Check this so your agency can immediately contact this buyer when you launch your next layout or project.</small>
+          </div>
+
+          <ng-container *ngIf="concernForm.interestedInNextProject">
+            <div class="ef-form-group">
+              <label>Target Budget for Next Project (₹)</label>
+              <input type="number" [(ngModel)]="concernForm.targetBudget" placeholder="e.g. 4500000">
+            </div>
+
+            <div class="ef-form-group">
+              <label>Desired Area / Locality</label>
+              <input type="text" [(ngModel)]="concernForm.preferredLocality" placeholder="e.g. Tambaram, OMR, Porur">
+            </div>
+
+            <div class="ef-form-group col-span-2">
+              <label>Preferred Plot Size or Unit Type</label>
+              <input type="text" [(ngModel)]="concernForm.preferredSize" placeholder="e.g. 1200 sqft / 30x40 / 3 BHK Villa">
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="ef-btn ef-btn-outlined" (click)="openConcernModal.set(false)">Cancel</button>
+        <button class="ef-btn ef-btn-primary" (click)="saveBuyerConcern()">Save Buyer Feedback</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 2: RECORD PROPERTY SALE EXPENSE                                    -->
+  <!-- ========================================================================= -->
+  <div class="modal-backdrop" *ngIf="openExpenseModal()" (click)="openExpenseModal.set(false)">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h2>Record Property Sale Expense</h2>
+          <span class="card-meta">Track marketing, fuel, customer hospitality and sales costs</span>
+        </div>
+        <button class="close-btn" (click)="openExpenseModal.set(false)">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="ef-form-group col-span-2">
+            <label>Expense Title / Description</label>
+            <input type="text" [(ngModel)]="expenseForm.title" placeholder="e.g. Client Site Visit Petrol &amp; Cab, 99acres Portal Listing, Site Signboard Flex">
+          </div>
+
+          <div class="ef-form-group">
+            <label>Expense Category</label>
+            <select [(ngModel)]="expenseForm.category">
+              <option value="travel_fuel">Site Visit Travel &amp; Fuel</option>
+              <option value="marketing">Digital &amp; Social Media Ads</option>
+              <option value="client_hospitality">Buyer Hospitality &amp; Refreshments</option>
+              <option value="legal_documentation">Legal, Patta &amp; EC Clearance</option>
+              <option value="site_maintenance">Site Clearing &amp; Boundary Signboards</option>
+              <option value="portal_listing_fee">Listing Portal Fee (99acres/MagicBricks)</option>
+              <option value="office_rent">Office Overhead</option>
+              <option value="miscellaneous">Miscellaneous</option>
+            </select>
+          </div>
+
+          <div class="ef-form-group">
+            <label>Amount (₹)</label>
+            <input type="number" [(ngModel)]="expenseForm.amount" placeholder="e.g. 2500">
+          </div>
+
+          <div class="ef-form-group">
+            <label>Associated Property</label>
+            <select [(ngModel)]="expenseForm.propertyId">
+              <option value="">General Agency Overhead</option>
+              <option *ngFor="let prop of propertyService.tenantProperties()" [value]="prop.id">
+                {{ prop.title }} (₹{{ prop.price | currencyFormat }})
+              </option>
+            </select>
+          </div>
+
+          <div class="ef-form-group">
+            <label>Date Incurred</label>
+            <input type="date" [(ngModel)]="expenseForm.date">
+          </div>
+
+          <div class="ef-form-group col-span-2">
+            <label>Optional Notes / Vendor / Bill Reference</label>
+            <input type="text" [(ngModel)]="expenseForm.notes" placeholder="e.g. Fastrack Taxi Bill #4592, Uber receipt">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="ef-btn ef-btn-outlined" (click)="openExpenseModal.set(false)">Cancel</button>
+        <button class="ef-btn ef-btn-primary" (click)="savePropertyExpense()">Save Expense</button>
       </div>
     </div>
   </div>

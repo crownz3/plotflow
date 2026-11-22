@@ -24,7 +24,15 @@ export const authGuard: CanActivateFn = (route, state) => {
     return router.parseUrl('/login');
   }
 
-  // 1. If user hasn't completed onboarding, require /onboarding
+  // 1. Super Admin has unrestricted platform-wide access across all routes
+  if (user.role === 'super_admin' || auth.isSuperAdmin()) {
+    if (url === '/onboarding' || url === '/pending-approval') {
+      return router.parseUrl('/dashboard');
+    }
+    return true;
+  }
+
+  // 2. If user hasn't completed onboarding, require /onboarding
   if (!user.onboardingCompleted) {
     if (url === '/onboarding') {
       return true;

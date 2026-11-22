@@ -13,6 +13,8 @@ import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
 import { AreaFormatPipe } from '../../shared/pipes/area-format.pipe';
 import { Property } from '../../core/models/models';
 import { AuthService } from '../../core/services/auth.service';
+import { LoadingService } from '../../core/services/loading.service';
+import { SnackbarService } from '../../core/services/snackbar.service';
 import imageCompression from 'browser-image-compression';
 
 @Component({
@@ -37,6 +39,8 @@ export class PropertiesComponent {
   analyticsService = inject(PropertyAnalyticsService);
   brochureService = inject(BrochureService);
   auth = inject(AuthService);
+  loadingService = inject(LoadingService);
+  snackbarService = inject(SnackbarService);
 
   searchQuery = '';
   selectedType = signal<string>('all');
@@ -357,6 +361,7 @@ export class PropertiesComponent {
     };
 
     this.propertyService.addProperty(propData);
+    this.snackbarService.success(`Property "${propData.title}" created successfully!`);
     this.openAddModal.set(false);
     this.newProp = this.getInitialNewProp();
   }
@@ -505,12 +510,14 @@ export class PropertiesComponent {
     };
 
     this.propertyService.updateProperty(cur.id, updates);
+    this.snackbarService.success(`Property "${updates.title || cur.title}" updated successfully!`);
     this.editingProperty.set(null);
   }
 
   deleteProperty(prop: Property) {
     if (confirm(`Are you sure you want to delete "${prop.title}"?`)) {
       this.propertyService.deleteProperty(prop.id);
+      this.snackbarService.info(`Property "${prop.title}" removed from inventory.`);
     }
   }
 
@@ -525,12 +532,16 @@ export class PropertiesComponent {
 
   async downloadBrochure(prop: Property) {
     this.isGeneratingBrochure.set(true);
+    this.loadingService.show('Generating Client Brochure...', 'Compiling specifications, images, and maps pin');
     try {
       await this.brochureService.generateAndShareBrochure(prop);
+      this.snackbarService.success('Client brochure generated successfully!');
     } catch (err) {
       console.error('Error generating brochure:', err);
+      this.snackbarService.error('Failed to generate brochure. Please try again.');
     } finally {
       this.isGeneratingBrochure.set(false);
+      this.loadingService.hide();
     }
   }
 
@@ -542,6 +553,7 @@ export class PropertiesComponent {
     const success = await this.brochureService.copyPitch(prop);
     if (success) {
       this.copiedNotice.set(true);
+      this.snackbarService.success('Pitch message copied to clipboard!');
       setTimeout(() => this.copiedNotice.set(false), 2500);
     }
   }

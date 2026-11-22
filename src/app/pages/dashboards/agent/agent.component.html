@@ -1,4 +1,27 @@
 <div class="dashboard-page animate-fade-in">
+  <!-- Smart 1-Week Subscription Expiry & Renewal Warning Banner -->
+  <div *ngIf="expiryInfo().isExpiringSoon" class="subscription-warning-banner" [class.expired]="expiryInfo().isExpired">
+    <div class="banner-content">
+      <div class="banner-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <div class="banner-text">
+        <strong *ngIf="!expiryInfo().isExpired">Agency Subscription Notice:</strong>
+        <strong *ngIf="expiryInfo().isExpired">Subscription Expired:</strong>
+        <span>
+          {{ expiryInfo().isExpired ? 'Your agency subscription has expired. Please notify your principal broker or administrator.' : 'Your agency subscription will renew in ' + expiryInfo().daysLeft + (expiryInfo().daysLeft === 1 ? ' day' : ' days') + '. Please notify your administrator to maintain access.' }}
+        </span>
+      </div>
+    </div>
+    <div class="banner-actions">
+      <span class="expiry-chip">{{ expiryInfo().isExpired ? 'Action Required' : expiryInfo().daysLeft + ' Days Remaining' }}</span>
+    </div>
+  </div>
+
   <div class="dashboard-header">
     <div>
       <span class="role-badge">Associate Broker Workspace</span>

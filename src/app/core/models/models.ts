@@ -34,6 +34,7 @@ export interface Tenant {
   approvedAt?: number;
   currency: 'INR' | 'USD' | 'AED' | 'EUR';
   defaultAreaUnit: 'sqft' | 'cent' | 'acre' | 'ground' | 'guntha';
+  defaultLanguage?: 'English' | 'Tamil' | 'Tanglish' | 'Hindi' | 'Hinglish' | 'Telugu' | 'Kannada';
   subscriptionPlan: 'trial' | 'starter' | 'pro' | 'enterprise';
   trialExpiresAt: number;
   totalAgentsCount: number;
@@ -204,6 +205,15 @@ export interface SiteVisit {
   scheduledTime: number;
   status: 'scheduled' | 'completed' | 'cancelled';
   feedback?: string;
+  // Buyer Concern & Next Project Retargeting
+  buyerConcernCategory?: 'price_budget' | 'location_connectivity' | 'vastu_facing' | 'bank_loan_legal' | 'size_layout' | 'timeline' | 'other';
+  buyerConcernNotes?: string;
+  interestedInNextProject?: boolean;
+  nextProjectPreferences?: {
+    targetBudget?: number;
+    preferredLocality?: string;
+    preferredSize?: string;
+  };
   createdAt: number;
 }
 
@@ -237,9 +247,12 @@ export interface Expense {
   id: string;
   tenantId: string;
   title: string;
-  category: 'marketing' | 'travel_fuel' | 'office_rent' | 'portal_listing_fee' | 'miscellaneous';
+  category: 'marketing' | 'travel_fuel' | 'office_rent' | 'portal_listing_fee' | 'client_hospitality' | 'legal_documentation' | 'site_maintenance' | 'miscellaneous';
   amount: number;
   date: number;
+  propertyId?: string;
+  propertyTitle?: string;
+  notes?: string;
   loggedBy: string;
   createdAt: number;
 }

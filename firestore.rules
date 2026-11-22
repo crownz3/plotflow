@@ -42,14 +42,22 @@ service cloud.firestore {
     //   - phone: string (required, 1..25 chars) - Agency primary phone
     //   - email: string (required, valid Google Mail) - Agency business email (gmail.com/googlemail.com)
     //   - address: string (required, 1..200 chars) - Agency physical address
+    //   - operatingCity: string (optional, 0..100 chars) - Operational city
+    //   - teamSize: string (optional, 0..50 chars) - Agency team size
+    //   - status: string (optional, 'pending_approval' | 'active' | 'suspended' | 'rejected') - Tenant onboarding approval status
+    //   - rejectionReason: string (optional, 0..500 chars) - Rejection reason if rejected
+    //   - submittedAt: number (optional) - Onboarding submission Unix timestamp ms
+    //   - approvedAt: number (optional) - Approval Unix timestamp ms
     //   - currency: string (required, 'INR' | 'USD' | 'AED' | 'EUR') - Primary currency
     //   - defaultAreaUnit: string (required, 'sqft' | 'cent' | 'acre' | 'ground' | 'guntha') - Default unit
+    //   - defaultLanguage: string (optional, 'English' | 'Tamil' | 'Tanglish' | 'Hindi' | 'Hinglish' | 'Telugu' | 'Kannada') - Interface language
     //   - subscriptionPlan: string (required, 'trial' | 'starter' | 'pro' | 'enterprise') - Plan tier
     //   - trialExpiresAt: number (required) - Subscription/trial expiration timestamp
     //   - totalAgentsCount: number (optional, >= 0)
     //   - totalListingsCount: number (optional, >= 0)
     //   - createdAt: number (required, immutable) - Creation timestamp
     //   - updatedAt: number (required) - Last update timestamp
+    //   - _cloudSyncedAt: number (optional) - Client offline sync timestamp
     //
     // Collection: /tenants/{tenantId}/users/{userId}
     // Document ID: userId (matches auth.uid)
@@ -280,7 +288,7 @@ service cloud.firestore {
     function isSuperAdmin() {
       return isAuthenticated() && (
         ('role' in request.auth.token && request.auth.token.role == 'super_admin') ||
-        ('email' in request.auth.token && request.auth.token.email == 'mohamedibrahim040125@gmail.com') ||
+        ('email' in request.auth.token && (request.auth.token.email == 'mohamedibrahim010425@gmail.com' || request.auth.token.email == 'mohamedibrahim040125@gmail.com')) ||
         (userDocExists() && getUserData().role == 'super_admin')
       );
     }
@@ -347,7 +355,13 @@ service cloud.firestore {
 
     function isValidTenant(data) {
       return data.keys().hasAll(['id', 'agencyName', 'ownerUid', 'phone', 'email', 'address', 'currency', 'defaultAreaUnit', 'subscriptionPlan', 'trialExpiresAt', 'createdAt', 'updatedAt']) &&
-        data.keys().hasOnly(['id', 'agencyName', 'ownerUid', 'reraNumber', 'logoUrl', 'phone', 'email', 'address', 'currency', 'defaultAreaUnit', 'subscriptionPlan', 'trialExpiresAt', 'totalAgentsCount', 'totalListingsCount', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly([
+          'id', 'agencyName', 'ownerUid', 'reraNumber', 'logoUrl', 'phone', 'email',
+          'address', 'operatingCity', 'teamSize', 'status', 'rejectionReason',
+          'submittedAt', 'approvedAt', 'currency', 'defaultAreaUnit', 'defaultLanguage',
+          'subscriptionPlan', 'trialExpiresAt', 'totalAgentsCount', 'totalListingsCount',
+          'createdAt', 'updatedAt', '_cloudSyncedAt'
+        ]) &&
         data.id is string && data.id.size() >= 1 && data.id.size() <= 100 &&
         data.agencyName is string && data.agencyName.size() >= 1 && data.agencyName.size() <= 100 &&
         data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128 &&
@@ -362,6 +376,14 @@ service cloud.firestore {
         data.updatedAt is number &&
         isValidOptionalString(data, 'reraNumber', 0, 50) &&
         isValidOptionalString(data, 'logoUrl', 0, 500) &&
+        isValidOptionalString(data, 'operatingCity', 0, 100) &&
+        isValidOptionalString(data, 'teamSize', 0, 50) &&
+        isValidOptionalString(data, 'rejectionReason', 0, 500) &&
+        (!( 'status' in data ) || (data.status is string && data.status in ['pending_approval', 'active', 'suspended', 'rejected'])) &&
+        (!( 'submittedAt' in data ) || data.submittedAt is number) &&
+        (!( 'approvedAt' in data ) || data.approvedAt is number) &&
+        (!( 'defaultLanguage' in data ) || (data.defaultLanguage is string && data.defaultLanguage in ['English', 'Tamil', 'Tanglish', 'Hindi', 'Hinglish', 'Telugu', 'Kannada'])) &&
+        (!( '_cloudSyncedAt' in data ) || data._cloudSyncedAt is number) &&
         (!( 'totalAgentsCount' in data ) || (data.totalAgentsCount is number && data.totalAgentsCount >= 0)) &&
         (!( 'totalListingsCount' in data ) || (data.totalListingsCount is number && data.totalListingsCount >= 0));
     }

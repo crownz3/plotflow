@@ -696,8 +696,9 @@
               <strong>Branded PDF Brochure</strong>
               <span>High-resolution PDF with agency logo, RERA #, specs &amp; owner details masked.</span>
             </div>
-            <button class="ef-btn ef-btn-sm ef-btn-primary">
-              {{ isGeneratingBrochure() ? 'Generating...' : 'Download PDF' }}
+            <button class="ef-btn ef-btn-sm ef-btn-primary" [class.loading]="isGeneratingBrochure()" [disabled]="isGeneratingBrochure()">
+              <span *ngIf="isGeneratingBrochure()" class="btn-spinner"></span>
+              <span>{{ isGeneratingBrochure() ? 'Generating...' : 'Download PDF' }}</span>
             </button>
           </div>
 

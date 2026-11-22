@@ -38,6 +38,12 @@ export const routes: Routes = [
       import('./pages/deals/deals.component').then(m => m.DealsComponent)
   },
   {
+    path: 'ai',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/ai/ai.component').then(m => m.PlotflowAiComponent)
+  },
+  {
     path: 'settings',
     canActivate: [authGuard],
     loadComponent: () =>

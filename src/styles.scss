@@ -332,11 +332,78 @@ a {
     padding: 6px 12px;
     font-size: 0.8rem;
   }
+
+  /* Small Action Loading State */
+  &.loading, &[disabled].loading {
+    position: relative;
+    cursor: not-allowed;
+    pointer-events: none;
+    opacity: 0.88;
+  }
+}
+
+/* Inline Micro Spinner for Button Actions */
+.btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: btnSpinnerAnim 0.75s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+.ef-btn-outlined .btn-spinner,
+.ef-btn-subtle .btn-spinner {
+  border-color: rgba(26, 115, 232, 0.25);
+  border-top-color: var(--ef-primary);
+}
+
+@keyframes btnSpinnerAnim {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* ==============================================================================
-   FORM CONTROLS (Material Outline)
+   FORM CONTROLS (Material Outline & Universal Select Dropdowns)
    ============================================================================== */
+select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  height: 44px;
+  padding: 10px 42px 10px 14px !important;
+  border-radius: var(--ef-radius-sm);
+  border: 1px solid var(--ef-border-medium);
+  background-color: #ffffff !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235f6368' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 14px center !important;
+  background-size: 16px 16px !important;
+  color: var(--ef-text-main);
+  font-size: 0.9rem;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-image 0.2s ease;
+
+  &:focus {
+    border-color: var(--ef-primary) !important;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15) !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%231a73e8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  }
+
+  option {
+    padding: 10px 14px;
+    background: #ffffff;
+    color: var(--ef-text-main);
+    font-size: 0.9rem;
+  }
+}
+
 .ef-form-group {
   margin-bottom: 16px;
 
@@ -368,6 +435,28 @@ a {
       color: var(--ef-text-tertiary);
     }
   }
+
+  input {
+    height: 44px;
+  }
+
+  select {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    height: 44px;
+    padding: 10px 42px 10px 14px !important;
+    background-color: #ffffff !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235f6368' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 14px center !important;
+    background-size: 16px 16px !important;
+    cursor: pointer;
+
+    &:focus {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%231a73e8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+    }
+  }
 }
 
 /* ==============================================================================
@@ -381,4 +470,88 @@ a {
   height: 100%;
   pointer-events: none;
   z-index: 99999;
+}
+
+/* ==============================================================================
+   SMART SUBSCRIPTION EXPIRY & RENEWAL BANNER (1 WEEK NOTICE)
+   ============================================================================== */
+.subscription-warning-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--ef-warning-tint);
+  border: 1px solid var(--ef-warning-border);
+  border-left: 4px solid var(--ef-warning);
+  padding: 14px 18px;
+  border-radius: var(--ef-radius-md);
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  &.expired {
+    background: var(--ef-danger-tint);
+    border-color: var(--ef-danger-border);
+    border-left-color: var(--ef-danger);
+
+    .banner-icon {
+      color: var(--ef-danger);
+    }
+
+    .expiry-chip {
+      background: var(--ef-danger);
+      color: #ffffff;
+    }
+  }
+
+  .banner-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .banner-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #b06000;
+    flex-shrink: 0;
+  }
+
+  .banner-text {
+    font-size: 0.88rem;
+    color: var(--ef-text-main);
+    line-height: 1.4;
+
+    strong {
+      font-weight: 700;
+      margin-right: 6px;
+    }
+  }
+
+  .banner-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .expiry-chip {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: #fef08a;
+    color: #854d0e;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+
+    .banner-actions {
+      align-self: flex-start;
+    }
+  }
 }

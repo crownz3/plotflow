@@ -1,17 +1,29 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, computed, inject, effect } from '@angular/core';
+import {
+  collection,
+  doc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  onSnapshot,
+  Unsubscribe
+} from 'firebase/firestore';
 import { Lead, LeadStage, Property } from '../models/models';
 import { AuthService } from './auth.service';
 import { PropertyService } from './property.service';
+import { FirebaseService } from './firebase.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LeadService {
   private auth = inject(AuthService);
+  private firebase = inject(FirebaseService);
   private propertyService = inject(PropertyService);
   private storageKey = 'pf_leads';
 
-  readonly allLeads = signal<Lead[]>(this.loadInitial());
+  readonly allLeads = signal<Lead[]>(this.loadCache());
+  private unsubscribeSnapshot: Unsubscribe | null = null;
 
   // Scoped strictly by active tenant
   readonly tenantLeads = computed(() => {
@@ -47,96 +59,188 @@ export class LeadService {
     this.tenantLeads().filter(l => l.priority === 'hot' && l.stage !== 'closed_won' && l.stage !== 'closed_lost').length
   );
 
-  private loadInitial(): Lead[] {
+  constructor() {
+    effect(() => {
+      const tenantId = this.auth.activeTenantId();
+      this.bindFirestoreListener(tenantId);
+    });
+  }
+
+  private loadCache(): Lead[] {
     try {
       const saved = localStorage.getItem(this.storageKey);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
+      if (saved) {
+        const parsed: Lead[] = JSON.parse(saved);
+        return parsed.filter(l => l.tenantId !== 'tenant_prime_properties');
+      }
+    } catch {}
+    return [];
   }
 
-  private save(): void {
+  private saveCache(list: Lead[]): void {
     try {
-      localStorage.setItem(this.storageKey, JSON.stringify(this.allLeads()));
+      localStorage.setItem(this.storageKey, JSON.stringify(list));
+    } catch {}
+  }
+
+  private bindFirestoreListener(tenantId: string): void {
+    if (this.unsubscribeSnapshot) {
+      this.unsubscribeSnapshot();
+      this.unsubscribeSnapshot = null;
+    }
+
+    if (!tenantId) return;
+
+    const path = tenantId === 'platform_global' ? 'tenants/tenant_default/leads' : `tenants/${tenantId}/leads`;
+    try {
+      const colRef = collection(this.firebase.firestore, path);
+      this.unsubscribeSnapshot = onSnapshot(
+        colRef,
+        { includeMetadataChanges: true },
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const remote: Lead[] = [];
+            snapshot.forEach(d => {
+              remote.push({ id: d.id, ...d.data() } as Lead);
+            });
+            this.allLeads.set(remote);
+            this.saveCache(remote);
+          }
+        },
+        (error) => {
+          console.warn(`Firestore real-time sync for ${path} operating in offline cache mode:`, error.message);
+        }
+      );
     } catch (e) {
-      console.warn('Failed to persist leads:', e);
+      console.warn('Could not attach Firestore onSnapshot for leads:', e);
     }
   }
 
-  addLead(data: Omit<Lead, 'id' | 'createdAt' | 'updatedAt' | 'notes'>): Lead {
+  async addLead(data: Omit<Lead, 'id' | 'createdAt' | 'updatedAt' | 'notes'>): Promise<Lead> {
+    const tenantId = data.tenantId || this.auth.activeTenantId() || 'tenant_default';
+    const id = `lead_${Date.now()}`;
     const newLead: Lead = {
       ...data,
-      id: `lead_${Date.now()}`,
+      id,
+      tenantId,
       notes: [],
       createdAt: Date.now(),
       updatedAt: Date.now()
     };
+
+    // 1. Optimistic Signal Update
     this.allLeads.update(list => [newLead, ...list]);
-    this.save();
+    this.saveCache(this.allLeads());
+
+    // 2. Cloud Firestore with IndexedDB persistence
+    try {
+      const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/leads`, id);
+      await setDoc(docRef, { ...newLead, _cloudSyncedAt: Date.now() });
+    } catch (err) {
+      console.warn('Firestore offline write queued for sync:', err);
+    }
+
     return newLead;
   }
 
-  updateStage(leadId: string, newStage: LeadStage): void {
+  async updateStage(leadId: string, newStage: LeadStage): Promise<void> {
+    const current = this.allLeads().find(l => l.id === leadId);
+    const tenantId = current?.tenantId || this.auth.activeTenantId() || 'tenant_default';
+
     this.allLeads.update(list =>
       list.map(l => l.id === leadId ? { ...l, stage: newStage, updatedAt: Date.now() } : l)
     );
-    this.save();
+    this.saveCache(this.allLeads());
+
+    try {
+      const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/leads`, leadId);
+      await updateDoc(docRef, { stage: newStage, updatedAt: Date.now() });
+    } catch (err) {
+      console.warn('Firestore offline update queued:', err);
+    }
   }
 
-  addNote(leadId: string, text: string): void {
+  async addNote(leadId: string, text: string): Promise<void> {
     const author = this.auth.currentUser()?.displayName || 'Agent';
+    const current = this.allLeads().find(l => l.id === leadId);
+    const tenantId = current?.tenantId || this.auth.activeTenantId() || 'tenant_default';
+    const newNote = { id: `note_${Date.now()}`, text, createdAt: Date.now(), authorName: author };
+
     this.allLeads.update(list =>
       list.map(l => {
         if (l.id === leadId) {
           return {
             ...l,
             lastContactedAt: Date.now(),
-            notes: [
-              { id: `note_${Date.now()}`, text, createdAt: Date.now(), authorName: author },
-              ...l.notes
-            ],
+            notes: [newNote, ...l.notes],
             updatedAt: Date.now()
           };
         }
         return l;
       })
     );
-    this.save();
+    this.saveCache(this.allLeads());
+
+    try {
+      const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/leads`, leadId);
+      const updatedNotes = current ? [newNote, ...current.notes] : [newNote];
+      await updateDoc(docRef, {
+        notes: updatedNotes,
+        lastContactedAt: Date.now(),
+        updatedAt: Date.now()
+      });
+    } catch (err) {
+      console.warn('Firestore offline update queued:', err);
+    }
   }
 
-  updateLead(leadId: string, updates: Partial<Lead>): void {
+  async updateLead(leadId: string, updates: Partial<Lead>): Promise<void> {
+    const current = this.allLeads().find(l => l.id === leadId);
+    const tenantId = current?.tenantId || this.auth.activeTenantId() || 'tenant_default';
+
     this.allLeads.update(list =>
       list.map(l => l.id === leadId ? { ...l, ...updates, updatedAt: Date.now() } : l)
     );
-    this.save();
+    this.saveCache(this.allLeads());
+
+    try {
+      const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/leads`, leadId);
+      await updateDoc(docRef, { ...updates, updatedAt: Date.now() });
+    } catch (err) {
+      console.warn('Firestore offline update queued:', err);
+    }
   }
 
-  deleteLead(leadId: string): void {
+  async deleteLead(leadId: string): Promise<void> {
+    const current = this.allLeads().find(l => l.id === leadId);
+    const tenantId = current?.tenantId || this.auth.activeTenantId() || 'tenant_default';
+
     this.allLeads.update(list => list.filter(l => l.id !== leadId));
-    this.save();
+    this.saveCache(this.allLeads());
+
+    try {
+      const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/leads`, leadId);
+      await deleteDoc(docRef);
+    } catch (err) {
+      console.warn('Firestore offline delete queued:', err);
+    }
   }
 
   /**
    * Smart Property Matcher Engine
-   * Returns properties from inventory matching the lead's budget, location, and type.
    */
   getMatchingProperties(lead: Lead): Property[] {
     const properties = this.propertyService.tenantProperties();
     return properties.filter(prop => {
-      // Must be available
       if (prop.status !== 'available' && prop.status !== 'under_offer') return false;
 
-      // Budget check (allows 10% upper negotiation headroom)
       const maxBudget = lead.requirement.budgetMax * 1.1;
       const minBudget = lead.requirement.budgetMin * 0.9;
       const withinBudget = prop.price >= minBudget && prop.price <= maxBudget;
 
-      // Property type check
       const typeMatches = lead.requirement.propertyTypes.length === 0 ||
         lead.requirement.propertyTypes.includes(prop.propertyType);
 
-      // Location match
       const locMatches = lead.requirement.preferredLocations.length === 0 ||
         lead.requirement.preferredLocations.some(loc =>
           prop.location.locality.toLowerCase().includes(loc.toLowerCase()) ||
@@ -147,13 +251,10 @@ export class LeadService {
     });
   }
 
-  /**
-   * Generates a pre-filled WhatsApp click-to-chat URL with property recommendation
-   */
   getWhatsAppShareUrl(lead: Lead, property?: Property): string {
     const cleanPhone = lead.phone.replace(/[^0-9]/g, '');
     const agent = this.auth.currentUser()?.displayName || 'Your Real Estate Advisor';
-    const agency = this.auth.currentUser()?.agencyName || 'Prime Properties';
+    const agency = this.auth.currentUser()?.agencyName || 'PlotFlow Brokerage';
 
     let text = `Hello ${lead.name}! This is ${agent} from ${agency}.`;
     if (property) {

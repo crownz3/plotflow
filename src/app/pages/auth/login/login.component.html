@@ -78,8 +78,9 @@
           <input type="password" [(ngModel)]="password" name="password" placeholder="••••••••">
         </div>
 
-        <button type="submit" class="ef-btn ef-btn-primary login-btn">
-          Sign In
+        <button type="submit" class="ef-btn ef-btn-primary login-btn" [class.loading]="isLoggingIn" [disabled]="isLoggingIn">
+          <span *ngIf="isLoggingIn" class="btn-spinner"></span>
+          <span>{{ isLoggingIn ? 'Signing In...' : 'Sign In' }}</span>
         </button>
       </form>
 

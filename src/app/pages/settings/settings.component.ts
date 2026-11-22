@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TenantService } from '../../core/services/tenant.service';
+import { SnackbarService } from '../../core/services/snackbar.service';
 
 @Component({
   selector: 'app-settings',
@@ -12,9 +13,9 @@ import { TenantService } from '../../core/services/tenant.service';
 })
 export class SettingsComponent {
   tenantService = inject(TenantService);
+  snackbarService = inject(SnackbarService);
 
   openInviteModal = signal(false);
-  savedNotice = signal(false);
 
   inviteName = '';
   inviteEmail = '';
@@ -26,6 +27,7 @@ export class SettingsComponent {
   phone = this.tenantService.activeTenant().phone;
   currency = this.tenantService.activeTenant().currency;
   defaultAreaUnit = this.tenantService.activeTenant().defaultAreaUnit;
+  defaultLanguage = this.tenantService.activeTenant().defaultLanguage || 'English';
   address = this.tenantService.activeTenant().address;
 
   sendInvite() {
@@ -35,6 +37,7 @@ export class SettingsComponent {
       return;
     }
     this.tenantService.inviteAgent(this.inviteName, this.inviteEmail, this.inviteRole);
+    this.snackbarService.success(`Invitation sent to ${this.inviteEmail}!`);
     this.inviteName = '';
     this.inviteEmail = '';
     this.inviteErrorMessage = '';
@@ -43,6 +46,7 @@ export class SettingsComponent {
 
   removeMember(uid: string) {
     this.tenantService.removeAgent(uid);
+    this.snackbarService.info('Team member removed.');
   }
 
   saveSettings() {
@@ -52,10 +56,10 @@ export class SettingsComponent {
       phone: this.phone,
       currency: this.currency as any,
       defaultAreaUnit: this.defaultAreaUnit as any,
+      defaultLanguage: this.defaultLanguage as any,
       address: this.address
     });
-    this.savedNotice.set(true);
-    setTimeout(() => this.savedNotice.set(false), 3000);
+    this.snackbarService.success('Agency settings saved successfully!');
   }
 }
 

@@ -58,5 +58,25 @@
       color: var(--ef-primary);
     }
   }
+
+  &.ai-nav-item {
+    .sparkle-icon {
+      color: #1a73e8;
+    }
+
+    .ai-nav-pill {
+      font-size: 0.65rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+      color: #ffffff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-left: auto;
+    }
+
+    &.active {
+      background: linear-gradient(135deg, #e8f0fe 0%, #f1f3f4 100%);
+    }
+  }
 }
 

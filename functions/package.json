@@ -1,0 +1,15 @@
+{
+  "name": "plotflow-functions",
+  "version": "1.0.0",
+  "description": "PlotFlow AI Cloud Functions Backend",
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "private": true
+}
+

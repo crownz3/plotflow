@@ -1,0 +1,21 @@
+<div
+  *ngIf="loadingService.loadingState().active"
+  class="ef-loader-backdrop"
+  role="alert"
+  aria-live="assertive"
+  aria-busy="true">
+  <div class="ef-loader-card">
+    <div class="ef-spinner-ring" aria-hidden="true">
+      <div class="ring-track"></div>
+      <div class="ring-arc"></div>
+    </div>
+
+    <div class="ef-loader-content">
+      <h4 class="ef-loader-title">{{ loadingService.loadingState().message }}</h4>
+      <p *ngIf="loadingService.loadingState().submessage" class="ef-loader-subtitle">
+        {{ loadingService.loadingState().submessage }}
+      </p>
+    </div>
+  </div>
+</div>
+

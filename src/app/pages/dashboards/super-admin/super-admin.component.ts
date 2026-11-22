@@ -6,6 +6,8 @@ import { AuthService } from '../../../core/services/auth.service';
 import { TenantService } from '../../../core/services/tenant.service';
 import { PropertyService } from '../../../core/services/property.service';
 import { PlatformConfigService } from '../../../core/services/platform-config.service';
+import { SnackbarService } from '../../../core/services/snackbar.service';
+import { LoadingService } from '../../../core/services/loading.service';
 import { StatCardComponent } from '../../../shared/components/stat-card/stat-card.component';
 import { StatusPillComponent } from '../../../shared/components/status-pill/status-pill.component';
 import { Tenant } from '../../../core/models/models';
@@ -22,10 +24,16 @@ export class SuperAdminDashboardComponent {
   tenantService = inject(TenantService);
   propertyService = inject(PropertyService);
   platformConfig = inject(PlatformConfigService);
+  snackbar = inject(SnackbarService);
+  loading = inject(LoadingService);
   router = inject(Router);
 
   totalAgentsCount = computed(() => {
-    return this.tenantService.teamMembers().length || this.tenantService.tenants().reduce((acc, t) => acc + (t.totalAgentsCount || 1), 0);
+    return this.tenantService.teamMembers().length || this.agencyTenants().reduce((acc, t) => acc + (t.totalAgentsCount || 1), 0);
+  });
+
+  agencyTenants = computed(() => {
+    return this.tenantService.tenants().filter(t => t.id !== 'platform_global');
   });
 
   platformNameInput = this.platformConfig.platformName();
@@ -77,6 +85,39 @@ export class SuperAdminDashboardComponent {
   supportContext(tenantId: string) {
     this.auth.supportSwitchTenant(tenantId);
     this.tenantService.refreshActiveTenant();
+  }
+
+  extendAgency(tenantId: string, days: number = 30): void {
+    const tenant = this.tenantService.getTenantById(tenantId);
+    this.tenantService.extendSubscription(tenantId, days);
+    this.snackbar.success(`Subscription extended by ${days} days for "${tenant?.agencyName || tenantId}".`);
+  }
+
+  cancelAgency(tenantId: string): void {
+    const tenant = this.tenantService.getTenantById(tenantId);
+    if (confirm(`Are you sure you want to cancel the subscription for "${tenant?.agencyName || tenantId}"? This will suspend their access.`)) {
+      this.tenantService.cancelSubscription(tenantId);
+      this.snackbar.warning(`Subscription cancelled for "${tenant?.agencyName || tenantId}".`);
+    }
+  }
+
+  deleteAgency(tenantId: string): void {
+    const tenant = this.tenantService.getTenantById(tenantId);
+    if (confirm(`Are you sure you want to permanently DELETE "${tenant?.agencyName || tenantId}"? This action cannot be undone.`)) {
+      this.tenantService.deleteTenant(tenantId);
+      this.snackbar.error(`Agency "${tenant?.agencyName || tenantId}" has been deleted.`);
+    }
+  }
+
+  getTenantExpiryBadge(tenant: Tenant): { label: string; color: 'green' | 'amber' | 'red' } {
+    const info = this.tenantService.getSubscriptionExpiryInfo(tenant);
+    if (info.isExpired) {
+      return { label: 'Expired', color: 'red' };
+    }
+    if (info.isExpiringSoon) {
+      return { label: `${info.daysLeft}d left`, color: 'amber' };
+    }
+    return { label: `${info.daysLeft}d left`, color: 'green' };
   }
 
 

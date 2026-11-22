@@ -2,6 +2,9 @@ import { Component, Input, Output, EventEmitter, inject, signal, OnInit } from '
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DealService } from '../../../core/services/deal.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { LoadingService } from '../../../core/services/loading.service';
+import { SnackbarService } from '../../../core/services/snackbar.service';
 import { CurrencyFormatPipe } from '../../pipes/currency-format.pipe';
 import { Property, Lead } from '../../../core/models/models';
 
@@ -19,6 +22,9 @@ export class DealModalComponent implements OnInit {
   @Output() onDealClosed = new EventEmitter<void>();
 
   private dealService = inject(DealService);
+  private auth = inject(AuthService);
+  private loadingService = inject(LoadingService);
+  private snackbarService = inject(SnackbarService);
 
   dealTitle = 'Property Deal Closing';
   dealValue = 24500000;
@@ -46,33 +52,38 @@ export class DealModalComponent implements OnInit {
   }
 
   submitDeal() {
+    this.loadingService.show('Finalizing Deal...', 'Updating tenant ledger and commission ledger');
     const fin = this.financials();
-    this.dealService.closeDeal({
-      tenantId: this.property?.tenantId || 'tenant_prime_properties',
-      dealTitle: this.dealTitle,
-      propertyId: this.property?.id || 'prop_01',
-      propertyTitle: this.property?.title || 'Prime Property',
-      leadId: this.lead?.id || 'lead_01',
-      clientName: this.lead?.name || 'Verified Buyer',
-      agentId: 'user_agent_01',
-      agentName: 'Arun Kumar',
-      dealValue: this.dealValue,
-      buyerBrokeragePercent: this.buyerPct,
-      sellerBrokeragePercent: this.sellerPct,
-      grossBrokerage: fin.grossBrokerage,
-      gstPercent: this.gstPct,
-      gstAmount: fin.gstAmount,
-      agentCommissionPercent: this.agentSplitPct,
-      agentCommissionAmount: fin.agentCommissionAmount,
-      netAgencyBrokerage: fin.netAgencyBrokerage,
-      totalReceived: fin.grossBrokerage,
-      balanceReceivable: 0,
-      closingDate: Date.now(),
-      status: 'closed_won'
-    });
+    setTimeout(() => {
+      this.dealService.closeDeal({
+        tenantId: this.property?.tenantId || this.auth.activeTenantId() || 'tenant_default',
+        dealTitle: this.dealTitle,
+        propertyId: this.property?.id || 'prop_01',
+        propertyTitle: this.property?.title || 'Prime Property',
+        leadId: this.lead?.id || 'lead_01',
+        clientName: this.lead?.name || 'Verified Buyer',
+        agentId: 'user_agent_01',
+        agentName: 'Arun Kumar',
+        dealValue: this.dealValue,
+        buyerBrokeragePercent: this.buyerPct,
+        sellerBrokeragePercent: this.sellerPct,
+        grossBrokerage: fin.grossBrokerage,
+        gstPercent: this.gstPct,
+        gstAmount: fin.gstAmount,
+        agentCommissionPercent: this.agentSplitPct,
+        agentCommissionAmount: fin.agentCommissionAmount,
+        netAgencyBrokerage: fin.netAgencyBrokerage,
+        totalReceived: fin.grossBrokerage,
+        balanceReceivable: 0,
+        closingDate: Date.now(),
+        status: 'closed_won'
+      });
 
-    this.onDealClosed.emit();
-    this.onClose.emit();
+      this.loadingService.hide();
+      this.snackbarService.success(`Deal "${this.dealTitle}" finalized successfully!`);
+      this.onDealClosed.emit();
+      this.onClose.emit();
+    }, 400);
   }
 }
 

@@ -1,6 +1,16 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, computed, inject, effect } from '@angular/core';
+import {
+  collection,
+  doc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  onSnapshot,
+  Unsubscribe
+} from 'firebase/firestore';
 import { Deal } from '../models/models';
 import { AuthService } from './auth.service';
+import { FirebaseService } from './firebase.service';
 import { fireConfetti } from '../utils/confetti.util';
 
 @Injectable({
@@ -8,9 +18,11 @@ import { fireConfetti } from '../utils/confetti.util';
 })
 export class DealService {
   private auth = inject(AuthService);
+  private firebase = inject(FirebaseService);
   private storageKey = 'pf_deals';
 
-  readonly allDeals = signal<Deal[]>(this.loadInitial());
+  readonly allDeals = signal<Deal[]>(this.loadCache());
+  private unsubscribeSnapshot: Unsubscribe | null = null;
 
   readonly tenantDeals = computed(() => {
     const tId = this.auth.activeTenantId();
@@ -36,26 +48,120 @@ export class DealService {
     this.tenantDeals().reduce((acc, d) => acc + (d.balanceReceivable || 0), 0)
   );
 
-  private loadInitial(): Deal[] {
+  // Time-based calculations for Sales & Revenue Reports
+  readonly weeklySales = computed(() => {
+    const deals = this.tenantDeals();
+    const now = Date.now();
+    const sevenDaysMs = 7 * 86400000;
+    const fourteenDaysMs = 14 * 86400000;
+
+    const thisWeekList = deals.filter(d => (d.closingDate || d.createdAt) >= now - sevenDaysMs);
+    const lastWeekList = deals.filter(d => {
+      const t = d.closingDate || d.createdAt;
+      return t >= now - fourteenDaysMs && t < now - sevenDaysMs;
+    });
+
+    const thisWeekRevenue = thisWeekList.reduce((acc, d) => acc + (d.grossBrokerage || 0), 0);
+    const lastWeekRevenue = lastWeekList.reduce((acc, d) => acc + (d.grossBrokerage || 0), 0);
+
+    const diff = thisWeekRevenue - lastWeekRevenue;
+    const percentChange = lastWeekRevenue > 0 ? Math.round((diff / lastWeekRevenue) * 100) : (thisWeekRevenue > 0 ? 100 : 0);
+
+    return {
+      thisWeekRevenue,
+      lastWeekRevenue,
+      diff,
+      percentChange,
+      isIncrease: diff > 0,
+      dealsThisWeek: thisWeekList.length
+    };
+  });
+
+  readonly monthlySales = computed(() => {
+    const deals = this.tenantDeals();
+    const now = Date.now();
+    const thirtyDaysMs = 30 * 86400000;
+    const sixtyDaysMs = 60 * 86400000;
+
+    const thisMonthList = deals.filter(d => (d.closingDate || d.createdAt) >= now - thirtyDaysMs);
+    const lastMonthList = deals.filter(d => {
+      const t = d.closingDate || d.createdAt;
+      return t >= now - sixtyDaysMs && t < now - thirtyDaysMs;
+    });
+
+    const thisMonthRevenue = thisMonthList.reduce((acc, d) => acc + (d.grossBrokerage || 0), 0);
+    const lastMonthRevenue = lastMonthList.reduce((acc, d) => acc + (d.grossBrokerage || 0), 0);
+
+    const diff = thisMonthRevenue - lastMonthRevenue;
+    const percentChange = lastMonthRevenue > 0 ? Math.round((diff / lastMonthRevenue) * 100) : (thisMonthRevenue > 0 ? 100 : 0);
+
+    return {
+      thisMonthRevenue,
+      lastMonthRevenue,
+      diff,
+      percentChange,
+      isIncrease: diff > 0,
+      dealsThisMonth: thisMonthList.length
+    };
+  });
+
+  constructor() {
+    effect(() => {
+      const tenantId = this.auth.activeTenantId();
+      this.bindFirestoreListener(tenantId);
+    });
+  }
+
+  private loadCache(): Deal[] {
     try {
       const saved = localStorage.getItem(this.storageKey);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
+      if (saved) {
+        const parsed: Deal[] = JSON.parse(saved);
+        return parsed.filter(d => d.tenantId !== 'tenant_prime_properties');
+      }
+    } catch {}
+    return [];
   }
 
-  private save(): void {
+  private saveCache(list: Deal[]): void {
     try {
-      localStorage.setItem(this.storageKey, JSON.stringify(this.allDeals()));
+      localStorage.setItem(this.storageKey, JSON.stringify(list));
+    } catch {}
+  }
+
+  private bindFirestoreListener(tenantId: string): void {
+    if (this.unsubscribeSnapshot) {
+      this.unsubscribeSnapshot();
+      this.unsubscribeSnapshot = null;
+    }
+
+    if (!tenantId) return;
+
+    const path = tenantId === 'platform_global' ? 'tenants/tenant_default/deals' : `tenants/${tenantId}/deals`;
+    try {
+      const colRef = collection(this.firebase.firestore, path);
+      this.unsubscribeSnapshot = onSnapshot(
+        colRef,
+        { includeMetadataChanges: true },
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const remote: Deal[] = [];
+            snapshot.forEach(d => {
+              remote.push({ id: d.id, ...d.data() } as Deal);
+            });
+            this.allDeals.set(remote);
+            this.saveCache(remote);
+          }
+        },
+        (error) => {
+          console.warn(`Firestore real-time sync for ${path} operating in offline cache mode:`, error.message);
+        }
+      );
     } catch (e) {
-      console.warn('Failed to persist deals:', e);
+      console.warn('Could not attach Firestore onSnapshot for deals:', e);
     }
   }
 
-  /**
-   * Financial Deal Calculator
-   */
   calculateFinancials(
     dealValue: number,
     buyerPct: number,
@@ -78,21 +184,29 @@ export class DealService {
     };
   }
 
-  /**
-   * Close a deal, add to ledger, and trigger celebration confetti!
-   */
-  closeDeal(data: Omit<Deal, 'id' | 'createdAt'>): Deal {
+  async closeDeal(data: Omit<Deal, 'id' | 'createdAt'>): Promise<Deal> {
+    const tenantId = data.tenantId || this.auth.activeTenantId() || 'tenant_default';
+    const id = `deal_${Date.now()}`;
     const newDeal: Deal = {
       ...data,
-      id: `deal_${Date.now()}`,
+      id,
+      tenantId,
       status: 'closed_won',
       createdAt: Date.now()
     };
 
+    // 1. Optimistic Signal Update
     this.allDeals.update(list => [newDeal, ...list]);
-    this.save();
+    this.saveCache(this.allDeals());
 
-    // Fire celebratory confetti!
+    // 2. Cloud Firestore with IndexedDB persistence
+    try {
+      const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/deals`, id);
+      await setDoc(docRef, { ...newDeal, _cloudSyncedAt: Date.now() });
+    } catch (err) {
+      console.warn('Firestore offline write queued for sync:', err);
+    }
+
     try {
       fireConfetti(3000);
     } catch (e) {
@@ -102,15 +216,35 @@ export class DealService {
     return newDeal;
   }
 
-  updateDeal(dealId: string, updates: Partial<Deal>): void {
+  async updateDeal(dealId: string, updates: Partial<Deal>): Promise<void> {
+    const current = this.allDeals().find(d => d.id === dealId);
+    const tenantId = current?.tenantId || this.auth.activeTenantId() || 'tenant_default';
+
     this.allDeals.update(list =>
       list.map(d => d.id === dealId ? { ...d, ...updates } : d)
     );
-    this.save();
+    this.saveCache(this.allDeals());
+
+    try {
+      const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/deals`, dealId);
+      await updateDoc(docRef, updates);
+    } catch (err) {
+      console.warn('Firestore offline update queued:', err);
+    }
   }
 
-  deleteDeal(dealId: string): void {
+  async deleteDeal(dealId: string): Promise<void> {
+    const current = this.allDeals().find(d => d.id === dealId);
+    const tenantId = current?.tenantId || this.auth.activeTenantId() || 'tenant_default';
+
     this.allDeals.update(list => list.filter(d => d.id !== dealId));
-    this.save();
+    this.saveCache(this.allDeals());
+
+    try {
+      const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/deals`, dealId);
+      await deleteDoc(docRef);
+    } catch (err) {
+      console.warn('Firestore offline delete queued:', err);
+    }
   }
 }

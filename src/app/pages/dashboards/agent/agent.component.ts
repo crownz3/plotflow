@@ -2,6 +2,7 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { TenantService } from '../../../core/services/tenant.service';
 import { PropertyService } from '../../../core/services/property.service';
 import { LeadService } from '../../../core/services/lead.service';
 import { SiteVisitService } from '../../../core/services/site-visit.service';
@@ -29,6 +30,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
 })
 export class AgentDashboardComponent {
   auth = inject(AuthService);
+  tenantService = inject(TenantService);
   propertyService = inject(PropertyService);
   leadService = inject(LeadService);
   siteVisitService = inject(SiteVisitService);
@@ -36,6 +38,8 @@ export class AgentDashboardComponent {
   router = inject(Router);
 
   openDealModal = signal(false);
+
+  expiryInfo = computed(() => this.tenantService.getSubscriptionExpiryInfo());
 
   navigateToLeads(): void {
     this.router.navigate(['/leads']);

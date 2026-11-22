@@ -53,6 +53,22 @@
         </div>
 
         <div class="ef-form-group col-span-2">
+          <label>Default AI &amp; Communication Language</label>
+          <select [(ngModel)]="defaultLanguage">
+            <option value="English">English (Professional Indian Real Estate)</option>
+            <option value="Tamil">தமிழ் (Tamil)</option>
+            <option value="Tanglish">Tanglish (Tamil + English)</option>
+            <option value="Hindi">हिंदी (Hindi)</option>
+            <option value="Hinglish">Hinglish (Hindi + English)</option>
+            <option value="Telugu">తెలుగు (Telugu)</option>
+            <option value="Kannada">ಕನ್ನಡ (Kannada)</option>
+          </select>
+          <small class="helper-text" style="color: var(--ef-text-secondary); font-size: 0.8rem; margin-top: 4px; display: block;">
+            PlotFlow AI Studio, automated pitches, and negotiation battlecards will default to this language.
+          </small>
+        </div>
+
+        <div class="ef-form-group col-span-2">
           <label>Office Address</label>
           <input type="text" [(ngModel)]="address">
         </div>
@@ -130,9 +146,5 @@
         <button class="ef-btn ef-btn-primary" (click)="sendInvite()">Send Invitation</button>
       </div>
     </div>
-  </div>
-
-  <div class="toast-notice" *ngIf="savedNotice()">
-    Settings saved successfully!
   </div>
 </div>
