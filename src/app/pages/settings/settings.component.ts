@@ -46,16 +46,14 @@ export class SettingsComponent {
   }
 
   saveSettings() {
-    this.tenantService.activeTenant.update(t => ({
-      ...t,
+    this.tenantService.updateActiveTenant({
       agencyName: this.agencyName,
       reraNumber: this.reraNumber,
       phone: this.phone,
       currency: this.currency as any,
       defaultAreaUnit: this.defaultAreaUnit as any,
-      address: this.address,
-      updatedAt: Date.now()
-    }));
+      address: this.address
+    });
     this.savedNotice.set(true);
     setTimeout(() => this.savedNotice.set(false), 3000);
   }

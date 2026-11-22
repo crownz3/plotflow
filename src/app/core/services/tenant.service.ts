@@ -266,6 +266,19 @@ export class TenantService {
     }
   }
 
+  updateActiveTenant(updates: Partial<Tenant>): void {
+    const active = this.activeTenant();
+    if (!active) return;
+    const updated: Tenant = {
+      ...active,
+      ...updates,
+      updatedAt: Date.now()
+    };
+    this.activeTenant.set(updated);
+    this.tenants.update(list => list.map(t => t.id === updated.id ? updated : t));
+    this.saveTenants();
+  }
+
   isGoogleMail(email: string): boolean {
     return /^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com)$/i.test(email.trim());
   }
