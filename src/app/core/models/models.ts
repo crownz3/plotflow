@@ -57,6 +57,61 @@ export interface TenantApprovalNotification {
   read: boolean;
 }
 
+export interface PlotDetails {
+  dimensions?: string; // e.g. "40 x 60"
+  roadWidthFt?: number; // e.g. 30, 40
+  approvalStatus?: 'DTCP' | 'CMDA' | 'RERA' | 'Panchayat' | 'Patta' | 'Approved' | 'Other';
+  isCornerPlot?: boolean;
+  hasBoundaryWall?: boolean;
+  isGatedLayout?: boolean;
+  soilType?: string;
+}
+
+export interface VillaDetails {
+  plotArea?: number;
+  builtUpArea?: number;
+  floors?: string; // e.g. "G+1", "G+2", "Duplex"
+  bedrooms?: number;
+  bathrooms?: number;
+  carParking?: number;
+  hasGarden?: boolean;
+  facing?: string;
+  furnishing?: 'unfurnished' | 'semi-furnished' | 'fully-furnished';
+}
+
+export interface ApartmentDetails {
+  floorNumber?: number;
+  totalFloors?: number;
+  bhk?: string;
+  bathrooms?: number;
+  balconies?: number;
+  monthlyMaintenance?: number;
+  udsSqFt?: number;
+  facing?: string;
+}
+
+export interface CommercialDetails {
+  floorPlate?: number;
+  powerBackupKva?: number;
+  cafeteria?: boolean;
+  passengerLifts?: number;
+  fireNoc?: boolean;
+}
+
+export interface PropertyVicinity {
+  metroDistance?: string;
+  airportDistance?: string;
+  schoolDistance?: string;
+  hospitalDistance?: string;
+  highwayDistance?: string;
+}
+
+export interface PropertyMedia {
+  photos?: string[];
+  layoutPlanUrl?: string;
+  videoTourUrl?: string;
+}
+
 export interface Property {
   id: string;
   tenantId: string;
@@ -78,8 +133,16 @@ export interface Property {
     locality: string;
     pincode?: string;
   };
+  mapsUrl?: string;
   amenities: string[];
+  infrastructure?: string[];
   images: string[];
+  plotDetails?: PlotDetails;
+  villaDetails?: VillaDetails;
+  apartmentDetails?: ApartmentDetails;
+  commercialDetails?: CommercialDetails;
+  vicinity?: PropertyVicinity;
+  media?: PropertyMedia;
   ownerDetails: {
     name: string;
     phone: string;

@@ -5,6 +5,16 @@
       <app-status-pill [status]="property.status"></app-status-pill>
       <span class="type-badge">{{ property.propertyType | uppercase }} • {{ property.listingType | uppercase }}</span>
     </div>
+
+    <!-- Media Indicators (Photos count & Video tour badge) -->
+    <div class="media-badges">
+      <span class="media-pill" *ngIf="property.images && property.images.length > 0">
+        📷 {{ property.images.length }}
+      </span>
+      <span class="media-pill video" *ngIf="property.media?.videoTourUrl">
+        ▶ Tour
+      </span>
+    </div>
   </div>
 
   <div class="property-details">
@@ -33,6 +43,45 @@
       </span>
     </div>
 
+    <!-- Specialized Type Intel Badges -->
+    <div class="spec-tags-row">
+      <!-- Plot specific -->
+      <ng-container *ngIf="property.propertyType === 'plot'">
+        <span class="spec-tag approval" *ngIf="property.plotDetails?.approvalStatus">
+          🏛 {{ property.plotDetails?.approvalStatus }} Approved
+        </span>
+        <span class="spec-tag" *ngIf="property.plotDetails?.dimensions">
+          📐 {{ property.plotDetails?.dimensions }} ft
+        </span>
+        <span class="spec-tag" *ngIf="property.plotDetails?.roadWidthFt">
+          🛣 {{ property.plotDetails?.roadWidthFt }}ft Road
+        </span>
+      </ng-container>
+
+      <!-- Villa specific -->
+      <ng-container *ngIf="property.propertyType === 'villa'">
+        <span class="spec-tag floors" *ngIf="property.villaDetails?.floors">
+          🏢 {{ property.villaDetails?.floors }}
+        </span>
+        <span class="spec-tag" *ngIf="property.villaDetails?.hasGarden">
+          🌿 Private Garden
+        </span>
+        <span class="spec-tag" *ngIf="property.villaDetails?.carParking">
+          🚗 {{ property.villaDetails?.carParking }} Parking
+        </span>
+      </ng-container>
+
+      <!-- Apartment specific -->
+      <ng-container *ngIf="property.propertyType === 'apartment'">
+        <span class="spec-tag" *ngIf="property.apartmentDetails?.floorNumber">
+          🏬 Floor {{ property.apartmentDetails?.floorNumber }} of {{ property.apartmentDetails?.totalFloors || '—' }}
+        </span>
+        <span class="spec-tag" *ngIf="property.apartmentDetails?.udsSqFt">
+          🌿 {{ property.apartmentDetails?.udsSqFt }} Sq.ft UDS
+        </span>
+      </ng-container>
+    </div>
+
     <!-- Quick Intelligence Row: Matched Clients, Visits, Projected/Realized Profit -->
     <div class="intel-pill-row">
       <span class="intel-pill leads" title="Qualified Matched Buyer Leads">
@@ -54,21 +103,36 @@
     </div>
 
     <div class="property-card-actions" (click)="$event.stopPropagation()">
+      <button class="ef-btn ef-btn-tonal ef-btn-sm share-btn" (click)="openShare($event)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="18" cy="5" r="3"></circle>
+          <circle cx="6" cy="12" r="3"></circle>
+          <circle cx="18" cy="19" r="3"></circle>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+        </svg>
+        Share
+      </button>
+
+      <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="shareBrochureDirect($event)" [disabled]="isSharing">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="12" y1="18" x2="12" y2="12"></line>
+          <line x1="9" y1="15" x2="15" y2="15"></line>
+        </svg>
+        PDF
+      </button>
+
       <button class="ef-btn ef-btn-tonal ef-btn-sm stats-btn" (click)="onViewStats.emit(property)">
         📊 Stats
       </button>
-      <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="shareBrochure()" [disabled]="isSharing">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
-          <polyline points="16 6 12 2 8 6"></polyline>
-          <line x1="12" y1="2" x2="12" y2="15"></line>
-        </svg>
-        {{ isSharing ? 'Generating...' : 'Brochure' }}
-      </button>
+
       <button class="ef-btn ef-btn-outlined ef-btn-sm edit-prop-btn" (click)="onEdit.emit(property)">
         ✏ Edit
       </button>
-      <button class="ef-btn ef-btn-outlined ef-btn-sm delete-prop-btn" (click)="onDelete.emit(property)" style="color: var(--ef-status-urgent);">
+
+      <button class="ef-btn ef-btn-outlined ef-btn-sm delete-prop-btn" (click)="onDelete.emit(property)" style="color: var(--ef-danger, #d93025);">
         🗑
       </button>
     </div>

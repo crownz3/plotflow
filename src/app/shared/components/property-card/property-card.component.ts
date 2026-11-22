@@ -21,9 +21,10 @@ export class PropertyCardComponent {
   @Output() onEdit = new EventEmitter<Property>();
   @Output() onDelete = new EventEmitter<Property>();
   @Output() onViewStats = new EventEmitter<Property>();
+  @Output() onShare = new EventEmitter<Property>();
 
   auth = inject(AuthService);
-  private brochureService = inject(BrochureService);
+  brochureService = inject(BrochureService);
   private analyticsService = inject(PropertyAnalyticsService);
 
   isSharing = false;
@@ -33,7 +34,13 @@ export class PropertyCardComponent {
     return this.analyticsService.getPropertyIntelligence(this.property);
   }
 
-  async shareBrochure(): Promise<void> {
+  openShare(event: Event): void {
+    event.stopPropagation();
+    this.onShare.emit(this.property);
+  }
+
+  async shareBrochureDirect(event: Event): Promise<void> {
+    event.stopPropagation();
     if (this.isSharing) return;
     this.isSharing = true;
     try {
