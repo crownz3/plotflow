@@ -9,8 +9,8 @@
           </svg>
         </div>
         <div>
-          <h2>{{ config?.title }}</h2>
-          <span class="ai-sub">{{ config?.subtitle }}</span>
+          <h2>{{ config.title }}</h2>
+          <span class="ai-sub">{{ config.subtitle }}</span>
         </div>
       </div>
 
@@ -25,9 +25,9 @@
           Would you like <strong>PlotFlow AI</strong> to process this request using your real estate inventory &amp; micro-market intelligence?
         </p>
 
-        <div class="prompt-context-pill" *ngIf="config?.payload?.summary">
+        <div class="prompt-context-pill" *ngIf="config.payload?.summary">
           <span class="context-label">Context:</span>
-          <span class="context-val">{{ config?.payload?.summary }}</span>
+          <span class="context-val">{{ config.payload.summary }}</span>
         </div>
 
         <div class="ai-powered-notice">

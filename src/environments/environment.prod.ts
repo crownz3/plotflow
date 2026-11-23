@@ -1,6 +1,7 @@
 export const environment = {
   production: true,
   platformName: 'PlotFlow',
+  hostingDomain: 'https://plotflow-crm.web.app',
   firebase: {
     apiKey: 'AIzaSyC0DDGSS2BmW_pgY19SQvcZwTQlz5OLwog',
     authDomain: 'plotflow-crm.firebaseapp.com',

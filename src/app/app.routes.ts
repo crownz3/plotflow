@@ -62,6 +62,16 @@ export const routes: Routes = [
       import('./pages/auth/pending-approval/pending-approval.component').then(m => m.PendingApprovalComponent)
   },
   {
+    path: 'view/:shareId',
+    loadComponent: () =>
+      import('./pages/public-property-view/public-property-view.component').then(m => m.PublicPropertyViewComponent)
+  },
+  {
+    path: 'visit-status/:bookingId',
+    loadComponent: () =>
+      import('./pages/public-site-visit-status/public-site-visit-status.component').then(m => m.PublicSiteVisitStatusComponent)
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./pages/auth/login/login.component').then(m => m.LoginComponent)

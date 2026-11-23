@@ -64,10 +64,10 @@
         </div>
 
         <div class="card-actions">
-          <button class="ef-btn ef-btn-primary approve-btn" (click)="approveAgency(pending.id)">
+          <button class="ef-btn ef-btn-primary approve-btn" (click)="promptApproveAgency(pending.id)">
             <span>✓ Accept &amp; Activate Brokerage</span>
           </button>
-          <button class="ef-btn ef-btn-outlined decline-btn" (click)="rejectAgency(pending.id)">
+          <button class="ef-btn ef-btn-outlined decline-btn" (click)="promptRejectAgency(pending.id)">
             <span>✕ Decline</span>
           </button>
         </div>
@@ -78,9 +78,9 @@
   <!-- KPI Summary Cards -->
   <div class="kpi-grid">
     <app-stat-card
-      title="Total Brokerage Agencies"
-      [value]="tenantService.tenants().length"
-      subtitle="All onboarded tenants"
+      title="Total Active Brokerages"
+      [value]="activeTenantsCount()"
+      [subtitle]="pendingTenantsCount() > 0 ? (pendingTenantsCount() + ' agency pending review') : 'All onboarded tenants'"
       badgeText="Active"
       badgeColor="green"
       iconColor="blue">
@@ -244,7 +244,20 @@
             </td>
             <td>
               <div class="plan-cell-stack">
-                <app-status-pill [status]="tenant.subscriptionPlan"></app-status-pill>
+                <div class="plan-interactive-row">
+                  <app-status-pill [status]="tenant.subscriptionPlan"></app-status-pill>
+                  <button
+                    type="button"
+                    class="btn-plan-change"
+                    (click)="openChangePlanModal(tenant)"
+                    title="Change subscription plan tier">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    <span>Change</span>
+                  </button>
+                </div>
                 <span class="sub-expiry-badge" [ngClass]="getTenantExpiryBadge(tenant).color">
                   {{ getTenantExpiryBadge(tenant).label }}
                 </span>
@@ -253,34 +266,34 @@
             <td>
               <div class="table-actions-cell">
                 <ng-container *ngIf="tenant.status === 'pending_approval'">
-                  <button class="ef-btn ef-btn-primary ef-btn-sm" (click)="approveAgency(tenant.id)">
+                  <button class="ef-btn ef-btn-primary ef-btn-sm" (click)="promptApproveAgency(tenant.id)">
                     ✓ Accept
                   </button>
-                  <button class="ef-btn ef-btn-outlined ef-btn-sm text-red" (click)="rejectAgency(tenant.id)">
+                  <button class="ef-btn ef-btn-outlined ef-btn-sm text-red" (click)="promptRejectAgency(tenant.id)">
                     ✕ Decline
                   </button>
                 </ng-container>
 
                 <ng-container *ngIf="tenant.status === 'active'">
-                  <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="supportContext(tenant.id)" title="Inspect tenant workspace">
+                  <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="promptInspectAgency(tenant)" title="Inspect tenant workspace">
                     Inspect
                   </button>
-                  <button class="ef-btn ef-btn-tonal ef-btn-sm text-green" (click)="extendAgency(tenant.id, 30)" title="Extend subscription by 30 days">
+                  <button class="ef-btn ef-btn-tonal ef-btn-sm text-green" (click)="promptExtendAgency(tenant, 30)" title="Extend subscription by 30 days">
                     +30d Extend
                   </button>
-                  <button class="ef-btn ef-btn-outlined ef-btn-sm text-amber" (click)="cancelAgency(tenant.id)" title="Cancel subscription">
+                  <button class="ef-btn ef-btn-outlined ef-btn-sm text-amber" (click)="promptCancelAgency(tenant)" title="Cancel subscription">
                     Cancel
                   </button>
-                  <button class="ef-btn ef-btn-outlined ef-btn-sm text-red" (click)="deleteAgency(tenant.id)" title="Delete tenant permanently">
+                  <button class="ef-btn ef-btn-outlined ef-btn-sm text-red" (click)="promptDeleteAgency(tenant)" title="Delete tenant permanently">
                     Delete
                   </button>
                 </ng-container>
 
                 <ng-container *ngIf="tenant.status === 'suspended' || tenant.status === 'rejected'">
-                  <button class="ef-btn ef-btn-tonal ef-btn-sm text-green" (click)="extendAgency(tenant.id, 30)">
+                  <button class="ef-btn ef-btn-tonal ef-btn-sm text-green" (click)="promptReactivateAgency(tenant, 30)">
                     Reactivate (+30d)
                   </button>
-                  <button class="ef-btn ef-btn-outlined ef-btn-sm text-red" (click)="deleteAgency(tenant.id)" title="Delete tenant permanently">
+                  <button class="ef-btn ef-btn-outlined ef-btn-sm text-red" (click)="promptDeleteAgency(tenant)" title="Delete tenant permanently">
                     Delete
                   </button>
                 </ng-container>
@@ -338,4 +351,72 @@
       </div>
     </div>
   </div>
+
+  <!-- Change Subscription Plan Modal -->
+  <div class="modal-backdrop animate-fade-in" *ngIf="planModal().isOpen" (click)="closeChangePlanModal()">
+    <div class="modal-card plan-modal-card animate-scale-up" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h2>Change Subscription Plan</h2>
+          <span class="card-meta">Select a new subscription tier for <strong>{{ planModal().tenant?.agencyName }}</strong></span>
+        </div>
+        <button type="button" class="close-btn" (click)="closeChangePlanModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="current-plan-banner" *ngIf="planModal().tenant as t">
+          <span class="banner-label">Current Active Tier:</span>
+          <app-status-pill [status]="t.subscriptionPlan"></app-status-pill>
+          <span class="banner-expiry" [ngClass]="getTenantExpiryBadge(t).color">
+            {{ getTenantExpiryBadge(t).label }}
+          </span>
+        </div>
+
+        <div class="plan-options-grid">
+          <div
+            *ngFor="let p of availablePlans"
+            class="plan-option-card"
+            [class.selected]="planModal().selectedPlan === p.id"
+            [class.current]="planModal().tenant?.subscriptionPlan === p.id"
+            (click)="selectPlanTier(p.id)">
+            <div class="plan-card-header">
+              <div class="plan-radio-circle" [class.checked]="planModal().selectedPlan === p.id">
+                <div class="radio-inner" *ngIf="planModal().selectedPlan === p.id"></div>
+              </div>
+              <div class="plan-card-titles">
+                <h4>{{ p.name }}</h4>
+                <span class="plan-tag-badge">{{ p.tag }}</span>
+              </div>
+              <span class="plan-price">{{ p.price }}</span>
+            </div>
+            <p class="plan-card-desc">{{ p.desc }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="ef-btn ef-btn-outlined" (click)="closeChangePlanModal()">Cancel</button>
+        <button
+          type="button"
+          class="ef-btn ef-btn-primary"
+          [disabled]="planModal().selectedPlan === planModal().tenant?.subscriptionPlan"
+          (click)="submitPlanChange()">
+          <span>Review &amp; Confirm Plan</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Material You Confirm Dialog -->
+  <app-confirm-dialog
+    [isOpen]="confirmDialog().isOpen"
+    [title]="confirmDialog().title"
+    [message]="confirmDialog().message"
+    [confirmText]="confirmDialog().confirmText"
+    [cancelText]="confirmDialog().cancelText"
+    [variant]="confirmDialog().variant"
+    [icon]="confirmDialog().icon"
+    (confirm)="handleConfirm()"
+    (cancel)="handleCancel()">
+  </app-confirm-dialog>
 </div>

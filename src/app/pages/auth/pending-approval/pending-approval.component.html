@@ -130,6 +130,28 @@
           </a>
         </div>
       </ng-container>
+
+      <!-- State 3: ACTIVE & APPROVED -->
+      <ng-container *ngIf="status() === 'active'">
+        <div class="status-badge-box active" style="background: #e6f4ea; color: #137333; border: 1px solid #ceead6;">
+          <span>✓ Agency License Approved</span>
+        </div>
+
+        <h1 class="status-title" style="color: #137333;">Welcome to PlotFlow CRM!</h1>
+        <p class="status-desc">
+          Congratulations! <strong>{{ tenant()?.agencyName }}</strong> has been verified and approved by Platform Super Admin. Your multi-tenant real estate workspace is fully unlocked.
+        </p>
+
+        <div class="feedback-banner success animate-fade-in" style="margin: 20px 0;">
+          <span>Redirecting to your Agency Admin Dashboard...</span>
+        </div>
+
+        <div class="actions-row">
+          <button class="ef-btn ef-btn-primary check-btn" (click)="goToDashboard()">
+            <span>Enter Agency Workspace &rarr;</span>
+          </button>
+        </div>
+      </ng-container>
     </div>
   </div>
 </div>

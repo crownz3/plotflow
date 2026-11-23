@@ -16,7 +16,8 @@ import { StatusPillComponent } from '../../../shared/components/status-pill/stat
 import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
 import { DealModalComponent } from '../../../shared/components/deal-modal/deal-modal.component';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
-import { SiteVisit, Expense } from '../../../core/models/models';
+import { SiteVisit, Expense, SecureSharedLink } from '../../../core/models/models';
+import { SecureShareService } from '../../../core/services/secure-share.service';
 
 export interface AgentLeaderboardEntry {
   agentName: string;
@@ -52,9 +53,10 @@ export class AgencyAdminDashboardComponent {
   expenseService = inject(ExpenseService);
   snackbar = inject(SnackbarService);
   ai = inject(AiService);
+  secureShareService = inject(SecureShareService);
 
-  // Active Hub Tab: 'overview' | 'visitors_concerns' | 'expenses_reports'
-  activeTab = signal<'overview' | 'visitors_concerns' | 'expenses_reports'>('overview');
+  // Active Hub Tab: 'overview' | 'visitors_concerns' | 'expenses_reports' | 'link_requests'
+  activeTab = signal<'overview' | 'visitors_concerns' | 'expenses_reports' | 'link_requests'>('overview');
 
   openDealModal = signal(false);
   expiryInfo = computed(() => this.tenantService.getSubscriptionExpiryInfo());
@@ -342,6 +344,41 @@ export class AgencyAdminDashboardComponent {
         summary: `Evaluating ₹${this.expenseService.totalExpenses()} in sales expenses against ₹${this.dealService.totalGrossBrokerage()} in brokerage revenue.`
       }
     });
+  }
+
+  // ==========================================
+  // SECURE SHARE LINK EXTENSION REQUESTS
+  // ==========================================
+  async approveLinkExtension(shareId: string, hours: number = 24): Promise<void> {
+    try {
+      await this.secureShareService.approveExtension(shareId, hours);
+      this.snackbar.success(`Access extended by ${hours} hours! The client can now view the property.`);
+    } catch (err) {
+      console.error('Error approving extension:', err);
+      this.snackbar.error('Could not approve extension.');
+    }
+  }
+
+  async rejectLinkExtension(shareId: string): Promise<void> {
+    try {
+      await this.secureShareService.rejectExtension(shareId);
+      this.snackbar.info('Link extension request rejected.');
+    } catch (err) {
+      console.error('Error rejecting extension:', err);
+      this.snackbar.error('Could not reject request.');
+    }
+  }
+
+  async convertRequesterToLead(shareLink: SecureSharedLink): Promise<void> {
+    try {
+      const lead = await this.secureShareService.convertRequesterToLead(shareLink);
+      if (lead) {
+        this.snackbar.success(`Requester "${lead.name}" added directly to Leads CRM!`);
+      }
+    } catch (err) {
+      console.error('Error converting requester to lead:', err);
+      this.snackbar.error('Failed to convert requester to lead.');
+    }
   }
 
   handleDealClosed() {

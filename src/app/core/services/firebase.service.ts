@@ -7,7 +7,7 @@ import {
   persistentMultipleTabManager,
   Firestore
 } from 'firebase/firestore';
-import { getAuth, Auth, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, Auth, GoogleAuthProvider, onAuthStateChanged } from 'firebase/auth';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -43,6 +43,13 @@ export class FirebaseService {
     this.googleProvider = new GoogleAuthProvider();
     this.googleProvider.setCustomParameters({
       prompt: 'select_account'
+    });
+
+    // 5. Connect Firebase Auth state listener
+    onAuthStateChanged(this.auth, (user) => {
+      if (user) {
+        console.log('✅ Firebase Auth authenticated user:', user.uid, user.email || '(anonymous)');
+      }
     });
 
     this.isReady.set(true);

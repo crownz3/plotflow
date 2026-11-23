@@ -271,7 +271,7 @@ export class LoginComponent implements OnInit {
     // 1. Super Admin
     if (this.isSuperAdminEmail(email)) {
       const superProfile: UserProfile = {
-        uid: 'user_super_01',
+        uid: this.firebaseService.auth.currentUser?.uid || 'user_super_01',
         email: email,
         displayName: 'Mohamed Ibrahim (Super Admin)',
         role: 'super_admin',
@@ -316,7 +316,7 @@ export class LoginComponent implements OnInit {
     if (registeredTenant) {
       const displayName = email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
       const profile: UserProfile = {
-        uid: registeredTenant.ownerUid || `user_${Date.now()}`,
+        uid: registeredTenant.ownerUid || this.firebaseService.auth.currentUser?.uid || `user_${Date.now()}`,
         email: email,
         displayName: displayName || registeredTenant.agencyName,
         role: 'agency_admin',
@@ -379,8 +379,9 @@ export class LoginComponent implements OnInit {
       const tenantId = `tenant_${cleanPrefix}`;
 
       // Create applicant UserProfile
+      const authUid = this.firebaseService.auth.currentUser?.uid || `user_${Date.now()}`;
       const applicantProfile: UserProfile = {
-        uid: `user_${Date.now()}`,
+        uid: authUid,
         email: email,
         displayName: this.regBrokerName.trim(),
         phoneNumber: this.regPhone.trim(),

@@ -12,6 +12,7 @@ import { Lead, LeadStage, Property } from '../models/models';
 import { AuthService } from './auth.service';
 import { PropertyService } from './property.service';
 import { FirebaseService } from './firebase.service';
+import { sanitizeForFirestore } from '../utils/firestore.util';
 
 @Injectable({
   providedIn: 'root'
@@ -20,9 +21,8 @@ export class LeadService {
   private auth = inject(AuthService);
   private firebase = inject(FirebaseService);
   private propertyService = inject(PropertyService);
-  private storageKey = 'pf_leads';
 
-  readonly allLeads = signal<Lead[]>(this.loadCache());
+  readonly allLeads = signal<Lead[]>([]);
   private unsubscribeSnapshot: Unsubscribe | null = null;
 
   // Scoped strictly by active tenant
@@ -63,24 +63,7 @@ export class LeadService {
     effect(() => {
       const tenantId = this.auth.activeTenantId();
       this.bindFirestoreListener(tenantId);
-    });
-  }
-
-  private loadCache(): Lead[] {
-    try {
-      const saved = localStorage.getItem(this.storageKey);
-      if (saved) {
-        const parsed: Lead[] = JSON.parse(saved);
-        return parsed.filter(l => l.tenantId !== 'tenant_prime_properties');
-      }
-    } catch {}
-    return [];
-  }
-
-  private saveCache(list: Lead[]): void {
-    try {
-      localStorage.setItem(this.storageKey, JSON.stringify(list));
-    } catch {}
+    }, { allowSignalWrites: true });
   }
 
   private bindFirestoreListener(tenantId: string): void {
@@ -89,7 +72,10 @@ export class LeadService {
       this.unsubscribeSnapshot = null;
     }
 
-    if (!tenantId) return;
+    if (!tenantId) {
+      this.allLeads.set([]);
+      return;
+    }
 
     const path = tenantId === 'platform_global' ? 'tenants/tenant_default/leads' : `tenants/${tenantId}/leads`;
     try {
@@ -98,14 +84,11 @@ export class LeadService {
         colRef,
         { includeMetadataChanges: true },
         (snapshot) => {
-          if (!snapshot.empty) {
-            const remote: Lead[] = [];
-            snapshot.forEach(d => {
-              remote.push({ id: d.id, ...d.data() } as Lead);
-            });
-            this.allLeads.set(remote);
-            this.saveCache(remote);
-          }
+          const remote: Lead[] = [];
+          snapshot.forEach(d => {
+            remote.push({ id: d.id, ...d.data() } as Lead);
+          });
+          this.allLeads.set(remote);
         },
         (error) => {
           console.warn(`Firestore real-time sync for ${path} operating in offline cache mode:`, error.message);
@@ -130,12 +113,12 @@ export class LeadService {
 
     // 1. Optimistic Signal Update
     this.allLeads.update(list => [newLead, ...list]);
-    this.saveCache(this.allLeads());
 
     // 2. Cloud Firestore with IndexedDB persistence
     try {
       const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/leads`, id);
-      await setDoc(docRef, { ...newLead, _cloudSyncedAt: Date.now() });
+      const payload = sanitizeForFirestore({ ...newLead, _cloudSyncedAt: Date.now() });
+      await setDoc(docRef, payload);
     } catch (err) {
       console.warn('Firestore offline write queued for sync:', err);
     }
@@ -150,7 +133,6 @@ export class LeadService {
     this.allLeads.update(list =>
       list.map(l => l.id === leadId ? { ...l, stage: newStage, updatedAt: Date.now() } : l)
     );
-    this.saveCache(this.allLeads());
 
     try {
       const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/leads`, leadId);
@@ -179,7 +161,6 @@ export class LeadService {
         return l;
       })
     );
-    this.saveCache(this.allLeads());
 
     try {
       const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/leads`, leadId);
@@ -201,7 +182,6 @@ export class LeadService {
     this.allLeads.update(list =>
       list.map(l => l.id === leadId ? { ...l, ...updates, updatedAt: Date.now() } : l)
     );
-    this.saveCache(this.allLeads());
 
     try {
       const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/leads`, leadId);
@@ -216,7 +196,6 @@ export class LeadService {
     const tenantId = current?.tenantId || this.auth.activeTenantId() || 'tenant_default';
 
     this.allLeads.update(list => list.filter(l => l.id !== leadId));
-    this.saveCache(this.allLeads());
 
     try {
       const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/leads`, leadId);

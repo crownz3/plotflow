@@ -113,6 +113,24 @@ export interface PropertyMedia {
   videoTourUrl?: string;
 }
 
+export interface PlotCoordinate {
+  lat: number;
+  lng: number;
+}
+
+export interface PlotBoundaryPoint extends PlotCoordinate {
+  label?: string; // e.g. "Front-Left", "Rear-Right"
+  dimensionFt?: number; // edge length in feet to next point
+}
+
+export interface Plot3DConfig {
+  wallHeightFt?: number; // e.g. 5ft compound wall
+  buildingSetbackFt?: { front: number; rear: number; left: number; right: number };
+  facingDirection?: 'North' | 'South' | 'East' | 'West' | 'North-East' | 'North-West' | 'South-East' | 'South-West';
+  roadWidthFt?: number;
+  cornerPlot?: boolean;
+}
+
 export interface Property {
   id: string;
   tenantId: string;
@@ -133,6 +151,9 @@ export interface Property {
     city: string;
     locality: string;
     pincode?: string;
+    coordinates?: PlotCoordinate;
+    plotBoundary?: PlotBoundaryPoint[];
+    view3D?: Plot3DConfig;
   };
   mapsUrl?: string;
   amenities: string[];
@@ -256,4 +277,101 @@ export interface Expense {
   loggedBy: string;
   createdAt: number;
 }
+
+export interface SecureSharedLink {
+  id: string;
+  tenantId: string;
+  propertyId: string;
+  propertyTitle: string;
+  
+  // Sanitized property snapshot (Owner private notes and contact details are completely stripped)
+  propertySnapshot: {
+    id: string;
+    title: string;
+    description: string;
+    propertyType: Property['propertyType'];
+    listingType: Property['listingType'];
+    status: Property['status'];
+    price: number | null; // null if includePrice is false
+    negotiable: boolean;
+    area: number;
+    areaUnit: string;
+    locality: string;
+    city: string;
+    address: string;
+    images: string[];
+    mapsUrl?: string;
+    coordinates?: PlotCoordinate;
+    plotBoundary?: PlotBoundaryPoint[];
+    plotDetails?: Record<string, any>;
+    villaDetails?: Record<string, any>;
+    apartmentDetails?: Record<string, any>;
+    infrastructure?: Record<string, any>;
+    highlights?: string[];
+  };
+
+  agencyName: string;
+  agencyPhone: string;
+  agencyEmail?: string;
+  agencyRera?: string;
+  agencyLogo?: string;
+  agentName: string;
+  agentPhone: string;
+
+  includePrice: boolean; // "Share amount or not?" -> If false, shows "Price on Request"
+  allowScreenshots: boolean; // Anti-screenshot & content protection
+  enableWatermark: boolean; // Forensic tiled watermark
+  
+  expiresAt: number; // Unix timestamp ms
+  durationHours: number; // e.g. 2, 6, 24, 48, 168
+  status: 'active' | 'expired' | 'revoked';
+  viewCount: number;
+  lastViewedAt?: number;
+
+  // Extension request workflow (capturing client Name & Mobile)
+  extensionRequest?: {
+    clientName: string;
+    clientMobile: string;
+    clientNotes?: string;
+    requestedAt: number;
+    status: 'pending' | 'approved' | 'rejected';
+    resolvedAt?: number;
+    resolvedBy?: string;
+    grantedHours?: number;
+  };
+
+  createdAt: number;
+  createdBy: string;
+}
+
+/**
+ * Public Site Visit Booking from Shared Links
+ * Enables prospective clients to request site visits with preferred timing,
+ * and track confirmation/rescheduling in real time via /visit-status/:bookingId.
+ */
+export interface PublicSiteVisitBooking {
+  id: string; // sv_xxxxxx
+  tenantId: string;
+  shareLinkId?: string;
+  propertyId: string;
+  propertyTitle: string;
+  propertyLocation: string;
+  propertyImage?: string;
+  clientName: string;
+  clientPhone: string;
+  preferredDate: string; // e.g. '2026-11-25'
+  preferredSlot: string; // e.g. 'Morning (9:00 AM - 12:00 PM)'
+  notes?: string;
+  agencyName: string;
+  agencyPhone: string;
+  assignedAgentName?: string;
+  assignedAgentPhone?: string;
+  status: 'pending' | 'confirmed' | 'rescheduled' | 'cancelled' | 'completed';
+  scheduledTime?: number;
+  rescheduledReason?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+
 

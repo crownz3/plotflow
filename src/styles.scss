@@ -1,3 +1,18 @@
+@import 'leaflet/dist/leaflet.css';
+@import 'swiper/css';
+@import 'swiper/css/navigation';
+@import 'swiper/css/pagination';
+@import 'swiper/css/zoom';
+
+/* Pencil-like cursor for plot boundary drawing on maps */
+.leaflet-container.drawing-mode,
+.leaflet-container.drawing-mode .leaflet-interactive,
+.leaflet-container.drawing-mode .leaflet-grab,
+.map-viewport.drawing-mode,
+.map-viewport.drawing-mode .leaflet-container {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='%231a73e8' stroke='%23ffffff' stroke-width='1.5'><path d='M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z'/></svg>") 2 22, crosshair !important;
+}
+
 /* ==============================================================================
    PlotFlow — Google Material Design 3 / Material You Design System
    ============================================================================== */
@@ -415,7 +430,7 @@ select {
     margin-bottom: 6px;
   }
 
-  input, select, textarea {
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea {
     width: 100%;
     padding: 10px 14px;
     border-radius: var(--ef-radius-sm);
@@ -436,8 +451,22 @@ select {
     }
   }
 
-  input {
+  input:not([type="checkbox"]):not([type="radio"]) {
     height: 44px;
+  }
+
+  input[type="checkbox"], input[type="radio"] {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    min-height: 18px !important;
+    max-width: 18px !important;
+    max-height: 18px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    accent-color: var(--ef-primary, #1a73e8);
+    cursor: pointer;
+    vertical-align: middle;
   }
 
   select {

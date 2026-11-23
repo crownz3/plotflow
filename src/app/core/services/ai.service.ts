@@ -151,8 +151,13 @@ export class AiService {
    * Private caller to Cloud Function backend
    */
   private async callCloudFunction(task: string, payload: any): Promise<string | null> {
+    // In local development or testing environments, fall back immediately to smart offline engine
+    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      return null;
+    }
+
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 9000);
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
 
     try {
       const res = await fetch(this.cloudFunctionUrl, {

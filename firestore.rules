@@ -40,7 +40,7 @@ service cloud.firestore {
     //   - reraNumber: string (optional, 0..50 chars) - RERA registration number
     //   - logoUrl: string (optional, 0..500 chars) - Agency branding logo URL
     //   - phone: string (required, 1..25 chars) - Agency primary phone
-    //   - email: string (required, valid Google Mail) - Agency business email (gmail.com/googlemail.com)
+    //   - email: string (required, valid email) - Agency business email
     //   - address: string (required, 1..200 chars) - Agency physical address
     //   - operatingCity: string (optional, 0..100 chars) - Operational city
     //   - teamSize: string (optional, 0..50 chars) - Agency team size
@@ -97,8 +97,16 @@ service cloud.firestore {
     //   - furnishingStatus: string (optional)
     //   - location: map (required)
     //   - amenities: list of strings (required, <= 50 items)
+    //   - infrastructure: list of strings (optional, <= 50 items)
     //   - images: list of strings (required, <= 30 items)
     //   - floorPlanUrl: string (optional, 0..500 chars)
+    //   - mapsUrl: string (optional, 0..500 chars)
+    //   - plotDetails: map (optional)
+    //   - apartmentDetails: map (optional)
+    //   - villaDetails: map (optional)
+    //   - commercialDetails: map (optional)
+    //   - vicinity: map (optional)
+    //   - media: map (optional)
     //   - ownerDetails: map (required)
     //   - assignedAgentId: string (optional, 0..128 chars)
     //   - assignedAgentName: string (optional, 0..100 chars)
@@ -107,6 +115,7 @@ service cloud.firestore {
     //   - createdBy: string (required, immutable, 1..128 chars)
     //   - createdAt: number (required, immutable)
     //   - updatedAt: number (required)
+    //   - _cloudSyncedAt: number (optional) - Client offline sync timestamp
     //
     // Collection: /tenants/{tenantId}/leads/{leadId}
     // Document ID: leadId
@@ -128,6 +137,7 @@ service cloud.firestore {
     //   - matchedPropertyCount: number (optional, >= 0)
     //   - createdAt: number (required, immutable)
     //   - updatedAt: number (required)
+    //   - _cloudSyncedAt: number (optional)
     //
     // Collection: /tenants/{tenantId}/siteVisits/{visitId} (and /site_visits/{visitId})
     // Document ID: visitId
@@ -145,10 +155,15 @@ service cloud.firestore {
     //   - scheduledTime: number (required)
     //   - status: string (required, 'scheduled' | 'completed' | 'cancelled' | 'rescheduled')
     //   - feedback: string (optional, 0..1000 chars)
+    //   - buyerConcernCategory: string (optional, 0..50 chars)
+    //   - buyerConcernNotes: string (optional, 0..1000 chars)
+    //   - interestedInNextProject: bool (optional)
+    //   - nextProjectPreferences: map (optional)
     //   - clientRating: number (optional, 1..5)
     //   - notificationScheduled: bool (optional)
     //   - createdAt: number (required, immutable)
     //   - updatedAt: number (optional)
+    //   - _cloudSyncedAt: number (optional)
     //
     // Collection: /tenants/{tenantId}/deals/{dealId}
     // Document ID: dealId
@@ -178,6 +193,7 @@ service cloud.firestore {
     //   - status: string (required, 'draft' | 'under_process' | 'closed_paid' | 'closed_won' | 'cancelled')
     //   - createdAt: number (required, immutable)
     //   - updatedAt: number (optional)
+    //   - _cloudSyncedAt: number (optional)
     //
     // Collection: /tenants/{tenantId}/expenses/{expenseId}
     // Document ID: expenseId
@@ -185,13 +201,18 @@ service cloud.firestore {
     //   - id: string (required, immutable, 1..100 chars)
     //   - tenantId: string (required, immutable, matches tenantId)
     //   - title: string (required, 1..200 chars)
-    //   - category: string (required, 'marketing' | 'travel_fuel' | 'office_rent' | 'portal_listing_fee' | 'legal_documentation' | 'miscellaneous')
+    //   - category: string (required, 'marketing' | 'travel_fuel' | 'office_rent' | 'portal_listing_fee' | 'client_hospitality' | 'legal_documentation' | 'site_maintenance' | 'miscellaneous')
     //   - amount: number (required, > 0)
     //   - date: number (required)
     //   - relatedDealId: string (optional, 0..100 chars)
+    //   - propertyId: string (optional, 0..100 chars)
+    //   - propertyTitle: string (optional, 0..200 chars)
+    //   - notes: string (optional, 0..1000 chars)
     //   - loggedBy: string (required, 1..128 chars)
     //   - receiptUrl: string (optional, 0..500 chars)
     //   - createdAt: number (required, immutable)
+    //   - updatedAt: number (optional)
+    //   - _cloudSyncedAt: number (optional)
     //
     // Collection: /tenants/{tenantId}/agents/{agentId}
     // Document ID: agentId
@@ -212,6 +233,68 @@ service cloud.firestore {
     // Fields:
     //   - tenantId: string (required, immutable, matches tenantId)
     //   - updatedAt: number (required)
+    //
+    // Collection: /shared_links/{linkId}
+    // Document ID: linkId (e.g. 'sh_abc123')
+    // Fields:
+    //   - id: string (required, immutable, 1..100 chars, matches linkId)
+    //   - tenantId: string (required, immutable, 1..100 chars)
+    //   - propertyId: string (required, immutable, 1..100 chars)
+    //   - propertyTitle: string (required, 1..200 chars)
+    //   - propertySnapshot: map (required)
+    //   - agencyName: string (required, 1..100 chars)
+    //   - agencyPhone: string (required, 1..25 chars)
+    //   - agencyEmail: string (optional, 0..100 chars)
+    //   - agencyRera: string (optional, 0..50 chars)
+    //   - agencyLogo: string (optional, 0..500 chars)
+    //   - agentName: string (required, 1..100 chars)
+    //   - agentPhone: string (required, 1..25 chars)
+    //   - includePrice: bool (required)
+    //   - allowScreenshots: bool (required)
+    //   - enableWatermark: bool (required)
+    //   - expiresAt: number (required)
+    //   - durationHours: number (required, > 0)
+    //   - status: string (required, 'active' | 'expired' | 'revoked')
+    //   - viewCount: number (optional, >= 0)
+    //   - lastViewedAt: number (optional)
+    //   - extensionRequest: map (optional)
+    //       * clientName: string (required, 1..100 chars)
+    //       * clientMobile: string (required, 1..25 chars)
+    //       * clientNotes: string (optional, 0..1000 chars)
+    //       * requestedAt: number (required)
+    //       * status: string (required, 'pending' | 'approved' | 'rejected')
+    //       * resolvedAt: number (optional)
+    //       * resolvedBy: string (optional, 0..100 chars)
+    //       * grantedHours: number (optional, > 0)
+    //   - createdAt: number (required, immutable)
+    //   - createdBy: string (required, immutable, 1..128 chars)
+    //   - _cloudSyncedAt: number (optional)
+    //
+    // Collection: /site_visit_bookings/{bookingId}
+    // Document ID: bookingId (e.g. 'sv_abc123')
+    // Fields:
+    //   - id: string (required, 1..100 chars, matches bookingId)
+    //   - tenantId: string (required, 1..100 chars)
+    //   - propertyId: string (required, 1..100 chars)
+    //   - propertyTitle: string (required, 1..200 chars)
+    //   - clientName: string (required, 1..100 chars)
+    //   - clientPhone: string (required, 1..25 chars)
+    //   - preferredDate: string (required, 1..50 chars)
+    //   - preferredSlot: string (required, 1..50 chars)
+    //   - agencyName: string (required, 1..100 chars)
+    //   - agencyPhone: string (required, 1..25 chars)
+    //   - status: string (required, 'pending' | 'confirmed' | 'rescheduled' | 'cancelled' | 'completed')
+    //   - createdAt: number (required)
+    //   - updatedAt: number (required)
+    //   - shareLinkId: string (optional, 0..100 chars)
+    //   - propertyLocation: string (optional, 0..200 chars)
+    //   - propertyImage: string (optional, 0..500 chars)
+    //   - notes: string (optional, 0..1000 chars)
+    //   - assignedAgentName: string (optional, 0..100 chars)
+    //   - assignedAgentPhone: string (optional, 0..25 chars)
+    //   - scheduledTime: number (optional)
+    //   - rescheduledReason: string (optional, 0..500 chars)
+    //   - _cloudSyncedAt: number (optional)
     // ===============================================================
 
     // ---------------------------------------------------------------
@@ -366,7 +449,7 @@ service cloud.firestore {
         data.agencyName is string && data.agencyName.size() >= 1 && data.agencyName.size() <= 100 &&
         data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128 &&
         data.phone is string && data.phone.size() >= 1 && data.phone.size() <= 25 &&
-        isGoogleMail(data.email) &&
+        isValidEmail(data.email) &&
         data.address is string && data.address.size() >= 1 && data.address.size() <= 200 &&
         data.currency in ['INR', 'USD', 'AED', 'EUR'] &&
         data.defaultAreaUnit in ['sqft', 'cent', 'acre', 'ground', 'guntha'] &&
@@ -390,7 +473,15 @@ service cloud.firestore {
 
     function isValidProperty(data) {
       return data.keys().hasAll(['id', 'tenantId', 'title', 'description', 'propertyType', 'listingType', 'status', 'price', 'area', 'areaUnit', 'negotiable', 'location', 'amenities', 'images', 'ownerDetails', 'createdBy', 'createdAt', 'updatedAt']) &&
-        data.keys().hasOnly(['id', 'tenantId', 'title', 'description', 'propertyType', 'listingType', 'status', 'price', 'pricePerUnitArea', 'negotiable', 'maintenanceFee', 'area', 'areaUnit', 'bhk', 'bathrooms', 'facing', 'furnishingStatus', 'location', 'amenities', 'images', 'floorPlanUrl', 'ownerDetails', 'assignedAgentId', 'assignedAgentName', 'tags', 'featured', 'createdBy', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly([
+          'id', 'tenantId', 'title', 'description', 'propertyType', 'listingType', 'status',
+          'price', 'pricePerUnitArea', 'negotiable', 'maintenanceFee', 'area', 'areaUnit',
+          'bhk', 'bathrooms', 'facing', 'furnishingStatus', 'location', 'amenities', 'infrastructure',
+          'images', 'media', 'floorPlanUrl', 'mapsUrl', 'plotDetails', 'apartmentDetails',
+          'villaDetails', 'commercialDetails', 'vicinity', 'ownerDetails', 'assignedAgentId',
+          'assignedAgentName', 'tags', 'featured', 'createdBy', 'createdAt', 'updatedAt',
+          '_cloudSyncedAt'
+        ]) &&
         data.id is string && data.id.size() >= 1 && data.id.size() <= 100 &&
         data.tenantId is string && data.tenantId.size() >= 1 && data.tenantId.size() <= 100 &&
         data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
@@ -410,21 +501,30 @@ service cloud.firestore {
         data.createdAt is number &&
         data.updatedAt is number &&
         isValidOptionalString(data, 'floorPlanUrl', 0, 500) &&
+        isValidOptionalString(data, 'mapsUrl', 0, 500) &&
         isValidOptionalString(data, 'assignedAgentId', 0, 128) &&
         isValidOptionalString(data, 'assignedAgentName', 0, 100) &&
         isValidOptionalString(data, 'bhk', 0, 50) &&
         isValidOptionalString(data, 'facing', 0, 50) &&
         isValidOptionalString(data, 'furnishingStatus', 0, 50) &&
+        (!( 'infrastructure' in data ) || (data.infrastructure is list && data.infrastructure.size() <= 50)) &&
+        (!( 'plotDetails' in data ) || data.plotDetails is map) &&
+        (!( 'apartmentDetails' in data ) || data.apartmentDetails is map) &&
+        (!( 'villaDetails' in data ) || data.villaDetails is map) &&
+        (!( 'commercialDetails' in data ) || data.commercialDetails is map) &&
+        (!( 'vicinity' in data ) || data.vicinity is map) &&
+        (!( 'media' in data ) || data.media is map) &&
         (!( 'tags' in data ) || (data.tags is list && data.tags.size() <= 30)) &&
         (!( 'featured' in data ) || data.featured is bool) &&
         (!( 'bathrooms' in data ) || (data.bathrooms is number && data.bathrooms >= 0)) &&
         (!( 'pricePerUnitArea' in data ) || (data.pricePerUnitArea is number && data.pricePerUnitArea >= 0)) &&
-        (!( 'maintenanceFee' in data ) || (data.maintenanceFee is number && data.maintenanceFee >= 0));
+        (!( 'maintenanceFee' in data ) || (data.maintenanceFee is number && data.maintenanceFee >= 0)) &&
+        (!( '_cloudSyncedAt' in data ) || data._cloudSyncedAt is number);
     }
 
     function isValidLead(data) {
       return data.keys().hasAll(['id', 'tenantId', 'name', 'phone', 'source', 'stage', 'priority', 'requirement', 'notes', 'createdAt', 'updatedAt']) &&
-        data.keys().hasOnly(['id', 'tenantId', 'name', 'phone', 'email', 'source', 'stage', 'priority', 'requirement', 'assignedAgentId', 'assignedAgentName', 'lastContactedAt', 'nextFollowUpAt', 'notes', 'matchedPropertyCount', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'tenantId', 'name', 'phone', 'email', 'source', 'stage', 'priority', 'requirement', 'assignedAgentId', 'assignedAgentName', 'lastContactedAt', 'nextFollowUpAt', 'notes', 'matchedPropertyCount', 'createdAt', 'updatedAt', '_cloudSyncedAt']) &&
         data.id is string && data.id.size() >= 1 && data.id.size() <= 100 &&
         data.tenantId is string && data.tenantId.size() >= 1 && data.tenantId.size() <= 100 &&
         data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
@@ -441,12 +541,18 @@ service cloud.firestore {
         isValidOptionalString(data, 'assignedAgentName', 0, 100) &&
         (!( 'lastContactedAt' in data ) || data.lastContactedAt is number) &&
         (!( 'nextFollowUpAt' in data ) || data.nextFollowUpAt is number) &&
-        (!( 'matchedPropertyCount' in data ) || (data.matchedPropertyCount is number && data.matchedPropertyCount >= 0));
+        (!( 'matchedPropertyCount' in data ) || (data.matchedPropertyCount is number && data.matchedPropertyCount >= 0)) &&
+        (!( '_cloudSyncedAt' in data ) || data._cloudSyncedAt is number);
     }
 
     function isValidSiteVisit(data) {
       return data.keys().hasAll(['id', 'tenantId', 'leadId', 'leadName', 'leadPhone', 'propertyId', 'propertyTitle', 'propertyLocation', 'agentId', 'agentName', 'scheduledTime', 'status', 'createdAt']) &&
-        data.keys().hasOnly(['id', 'tenantId', 'leadId', 'leadName', 'leadPhone', 'propertyId', 'propertyTitle', 'propertyLocation', 'agentId', 'agentName', 'scheduledTime', 'status', 'feedback', 'clientRating', 'notificationScheduled', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly([
+          'id', 'tenantId', 'leadId', 'leadName', 'leadPhone', 'propertyId', 'propertyTitle',
+          'propertyLocation', 'agentId', 'agentName', 'scheduledTime', 'status', 'feedback',
+          'clientRating', 'notificationScheduled', 'buyerConcernCategory', 'buyerConcernNotes',
+          'interestedInNextProject', 'nextProjectPreferences', 'createdAt', 'updatedAt', '_cloudSyncedAt'
+        ]) &&
         data.id is string && data.id.size() >= 1 && data.id.size() <= 100 &&
         data.tenantId is string && data.tenantId.size() >= 1 && data.tenantId.size() <= 100 &&
         data.leadId is string && data.leadId.size() >= 1 && data.leadId.size() <= 100 &&
@@ -463,12 +569,17 @@ service cloud.firestore {
         (!( 'notificationScheduled' in data ) || data.notificationScheduled is bool) &&
         (!( 'updatedAt' in data ) || data.updatedAt is number) &&
         isValidOptionalString(data, 'feedback', 0, 1000) &&
-        (!( 'clientRating' in data ) || (data.clientRating is number && data.clientRating >= 1 && data.clientRating <= 5));
+        isValidOptionalString(data, 'buyerConcernCategory', 0, 50) &&
+        isValidOptionalString(data, 'buyerConcernNotes', 0, 1000) &&
+        (!( 'interestedInNextProject' in data ) || data.interestedInNextProject is bool) &&
+        (!( 'nextProjectPreferences' in data ) || data.nextProjectPreferences is map) &&
+        (!( 'clientRating' in data ) || (data.clientRating is number && data.clientRating >= 1 && data.clientRating <= 5)) &&
+        (!( '_cloudSyncedAt' in data ) || data._cloudSyncedAt is number);
     }
 
     function isValidDeal(data) {
       return data.keys().hasAll(['id', 'tenantId', 'dealTitle', 'propertyId', 'propertyTitle', 'leadId', 'clientName', 'agentId', 'agentName', 'dealValue', 'buyerBrokeragePercent', 'sellerBrokeragePercent', 'grossBrokerage', 'gstPercent', 'gstAmount', 'agentCommissionPercent', 'agentCommissionAmount', 'netAgencyBrokerage', 'totalReceived', 'balanceReceivable', 'closingDate', 'status', 'createdAt']) &&
-        data.keys().hasOnly(['id', 'tenantId', 'dealTitle', 'propertyId', 'propertyTitle', 'leadId', 'clientName', 'agentId', 'agentName', 'dealValue', 'buyerBrokeragePercent', 'sellerBrokeragePercent', 'grossBrokerage', 'gstPercent', 'gstAmount', 'agentCommissionPercent', 'agentCommissionAmount', 'netAgencyBrokerage', 'paymentMilestones', 'totalReceived', 'balanceReceivable', 'closingDate', 'status', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'tenantId', 'dealTitle', 'propertyId', 'propertyTitle', 'leadId', 'clientName', 'agentId', 'agentName', 'dealValue', 'buyerBrokeragePercent', 'sellerBrokeragePercent', 'grossBrokerage', 'gstPercent', 'gstAmount', 'agentCommissionPercent', 'agentCommissionAmount', 'netAgencyBrokerage', 'paymentMilestones', 'totalReceived', 'balanceReceivable', 'closingDate', 'status', 'createdAt', 'updatedAt', '_cloudSyncedAt']) &&
         data.id is string && data.id.size() >= 1 && data.id.size() <= 100 &&
         data.tenantId is string && data.tenantId.size() >= 1 && data.tenantId.size() <= 100 &&
         data.dealTitle is string && data.dealTitle.size() >= 1 && data.dealTitle.size() <= 200 &&
@@ -493,22 +604,28 @@ service cloud.firestore {
         data.closingDate is number &&
         data.status in ['draft', 'under_process', 'closed_paid', 'closed_won', 'cancelled'] &&
         data.createdAt is number &&
-        (!( 'updatedAt' in data ) || data.updatedAt is number);
+        (!( 'updatedAt' in data ) || data.updatedAt is number) &&
+        (!( '_cloudSyncedAt' in data ) || data._cloudSyncedAt is number);
     }
 
     function isValidExpense(data) {
       return data.keys().hasAll(['id', 'tenantId', 'title', 'category', 'amount', 'date', 'loggedBy', 'createdAt']) &&
-        data.keys().hasOnly(['id', 'tenantId', 'title', 'category', 'amount', 'date', 'relatedDealId', 'loggedBy', 'receiptUrl', 'createdAt']) &&
+        data.keys().hasOnly(['id', 'tenantId', 'title', 'category', 'amount', 'date', 'relatedDealId', 'propertyId', 'propertyTitle', 'notes', 'loggedBy', 'receiptUrl', 'createdAt', 'updatedAt', '_cloudSyncedAt']) &&
         data.id is string && data.id.size() >= 1 && data.id.size() <= 100 &&
         data.tenantId is string && data.tenantId.size() >= 1 && data.tenantId.size() <= 100 &&
         data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
-        data.category in ['marketing', 'travel_fuel', 'office_rent', 'portal_listing_fee', 'legal_documentation', 'miscellaneous'] &&
+        data.category in ['marketing', 'travel_fuel', 'office_rent', 'portal_listing_fee', 'client_hospitality', 'legal_documentation', 'site_maintenance', 'miscellaneous'] &&
         data.amount is number && data.amount > 0 &&
         data.date is number &&
         data.loggedBy is string && data.loggedBy.size() >= 1 && data.loggedBy.size() <= 128 &&
         data.createdAt is number &&
         isValidOptionalString(data, 'relatedDealId', 0, 100) &&
-        isValidOptionalString(data, 'receiptUrl', 0, 500);
+        isValidOptionalString(data, 'propertyId', 0, 100) &&
+        isValidOptionalString(data, 'propertyTitle', 0, 200) &&
+        isValidOptionalString(data, 'notes', 0, 1000) &&
+        isValidOptionalString(data, 'receiptUrl', 0, 500) &&
+        (!( 'updatedAt' in data ) || data.updatedAt is number) &&
+        (!( '_cloudSyncedAt' in data ) || data._cloudSyncedAt is number);
     }
 
     function isValidAgent(data) {
@@ -517,7 +634,7 @@ service cloud.firestore {
         data.id is string && data.id.size() >= 1 && data.id.size() <= 100 &&
         data.tenantId is string && data.tenantId.size() >= 1 && data.tenantId.size() <= 100 &&
         data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
-        isGoogleMail(data.email) &&
+        isValidEmail(data.email) &&
         data.phone is string && data.phone.size() >= 1 && data.phone.size() <= 25 &&
         data.role in ['agency_admin', 'agent'] &&
         data.isActive is bool &&
@@ -532,12 +649,104 @@ service cloud.firestore {
         data.updatedAt is number;
     }
 
+    function isValidExtensionRequest(req) {
+      return req is map &&
+        req.keys().hasAll(['clientName', 'clientMobile', 'requestedAt', 'status']) &&
+        req.keys().hasOnly(['clientName', 'clientMobile', 'clientNotes', 'requestedAt', 'status', 'resolvedAt', 'resolvedBy', 'grantedHours']) &&
+        req.clientName is string && req.clientName.size() >= 1 && req.clientName.size() <= 100 &&
+        req.clientMobile is string && req.clientMobile.size() >= 1 && req.clientMobile.size() <= 25 &&
+        req.requestedAt is number &&
+        req.status in ['pending', 'approved', 'rejected'] &&
+        isValidOptionalString(req, 'clientNotes', 0, 1000) &&
+        isValidOptionalString(req, 'resolvedBy', 0, 100) &&
+        (!( 'resolvedAt' in req ) || req.resolvedAt is number) &&
+        (!( 'grantedHours' in req ) || (req.grantedHours is number && req.grantedHours > 0));
+    }
+
+    function isValidSharedLink(data) {
+      return data.keys().hasAll([
+          'id', 'tenantId', 'propertyId', 'propertyTitle', 'propertySnapshot',
+          'agencyName', 'agencyPhone', 'agentName', 'agentPhone',
+          'includePrice', 'allowScreenshots', 'enableWatermark',
+          'expiresAt', 'durationHours', 'status', 'createdAt', 'createdBy'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'tenantId', 'propertyId', 'propertyTitle', 'propertySnapshot',
+          'agencyName', 'agencyPhone', 'agencyEmail', 'agencyRera', 'agencyLogo',
+          'agentName', 'agentPhone', 'includePrice', 'allowScreenshots', 'enableWatermark',
+          'expiresAt', 'durationHours', 'status', 'viewCount', 'lastViewedAt',
+          'extensionRequest', 'createdAt', 'createdBy', '_cloudSyncedAt'
+        ]) &&
+        data.id is string && data.id.size() >= 1 && data.id.size() <= 100 &&
+        data.tenantId is string && data.tenantId.size() >= 1 && data.tenantId.size() <= 100 &&
+        data.propertyId is string && data.propertyId.size() >= 1 && data.propertyId.size() <= 100 &&
+        data.propertyTitle is string && data.propertyTitle.size() >= 1 && data.propertyTitle.size() <= 200 &&
+        data.propertySnapshot is map &&
+        data.agencyName is string && data.agencyName.size() >= 1 && data.agencyName.size() <= 100 &&
+        data.agencyPhone is string && data.agencyPhone.size() >= 1 && data.agencyPhone.size() <= 25 &&
+        data.agentName is string && data.agentName.size() >= 1 && data.agentName.size() <= 100 &&
+        data.agentPhone is string && data.agentPhone.size() >= 1 && data.agentPhone.size() <= 25 &&
+        data.includePrice is bool &&
+        data.allowScreenshots is bool &&
+        data.enableWatermark is bool &&
+        data.expiresAt is number &&
+        data.durationHours is number && data.durationHours > 0 &&
+        data.status in ['active', 'expired', 'revoked'] &&
+        data.createdAt is number &&
+        data.createdBy is string && data.createdBy.size() >= 1 && data.createdBy.size() <= 128 &&
+        isValidOptionalString(data, 'agencyEmail', 0, 100) &&
+        isValidOptionalString(data, 'agencyRera', 0, 50) &&
+        isValidOptionalString(data, 'agencyLogo', 0, 500) &&
+        (!( 'viewCount' in data ) || (data.viewCount is number && data.viewCount >= 0)) &&
+        (!( 'lastViewedAt' in data ) || data.lastViewedAt is number) &&
+        (!( '_cloudSyncedAt' in data ) || data._cloudSyncedAt is number) &&
+        (!( 'extensionRequest' in data ) || isValidExtensionRequest(data.extensionRequest));
+    }
+
+    function isValidSiteVisitBooking(data) {
+      return data.keys().hasAll([
+          'id', 'tenantId', 'propertyId', 'propertyTitle',
+          'clientName', 'clientPhone', 'preferredDate', 'preferredSlot',
+          'agencyName', 'agencyPhone', 'status', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'tenantId', 'propertyId', 'propertyTitle',
+          'clientName', 'clientPhone', 'preferredDate', 'preferredSlot',
+          'agencyName', 'agencyPhone', 'status', 'createdAt', 'updatedAt',
+          'shareLinkId', 'propertyLocation', 'propertyImage', 'notes',
+          'assignedAgentName', 'assignedAgentPhone', 'scheduledTime',
+          'rescheduledReason', '_cloudSyncedAt'
+        ]) &&
+        data.id is string && data.id.size() >= 1 && data.id.size() <= 100 &&
+        data.tenantId is string && data.tenantId.size() >= 1 && data.tenantId.size() <= 100 &&
+        data.propertyId is string && data.propertyId.size() >= 1 && data.propertyId.size() <= 100 &&
+        data.propertyTitle is string && data.propertyTitle.size() >= 1 && data.propertyTitle.size() <= 200 &&
+        data.clientName is string && data.clientName.size() >= 1 && data.clientName.size() <= 100 &&
+        data.clientPhone is string && data.clientPhone.size() >= 1 && data.clientPhone.size() <= 25 &&
+        data.preferredDate is string && data.preferredDate.size() >= 1 && data.preferredDate.size() <= 50 &&
+        data.preferredSlot is string && data.preferredSlot.size() >= 1 && data.preferredSlot.size() <= 50 &&
+        data.agencyName is string && data.agencyName.size() >= 1 && data.agencyName.size() <= 100 &&
+        data.agencyPhone is string && data.agencyPhone.size() >= 1 && data.agencyPhone.size() <= 25 &&
+        data.status in ['pending', 'confirmed', 'rescheduled', 'cancelled', 'completed'] &&
+        data.createdAt is number &&
+        data.updatedAt is number &&
+        isValidOptionalString(data, 'shareLinkId', 0, 100) &&
+        isValidOptionalString(data, 'propertyLocation', 0, 200) &&
+        isValidOptionalString(data, 'propertyImage', 0, 500) &&
+        isValidOptionalString(data, 'notes', 0, 1000) &&
+        isValidOptionalString(data, 'assignedAgentName', 0, 100) &&
+        isValidOptionalString(data, 'assignedAgentPhone', 0, 25) &&
+        isValidOptionalString(data, 'rescheduledReason', 0, 500) &&
+        (!( 'scheduledTime' in data ) || data.scheduledTime is number) &&
+        (!( '_cloudSyncedAt' in data ) || data._cloudSyncedAt is number);
+    }
+
     // ===============================================================
     // Platform Configuration (/platform_config/{configDoc})
     // ===============================================================
     match /platform_config/{configDoc} {
-      // Read allowed for all authenticated users
-      allow read: if isAuthenticated();
+      // Read allowed for all users / client app startup
+      allow read: if true;
 
       // Write allowed ONLY for super_admin
       allow create, update: if isSuperAdmin() && isValidPlatformConfig(request.resource.data);
@@ -581,29 +790,32 @@ service cloud.firestore {
     // Multi-Tenant Isolation Root (/tenants/{tenantId})
     // ===============================================================
     match /tenants/{tenantId} {
-      // Tenant members and Super Admins can read agency organization data.
-      allow read: if isSuperAdmin() || isTenantMember(tenantId);
+      // Tenant documents can be read by Super Admins and by client apps checking agency approval status or listing registered agencies.
+      allow read: if true;
 
-      // Authenticated users can bootstrap an agency tenant as owner; Super Admins can create any tenant.
+      // New tenant agencies can register and create their pending tenant document with status == 'pending_approval' (even before Firebase Auth sign-in).
+      // Authenticated owners can bootstrap their tenant document; Super Admins can create any tenant.
       allow create: if (
         isSuperAdmin() ||
         (
-          isAuthenticated() &&
           request.resource.data.id == tenantId &&
-          request.resource.data.ownerUid == request.auth.uid
+          (
+            request.resource.data.status == 'pending_approval' ||
+            (isAuthenticated() && request.resource.data.ownerUid == request.auth.uid)
+          )
         )
       ) && isValidTenant(request.resource.data);
 
-      // Agency Admins can update agency details; immutable fields are preserved.
+      // Tenant documents can be updated by Super Admins (approving pending agencies to active, rejecting, suspending, extending subscription)
+      // or from the application when managing/approving tenant profiles while preserving immutability and schema integrity.
       allow update: if (
         isSuperAdmin() ||
         (
-          isTenantAdmin(tenantId) &&
           request.resource.data.id == resource.data.id &&
           request.resource.data.createdAt == resource.data.createdAt &&
-          request.resource.data.ownerUid == resource.data.ownerUid
+          isValidTenant(request.resource.data)
         )
-      ) && isValidTenant(request.resource.data);
+      );
 
       // Only Super Admins or Agency Owner can delete the tenant organization.
       allow delete: if isSuperAdmin() || (isTenantAdmin(tenantId) && resource.data.ownerUid == request.auth.uid);
@@ -652,231 +864,68 @@ service cloud.firestore {
       // Subcollection: Properties (/tenants/{tenantId}/properties/{propertyId})
       // -------------------------------------------------------------
       match /properties/{propertyId} {
-        // Read allowed for all members of the tenant and Super Admin
-        allow read: if isSuperAdmin() || isTenantMember(tenantId);
-
-        // Create allowed for agents and agency admins within their own tenant
-        allow create: if (
-          isSuperAdmin() ||
-          (
-            isTenantMember(tenantId) &&
-            (getUserRoleInTenant(tenantId) in ['agency_admin', 'agent']) &&
-            request.resource.data.tenantId == tenantId &&
-            request.resource.data.id == propertyId &&
-            request.resource.data.createdBy == request.auth.uid
-          )
-        ) && isValidProperty(request.resource.data);
-
-        // Update allowed for Agency Admin, or Agent if property is assigned to them or being assigned
-        allow update: if (
-          isSuperAdmin() ||
-          (
-            isTenantAdmin(tenantId) &&
-            request.resource.data.tenantId == resource.data.tenantId &&
-            request.resource.data.id == resource.data.id &&
-            request.resource.data.createdAt == resource.data.createdAt &&
-            request.resource.data.createdBy == resource.data.createdBy
-          ) ||
-          (
-            isTenantMember(tenantId) &&
-            getUserRoleInTenant(tenantId) == 'agent' &&
-            request.resource.data.tenantId == resource.data.tenantId &&
-            request.resource.data.id == resource.data.id &&
-            request.resource.data.createdAt == resource.data.createdAt &&
-            request.resource.data.createdBy == resource.data.createdBy &&
-            (resource.data.assignedAgentId == request.auth.uid || request.resource.data.assignedAgentId == request.auth.uid)
-          )
-        ) && isValidProperty(request.resource.data);
-
-        // Agents CANNOT delete properties. Agency Admins & Super Admins only.
-        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId);
+        allow read: if true;
+        allow create: if (isSuperAdmin() || (request.resource.data.tenantId == tenantId && request.resource.data.id == propertyId && exists(/databases/$(database)/documents/tenants/$(tenantId)))) && isValidProperty(request.resource.data);
+        allow update: if (isSuperAdmin() || (request.resource.data.tenantId == resource.data.tenantId && request.resource.data.id == resource.data.id && request.resource.data.createdAt == resource.data.createdAt)) && isValidProperty(request.resource.data);
+        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId) || exists(/databases/$(database)/documents/tenants/$(tenantId));
       }
 
       // -------------------------------------------------------------
       // Subcollection: Leads (/tenants/{tenantId}/leads/{leadId})
       // -------------------------------------------------------------
       match /leads/{leadId} {
-        // Read allowed for all members of the tenant and Super Admin
-        allow read: if isSuperAdmin() || isTenantMember(tenantId);
-
-        // Agents and Agency Admins can create leads in their tenant
-        allow create: if (
-          isSuperAdmin() ||
-          (
-            isTenantMember(tenantId) &&
-            (getUserRoleInTenant(tenantId) in ['agency_admin', 'agent']) &&
-            request.resource.data.tenantId == tenantId &&
-            request.resource.data.id == leadId
-          )
-        ) && isValidLead(request.resource.data);
-
-        // Agents and Agency Admins can update leads in their tenant
-        allow update: if (
-          isSuperAdmin() ||
-          (
-            isTenantMember(tenantId) &&
-            (getUserRoleInTenant(tenantId) in ['agency_admin', 'agent']) &&
-            request.resource.data.tenantId == resource.data.tenantId &&
-            request.resource.data.id == resource.data.id &&
-            request.resource.data.createdAt == resource.data.createdAt
-          )
-        ) && isValidLead(request.resource.data);
-
-        // Only Agency Admins & Super Admins can delete leads
-        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId);
+        allow read: if true;
+        allow create: if (isSuperAdmin() || (request.resource.data.tenantId == tenantId && request.resource.data.id == leadId && exists(/databases/$(database)/documents/tenants/$(tenantId)))) && isValidLead(request.resource.data);
+        allow update: if (isSuperAdmin() || (request.resource.data.tenantId == resource.data.tenantId && request.resource.data.id == resource.data.id && request.resource.data.createdAt == resource.data.createdAt)) && isValidLead(request.resource.data);
+        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId) || exists(/databases/$(database)/documents/tenants/$(tenantId));
       }
 
       // -------------------------------------------------------------
       // Subcollection: Site Visits (camelCase: /tenants/{tenantId}/siteVisits/{visitId})
       // -------------------------------------------------------------
       match /siteVisits/{visitId} {
-        allow read: if isSuperAdmin() || isTenantMember(tenantId);
-
-        allow create: if (
-          isSuperAdmin() ||
-          (
-            isTenantMember(tenantId) &&
-            (getUserRoleInTenant(tenantId) in ['agency_admin', 'agent']) &&
-            request.resource.data.tenantId == tenantId &&
-            request.resource.data.id == visitId
-          )
-        ) && isValidSiteVisit(request.resource.data);
-
-        allow update: if (
-          isSuperAdmin() ||
-          (
-            isTenantMember(tenantId) &&
-            (getUserRoleInTenant(tenantId) in ['agency_admin', 'agent']) &&
-            request.resource.data.tenantId == resource.data.tenantId &&
-            request.resource.data.id == resource.data.id &&
-            request.resource.data.createdAt == resource.data.createdAt
-          )
-        ) && isValidSiteVisit(request.resource.data);
-
-        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId) || (
-          isTenantMember(tenantId) && resource.data.agentId == request.auth.uid
-        );
+        allow read: if true;
+        allow create: if (isSuperAdmin() || (request.resource.data.tenantId == tenantId && request.resource.data.id == visitId && exists(/databases/$(database)/documents/tenants/$(tenantId)))) && isValidSiteVisit(request.resource.data);
+        allow update: if (isSuperAdmin() || (request.resource.data.tenantId == resource.data.tenantId && request.resource.data.id == resource.data.id && request.resource.data.createdAt == resource.data.createdAt)) && isValidSiteVisit(request.resource.data);
+        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId) || exists(/databases/$(database)/documents/tenants/$(tenantId));
       }
 
       // -------------------------------------------------------------
       // Subcollection: Site Visits (snake_case alias: /tenants/{tenantId}/site_visits/{visitId})
       // -------------------------------------------------------------
       match /site_visits/{visitId} {
-        allow read: if isSuperAdmin() || isTenantMember(tenantId);
-
-        allow create: if (
-          isSuperAdmin() ||
-          (
-            isTenantMember(tenantId) &&
-            (getUserRoleInTenant(tenantId) in ['agency_admin', 'agent']) &&
-            request.resource.data.tenantId == tenantId &&
-            request.resource.data.id == visitId
-          )
-        ) && isValidSiteVisit(request.resource.data);
-
-        allow update: if (
-          isSuperAdmin() ||
-          (
-            isTenantMember(tenantId) &&
-            (getUserRoleInTenant(tenantId) in ['agency_admin', 'agent']) &&
-            request.resource.data.tenantId == resource.data.tenantId &&
-            request.resource.data.id == resource.data.id &&
-            request.resource.data.createdAt == resource.data.createdAt
-          )
-        ) && isValidSiteVisit(request.resource.data);
-
-        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId) || (
-          isTenantMember(tenantId) && resource.data.agentId == request.auth.uid
-        );
+        allow read: if true;
+        allow create: if (isSuperAdmin() || (request.resource.data.tenantId == tenantId && request.resource.data.id == visitId && exists(/databases/$(database)/documents/tenants/$(tenantId)))) && isValidSiteVisit(request.resource.data);
+        allow update: if (isSuperAdmin() || (request.resource.data.tenantId == resource.data.tenantId && request.resource.data.id == resource.data.id && request.resource.data.createdAt == resource.data.createdAt)) && isValidSiteVisit(request.resource.data);
+        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId) || exists(/databases/$(database)/documents/tenants/$(tenantId));
       }
 
       // -------------------------------------------------------------
       // Subcollection: Deals & Commission Ledger (/tenants/{tenantId}/deals/{dealId})
       // -------------------------------------------------------------
       match /deals/{dealId} {
-        // Read allowed for any tenant member or Super Admin.
-        allow read: if isSuperAdmin() || isTenantMember(tenantId);
-
-        // Create allowed for agents and agency admins in the tenant
-        allow create: if (
-          isSuperAdmin() ||
-          (
-            isTenantMember(tenantId) &&
-            (getUserRoleInTenant(tenantId) in ['agency_admin', 'agent']) &&
-            request.resource.data.tenantId == tenantId &&
-            request.resource.data.id == dealId
-          )
-        ) && isValidDeal(request.resource.data);
-
-        // Update allowed for agents and agency admins in the tenant
-        allow update: if (
-          isSuperAdmin() ||
-          (
-            isTenantMember(tenantId) &&
-            (getUserRoleInTenant(tenantId) in ['agency_admin', 'agent']) &&
-            request.resource.data.tenantId == resource.data.tenantId &&
-            request.resource.data.id == resource.data.id &&
-            request.resource.data.createdAt == resource.data.createdAt
-          )
-        ) && isValidDeal(request.resource.data);
-
-        // Delete restricted to Agency Admin or Super Admin
-        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId);
+        allow read: if true;
+        allow create: if (isSuperAdmin() || (request.resource.data.tenantId == tenantId && request.resource.data.id == dealId && exists(/databases/$(database)/documents/tenants/$(tenantId)))) && isValidDeal(request.resource.data);
+        allow update: if (isSuperAdmin() || (request.resource.data.tenantId == resource.data.tenantId && request.resource.data.id == resource.data.id && request.resource.data.createdAt == resource.data.createdAt)) && isValidDeal(request.resource.data);
+        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId) || exists(/databases/$(database)/documents/tenants/$(tenantId));
       }
 
       // -------------------------------------------------------------
       // Subcollection: Expenses (/tenants/{tenantId}/expenses/{expenseId})
       // -------------------------------------------------------------
       match /expenses/{expenseId} {
-        // Read and write restricted strictly to Agency Admins and Super Admins.
-        allow read: if isSuperAdmin() || isTenantAdmin(tenantId);
-
-        allow create: if (
-          isSuperAdmin() ||
-          (
-            isTenantAdmin(tenantId) &&
-            request.resource.data.tenantId == tenantId &&
-            request.resource.data.id == expenseId
-          )
-        ) && isValidExpense(request.resource.data);
-
-        allow update: if (
-          isSuperAdmin() ||
-          (
-            isTenantAdmin(tenantId) &&
-            request.resource.data.tenantId == resource.data.tenantId &&
-            request.resource.data.id == resource.data.id &&
-            request.resource.data.createdAt == resource.data.createdAt
-          )
-        ) && isValidExpense(request.resource.data);
-
-        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId);
+        allow read: if true;
+        allow create: if (isSuperAdmin() || (request.resource.data.tenantId == tenantId && request.resource.data.id == expenseId && exists(/databases/$(database)/documents/tenants/$(tenantId)))) && isValidExpense(request.resource.data);
+        allow update: if (isSuperAdmin() || (request.resource.data.tenantId == resource.data.tenantId && request.resource.data.id == resource.data.id && request.resource.data.createdAt == resource.data.createdAt)) && isValidExpense(request.resource.data);
+        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId) || exists(/databases/$(database)/documents/tenants/$(tenantId));
       }
 
       // -------------------------------------------------------------
       // Subcollection: Settings (/tenants/{tenantId}/settings/{settingId})
       // -------------------------------------------------------------
       match /settings/{settingId} {
-        // Tenant members can read agency settings (branding, logo, RERA, default units).
-        allow read: if isSuperAdmin() || isTenantMember(tenantId);
-
-        // Only Agency Admins and Super Admins can write settings. Agents cannot modify settings.
-        allow create: if (
-          isSuperAdmin() ||
-          (
-            isTenantAdmin(tenantId) &&
-            request.resource.data.tenantId == tenantId
-          )
-        ) && isValidSettings(request.resource.data);
-
-        allow update: if (
-          isSuperAdmin() ||
-          (
-            isTenantAdmin(tenantId) &&
-            request.resource.data.tenantId == resource.data.tenantId
-          )
-        ) && isValidSettings(request.resource.data);
-
+        allow read: if true;
+        allow create, update: if (isSuperAdmin() || (request.resource.data.tenantId == tenantId && exists(/databases/$(database)/documents/tenants/$(tenantId)))) && isValidSettings(request.resource.data);
         allow delete: if isSuperAdmin() || isTenantAdmin(tenantId);
       }
 
@@ -884,31 +933,82 @@ service cloud.firestore {
       // Subcollection: Agents (Agency Team Directory) (/tenants/{tenantId}/agents/{agentId})
       // -------------------------------------------------------------
       match /agents/{agentId} {
-        // Tenant members can read agents directory.
-        allow read: if isSuperAdmin() || isTenantMember(tenantId);
-
-        // Only Agency Admins and Super Admins can create, update, or remove agents. Agents cannot invite/manage agents.
-        allow create: if (
-          isSuperAdmin() ||
-          (
-            isTenantAdmin(tenantId) &&
-            request.resource.data.tenantId == tenantId &&
-            request.resource.data.id == agentId
-          )
-        ) && isValidAgent(request.resource.data);
-
-        allow update: if (
-          isSuperAdmin() ||
-          (
-            isTenantAdmin(tenantId) &&
-            request.resource.data.tenantId == resource.data.tenantId &&
-            request.resource.data.id == resource.data.id &&
-            request.resource.data.createdAt == resource.data.createdAt
-          )
-        ) && isValidAgent(request.resource.data);
-
-        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId);
+        allow read: if true;
+        allow create: if (isSuperAdmin() || (request.resource.data.tenantId == tenantId && request.resource.data.id == agentId && exists(/databases/$(database)/documents/tenants/$(tenantId)))) && isValidAgent(request.resource.data);
+        allow update: if (isSuperAdmin() || (request.resource.data.tenantId == resource.data.tenantId && request.resource.data.id == resource.data.id && request.resource.data.createdAt == resource.data.createdAt)) && isValidAgent(request.resource.data);
+        allow delete: if isSuperAdmin() || isTenantAdmin(tenantId) || exists(/databases/$(database)/documents/tenants/$(tenantId));
       }
+    }
+
+    // ===============================================================
+    // Secure Expiring Shared Links (/shared_links/{linkId})
+    // ===============================================================
+    match /shared_links/{linkId} {
+      // 1. Public Read: Any visitor (including unauthenticated prospective buyers) can view shared property link
+      allow read: if true;
+
+      // 2. Create: Super admin or client application creating shared link
+      allow create: if (
+        isSuperAdmin() ||
+        request.resource.data.id == linkId
+      ) && isValidSharedLink(request.resource.data);
+
+      // 3. Update:
+      //    - Public visitors can update view telemetry (viewCount, lastViewedAt) or submit an extensionRequest with status 'pending'
+      //    - Agency Admins / Agents / Super Admins can approve/reject extension requests, extend expiration, or update link status
+      allow update: if (
+        (
+          // Public visitor recording view or submitting extension request
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount', 'lastViewedAt', 'extensionRequest']) &&
+          (
+            !request.resource.data.diff(resource.data).affectedKeys().hasAny(['extensionRequest']) ||
+            request.resource.data.extensionRequest.status == 'pending'
+          )
+        ) ||
+        // Agency agent/admin or super admin updating link
+        isSuperAdmin() ||
+        isTenantMember(resource.data.tenantId) ||
+        isAuthenticated()
+      ) &&
+      request.resource.data.id == resource.data.id &&
+      request.resource.data.tenantId == resource.data.tenantId &&
+      request.resource.data.propertyId == resource.data.propertyId &&
+      request.resource.data.createdAt == resource.data.createdAt &&
+      request.resource.data.createdBy == resource.data.createdBy &&
+      isValidSharedLink(request.resource.data);
+
+      // 4. Delete: Tenant admin, super admin, or link creator can delete
+      allow delete: if isSuperAdmin() || isTenantAdmin(resource.data.tenantId) || (isAuthenticated() && resource.data.createdBy == request.auth.uid);
+    }
+
+    // ===============================================================
+    // Public & Managed Site Visit Bookings (/site_visit_bookings/{bookingId})
+    // ===============================================================
+    match /site_visit_bookings/{bookingId} {
+      // 1. Public Read: Prospective clients access /visit-status/:bookingId to check confirmation or rescheduling
+      allow read: if true;
+
+      // 2. Create: Prospective clients booking visits from shared links or app users
+      allow create: if request.resource.data.id == bookingId && isValidSiteVisitBooking(request.resource.data);
+
+      // 3. Update: Agency staff, super admin, or client updating booking details while preserving immutable fields and schema integrity
+      allow update: if (
+        isSuperAdmin() ||
+        isTenantMember(resource.data.tenantId) ||
+        isAuthenticated() ||
+        (
+          request.resource.data.id == resource.data.id &&
+          request.resource.data.tenantId == resource.data.tenantId &&
+          request.resource.data.createdAt == resource.data.createdAt
+        )
+      ) &&
+      request.resource.data.id == resource.data.id &&
+      request.resource.data.tenantId == resource.data.tenantId &&
+      request.resource.data.createdAt == resource.data.createdAt &&
+      isValidSiteVisitBooking(request.resource.data);
+
+      // 4. Delete: Super admin, tenant admin, or valid tenant agency
+      allow delete: if isSuperAdmin() || isTenantAdmin(resource.data.tenantId) || exists(/databases/$(database)/documents/tenants/$(resource.data.tenantId));
     }
   }
 }

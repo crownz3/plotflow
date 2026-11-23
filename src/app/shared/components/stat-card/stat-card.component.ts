@@ -13,7 +13,7 @@ export class StatCardComponent {
   @Input({ required: true }) value!: string | number;
   @Input() subtitle?: string;
   @Input() badgeText?: string;
-  @Input() badgeColor: 'green' | 'blue' = 'green';
+  @Input() badgeColor: 'green' | 'blue' | 'amber' | 'red' = 'green';
   @Input() iconColor: 'blue' | 'green' | 'amber' | 'red' = 'blue';
   @Input() theme: string = '';
 }

@@ -10,6 +10,7 @@ import {
 import { Expense } from '../models/models';
 import { AuthService } from './auth.service';
 import { FirebaseService } from './firebase.service';
+import { sanitizeForFirestore } from '../utils/firestore.util';
 
 @Injectable({
   providedIn: 'root'
@@ -17,9 +18,8 @@ import { FirebaseService } from './firebase.service';
 export class ExpenseService {
   private auth = inject(AuthService);
   private firebase = inject(FirebaseService);
-  private storageKey = 'pf_expenses';
 
-  readonly allExpenses = signal<Expense[]>(this.loadCache());
+  readonly allExpenses = signal<Expense[]>([]);
   private unsubscribeSnapshot: Unsubscribe | null = null;
 
   readonly tenantExpenses = computed(() => {
@@ -144,24 +144,7 @@ export class ExpenseService {
     effect(() => {
       const tenantId = this.auth.activeTenantId();
       this.bindFirestoreListener(tenantId);
-    });
-  }
-
-  private loadCache(): Expense[] {
-    try {
-      const saved = localStorage.getItem(this.storageKey);
-      if (saved) {
-        const parsed: Expense[] = JSON.parse(saved);
-        return parsed.filter(e => e.tenantId !== 'tenant_prime_properties');
-      }
-    } catch {}
-    return [];
-  }
-
-  private saveCache(list: Expense[]): void {
-    try {
-      localStorage.setItem(this.storageKey, JSON.stringify(list));
-    } catch {}
+    }, { allowSignalWrites: true });
   }
 
   private bindFirestoreListener(tenantId: string): void {
@@ -170,7 +153,10 @@ export class ExpenseService {
       this.unsubscribeSnapshot = null;
     }
 
-    if (!tenantId) return;
+    if (!tenantId) {
+      this.allExpenses.set([]);
+      return;
+    }
 
     const path = tenantId === 'platform_global' ? 'tenants/tenant_default/expenses' : `tenants/${tenantId}/expenses`;
     try {
@@ -179,14 +165,11 @@ export class ExpenseService {
         colRef,
         { includeMetadataChanges: true },
         (snapshot) => {
-          if (!snapshot.empty) {
-            const remote: Expense[] = [];
-            snapshot.forEach(d => {
-              remote.push({ id: d.id, ...d.data() } as Expense);
-            });
-            this.allExpenses.set(remote);
-            this.saveCache(remote);
-          }
+          const remote: Expense[] = [];
+          snapshot.forEach(d => {
+            remote.push({ id: d.id, ...d.data() } as Expense);
+          });
+          this.allExpenses.set(remote);
         },
         (error) => {
           console.warn(`Firestore real-time sync for ${path} operating in offline cache mode:`, error.message);
@@ -208,11 +191,11 @@ export class ExpenseService {
     };
 
     this.allExpenses.update(list => [newExp, ...list]);
-    this.saveCache(this.allExpenses());
 
     try {
       const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/expenses`, id);
-      await setDoc(docRef, { ...newExp, _cloudSyncedAt: Date.now() });
+      const payload = sanitizeForFirestore({ ...newExp, _cloudSyncedAt: Date.now() });
+      await setDoc(docRef, payload);
     } catch (err) {
       console.warn('Firestore offline write queued for sync:', err);
     }
@@ -225,7 +208,6 @@ export class ExpenseService {
     const tenantId = current?.tenantId || this.auth.activeTenantId() || 'tenant_default';
 
     this.allExpenses.update(list => list.filter(e => e.id !== id));
-    this.saveCache(this.allExpenses());
 
     try {
       const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/expenses`, id);

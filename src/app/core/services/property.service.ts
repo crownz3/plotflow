@@ -11,6 +11,7 @@ import {
 import { Property } from '../models/models';
 import { AuthService } from './auth.service';
 import { FirebaseService } from './firebase.service';
+import { sanitizeForFirestore } from '../utils/firestore.util';
 
 @Injectable({
   providedIn: 'root'
@@ -18,9 +19,9 @@ import { FirebaseService } from './firebase.service';
 export class PropertyService {
   private auth = inject(AuthService);
   private firebase = inject(FirebaseService);
-  private storageKey = 'pf_properties';
 
-  readonly allProperties = signal<Property[]>(this.loadCache());
+  // Synced purely from Cloud Firestore with IndexedDB offline persistence
+  readonly allProperties = signal<Property[]>([]);
   private unsubscribeSnapshot: Unsubscribe | null = null;
 
   // Scoped strictly by active tenant
@@ -43,24 +44,7 @@ export class PropertyService {
     effect(() => {
       const tenantId = this.auth.activeTenantId();
       this.bindFirestoreListener(tenantId);
-    });
-  }
-
-  private loadCache(): Property[] {
-    try {
-      const saved = localStorage.getItem(this.storageKey);
-      if (saved) {
-        const parsed: Property[] = JSON.parse(saved);
-        return parsed.filter(p => !p.id.startsWith('prop_seed_') && p.tenantId !== 'tenant_prime_properties');
-      }
-    } catch {}
-    return [];
-  }
-
-  private saveCache(list: Property[]): void {
-    try {
-      localStorage.setItem(this.storageKey, JSON.stringify(list));
-    } catch {}
+    }, { allowSignalWrites: true });
   }
 
   private bindFirestoreListener(tenantId: string): void {
@@ -70,6 +54,7 @@ export class PropertyService {
     }
 
     if (!tenantId) {
+      this.allProperties.set([]);
       return;
     }
 
@@ -80,14 +65,11 @@ export class PropertyService {
         colRef,
         { includeMetadataChanges: true },
         (snapshot) => {
-          if (!snapshot.empty) {
-            const remote: Property[] = [];
-            snapshot.forEach(d => {
-              remote.push({ id: d.id, ...d.data() } as Property);
-            });
-            this.allProperties.set(remote);
-            this.saveCache(remote);
-          }
+          const remote: Property[] = [];
+          snapshot.forEach(d => {
+            remote.push({ id: d.id, ...d.data() } as Property);
+          });
+          this.allProperties.set(remote);
         },
         (error) => {
           console.warn(`Firestore real-time sync for ${path} operating in offline cache mode:`, error.message);
@@ -111,14 +93,15 @@ export class PropertyService {
 
     // 1. Optimistic Signal Update (instant UI responsiveness)
     this.allProperties.update(list => [newProp, ...list]);
-    this.saveCache(this.allProperties());
 
     // 2. Persist to Cloud Firestore (with automatic IndexedDB offline queueing)
     try {
       const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/properties`, id);
-      await setDoc(docRef, { ...newProp, _cloudSyncedAt: Date.now() });
+      const payload = sanitizeForFirestore({ ...newProp, _cloudSyncedAt: Date.now() });
+      await setDoc(docRef, payload);
+      console.log('✅ Property saved to Cloud Firestore:', id, `tenants/${tenantId}/properties/${id}`);
     } catch (err) {
-      console.warn('Firestore offline write queued for sync:', err);
+      console.error('❌ Cloud Firestore property write error:', err);
     }
 
     return newProp;
@@ -132,14 +115,15 @@ export class PropertyService {
     this.allProperties.update(list =>
       list.map(p => p.id === id ? { ...p, ...updates, updatedAt: Date.now() } : p)
     );
-    this.saveCache(this.allProperties());
 
     // 2. Cloud Firestore update
     try {
       const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/properties`, id);
-      await updateDoc(docRef, { ...updates, updatedAt: Date.now() });
+      const payload = sanitizeForFirestore({ ...updates, updatedAt: Date.now() });
+      await updateDoc(docRef, payload);
+      console.log('✅ Property updated in Cloud Firestore:', id);
     } catch (err) {
-      console.warn('Firestore offline update queued:', err);
+      console.error('❌ Cloud Firestore property update error:', err);
     }
   }
 
@@ -149,7 +133,6 @@ export class PropertyService {
 
     // 1. Optimistic Signal Update
     this.allProperties.update(list => list.filter(p => p.id !== id));
-    this.saveCache(this.allProperties());
 
     // 2. Cloud Firestore delete
     try {
@@ -162,6 +145,5 @@ export class PropertyService {
 
   clearAllProperties(): void {
     this.allProperties.set([]);
-    this.saveCache([]);
   }
 }

@@ -29,6 +29,19 @@ export class PropertyCardComponent {
 
   isSharing = false;
   defaultImg = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80';
+  activePhotoIndex = 0;
+
+  nextPhoto(event?: Event): void {
+    if (event) event.stopPropagation();
+    if (!this.property.images || this.property.images.length <= 1) return;
+    this.activePhotoIndex = (this.activePhotoIndex + 1) % this.property.images.length;
+  }
+
+  prevPhoto(event?: Event): void {
+    if (event) event.stopPropagation();
+    if (!this.property.images || this.property.images.length <= 1) return;
+    this.activePhotoIndex = (this.activePhotoIndex - 1 + this.property.images.length) % this.property.images.length;
+  }
 
   get intel(): PropertyIntelligence {
     return this.analyticsService.getPropertyIntelligence(this.property);

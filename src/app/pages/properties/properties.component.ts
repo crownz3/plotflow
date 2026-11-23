@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PropertyService } from '../../core/services/property.service';
@@ -9,17 +9,24 @@ import { StatusPillComponent } from '../../shared/components/status-pill/status-
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { PropertyStatsDrawerComponent } from '../../shared/components/property-stats-drawer/property-stats-drawer.component';
 import { DealModalComponent } from '../../shared/components/deal-modal/deal-modal.component';
+import { PlotMapViewerComponent } from '../../shared/components/plot-map-viewer/plot-map-viewer.component';
 import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
 import { AreaFormatPipe } from '../../shared/pipes/area-format.pipe';
-import { Property } from '../../core/models/models';
+import { Property, PlotCoordinate, PlotBoundaryPoint, Plot3DConfig } from '../../core/models/models';
 import { AuthService } from '../../core/services/auth.service';
 import { LoadingService } from '../../core/services/loading.service';
 import { SnackbarService } from '../../core/services/snackbar.service';
+import { SecureShareService } from '../../core/services/secure-share.service';
 import imageCompression from 'browser-image-compression';
+import { register as registerSwiper } from 'swiper/element/bundle';
+
+// Initialize Swiper Web Components (Zoom, Navigation, Pagination)
+registerSwiper();
 
 @Component({
   selector: 'app-properties',
   standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     CommonModule,
     FormsModule,
@@ -28,6 +35,7 @@ import imageCompression from 'browser-image-compression';
     EmptyStateComponent,
     PropertyStatsDrawerComponent,
     DealModalComponent,
+    PlotMapViewerComponent,
     CurrencyFormatPipe,
     AreaFormatPipe
   ],
@@ -38,6 +46,7 @@ export class PropertiesComponent {
   propertyService = inject(PropertyService);
   analyticsService = inject(PropertyAnalyticsService);
   brochureService = inject(BrochureService);
+  secureShareService = inject(SecureShareService);
   auth = inject(AuthService);
   loadingService = inject(LoadingService);
   snackbarService = inject(SnackbarService);
@@ -52,10 +61,39 @@ export class PropertiesComponent {
 
   openAddModal = signal(false);
   editingProperty = signal<Property | null>(null);
+  lastMarkedArea = signal<{ sqFt: number; cents: number; acres: number } | null>(null);
 
   copiedNotice = signal(false);
   isGeneratingBrochure = signal(false);
   isCompressingImage = signal(false);
+
+  // Swiper Lightbox & Pinch/Zoom State
+  lightboxOpen = signal(false);
+  lightboxActiveIndex = signal(0);
+  lightboxZoomLevel = signal(1);
+
+  openLightbox(index: number = 0) {
+    this.lightboxActiveIndex.set(index);
+    this.lightboxZoomLevel.set(1);
+    this.lightboxOpen.set(true);
+  }
+
+  closeLightbox() {
+    this.lightboxOpen.set(false);
+    this.lightboxZoomLevel.set(1);
+  }
+
+  zoomInLightbox() {
+    this.lightboxZoomLevel.update(z => Math.min(Number((z + 0.5).toFixed(1)), 4));
+  }
+
+  zoomOutLightbox() {
+    this.lightboxZoomLevel.update(z => Math.max(Number((z - 0.5).toFixed(1)), 1));
+  }
+
+  resetZoomLightbox() {
+    this.lightboxZoomLevel.set(1);
+  }
 
   // View Mode Toggle (Cards vs Table)
   readonly viewMode = signal<'cards' | 'table'>('cards');
@@ -73,6 +111,22 @@ export class PropertiesComponent {
     'Rainwater Harvesting'
   ];
 
+  readonly availableApprovals = [
+    'DTCP Approved',
+    'CMDA Approved',
+    'RERA Registered',
+    'Patta / Clean Title',
+    'Panchayat Approved',
+    'BMRDA Approved',
+    'BDA Approved',
+    'HMDA Approved'
+  ];
+
+  readonly infraDropdownOpen = signal(false);
+  readonly approvalDropdownOpen = signal(false);
+  readonly editInfraDropdownOpen = signal(false);
+  readonly editApprovalDropdownOpen = signal(false);
+
   newProp = this.getInitialNewProp();
   editForm = this.getInitialNewProp();
 
@@ -83,23 +137,27 @@ export class PropertiesComponent {
       propertyType: 'plot' as 'apartment' | 'villa' | 'plot' | 'commercial',
       listingType: 'sale' as 'sale' | 'rent',
       status: 'available' as 'available' | 'under_offer' | 'sold',
-      price: 18000000,
+      price: null as any,
       negotiable: true,
-      area: 2400,
+      area: null as any,
       areaUnit: 'sqft' as 'sqft' | 'cent' | 'acre' | 'ground' | 'guntha',
       locality: '',
       city: 'Chennai',
       address: '',
       pincode: '',
       mapsUrl: '',
+      coordinates: undefined as PlotCoordinate | undefined,
+      plotBoundary: [] as PlotBoundaryPoint[],
+      view3D: undefined as Plot3DConfig | undefined,
       // Plot specific
-      plotDimensions: '40 x 60',
-      plotRoadWidth: 40,
-      plotApproval: 'DTCP' as 'DTCP' | 'CMDA' | 'RERA' | 'Panchayat' | 'Patta' | 'Approved' | 'Other',
+      plotDimensions: '',
+      plotRoadWidth: null as any,
+      plotApprovals: ['DTCP Approved'] as string[],
+      plotApproval: 'DTCP Approved' as string,
       isCornerPlot: false,
       hasBoundaryWall: false,
       isGatedLayout: true,
-      soilType: 'Red Sand / Loamy',
+      soilType: '',
       // Villa specific
       villaPlotArea: 2400,
       villaBuiltUpArea: 3200,
@@ -203,8 +261,138 @@ export class PropertiesComponent {
 
   getMapsUrlForProp(prop: Property): string {
     if (prop.mapsUrl && prop.mapsUrl.trim()) return prop.mapsUrl.trim();
+    if (prop.location.coordinates?.lat && prop.location.coordinates?.lng) {
+      return `https://www.google.com/maps?q=${prop.location.coordinates.lat},${prop.location.coordinates.lng}`;
+    }
     const query = `${prop.location.address || ''} ${prop.location.locality || ''}, ${prop.location.city || ''}`.trim();
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query || 'Chennai')}`;
+  }
+
+  onCoordinatesChange(coords: PlotCoordinate, target: 'new' | 'edit') {
+    const form = target === 'new' ? this.newProp : this.editForm;
+    form.coordinates = coords;
+    form.mapsUrl = `https://www.google.com/maps?q=${coords.lat},${coords.lng}`;
+  }
+
+  onBoundaryChange(boundary: PlotBoundaryPoint[], target: 'new' | 'edit') {
+    const form = target === 'new' ? this.newProp : this.editForm;
+    form.plotBoundary = boundary;
+    if (boundary && boundary.length >= 3) {
+      const lat = Number((boundary.reduce((sum, p) => sum + p.lat, 0) / boundary.length).toFixed(6));
+      const lng = Number((boundary.reduce((sum, p) => sum + p.lng, 0) / boundary.length).toFixed(6));
+      form.coordinates = { lat, lng };
+      form.mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+    }
+  }
+
+  onView3DChange(v3d: Plot3DConfig, target: 'new' | 'edit') {
+    const form = target === 'new' ? this.newProp : this.editForm;
+    form.view3D = v3d;
+  }
+
+  onMarkedAreaChange(area: { sqFt: number; cents: number; acres: number } | null, target: 'new' | 'edit') {
+    const form = target === 'new' ? this.newProp : this.editForm;
+    if (target === 'new') {
+      this.lastMarkedArea.set(area);
+    }
+    if (!area) return;
+
+    // Automatically synchronize the form area field based on current unit
+    if (form.areaUnit === 'cent') {
+      form.area = area.cents;
+    } else if (form.areaUnit === 'acre') {
+      form.area = area.acres;
+    } else if (form.areaUnit === 'ground') {
+      form.area = Number((area.sqFt / 2400).toFixed(2));
+    } else if (form.areaUnit === 'guntha') {
+      form.area = Number((area.sqFt / 1089).toFixed(2));
+    } else {
+      // Default sqft
+      form.area = area.sqFt;
+    }
+
+    // Clear stale dimensions or indicate custom polygon
+    if (!form.plotDimensions || form.plotDimensions === '40 x 60') {
+      if (form.plotBoundary && form.plotBoundary.length > 4) {
+        form.plotDimensions = `Irregular (${form.plotBoundary.length}-Corner)`;
+      } else {
+        form.plotDimensions = '';
+      }
+    }
+  }
+
+  onAreaUnitChange(newUnit: string, target: 'new' | 'edit') {
+    const form = target === 'new' ? this.newProp : this.editForm;
+    form.areaUnit = newUnit as any;
+    const area = this.lastMarkedArea();
+    if (area) {
+      if (newUnit === 'cent') {
+        form.area = area.cents;
+      } else if (newUnit === 'acre') {
+        form.area = area.acres;
+      } else if (newUnit === 'ground') {
+        form.area = Number((area.sqFt / 2400).toFixed(2));
+      } else if (newUnit === 'guntha') {
+        form.area = Number((area.sqFt / 1089).toFixed(2));
+      } else {
+        form.area = area.sqFt;
+      }
+    }
+  }
+
+  getConvertedAreaHint(area: number | null | undefined, unit: string): { primary: string; secondary: string } | null {
+    if (!area || area <= 0) return null;
+    let sqFt = 0;
+    switch (unit) {
+      case 'cent':
+        sqFt = area * 435.6;
+        break;
+      case 'ground':
+        sqFt = area * 2400;
+        break;
+      case 'acre':
+        sqFt = area * 43560;
+        break;
+      case 'guntha':
+        sqFt = area * 1089;
+        break;
+      case 'sqft':
+      default:
+        sqFt = area;
+        break;
+    }
+
+    const cents = Number((sqFt / 435.6).toFixed(2));
+    const grounds = Number((sqFt / 2400).toFixed(2));
+    const acres = Number((sqFt / 43560).toFixed(3));
+    const formattedSqft = Math.round(sqFt).toLocaleString('en-IN');
+
+    if (unit === 'sqft') {
+      return {
+        primary: `≈ ${cents} Cents`,
+        secondary: `approx. ${grounds} Ground • ${acres} Acres`
+      };
+    } else if (unit === 'cent') {
+      return {
+        primary: `≈ ${formattedSqft} Sq.ft`,
+        secondary: `approx. ${grounds} Ground • ${acres} Acres`
+      };
+    } else if (unit === 'ground') {
+      return {
+        primary: `≈ ${cents} Cents`,
+        secondary: `approx. ${formattedSqft} Sq.ft • ${acres} Acres`
+      };
+    } else if (unit === 'acre') {
+      return {
+        primary: `≈ ${cents} Cents (100 Cents / Acre)`,
+        secondary: `approx. ${formattedSqft} Sq.ft • ${grounds} Ground`
+      };
+    } else {
+      return {
+        primary: `≈ ${cents} Cents`,
+        secondary: `approx. ${formattedSqft} Sq.ft`
+      };
+    }
   }
 
   // Toggle on-site infrastructure item
@@ -221,6 +409,28 @@ export class PropertiesComponent {
   isInfraSelected(item: string, target: 'new' | 'edit'): boolean {
     const list = target === 'new' ? this.newProp.infrastructure : this.editForm.infrastructure;
     return list.includes(item);
+  }
+
+  // Toggle approval authority item
+  toggleApproval(item: string, target: 'new' | 'edit') {
+    const form = target === 'new' ? this.newProp : this.editForm;
+    if (!form.plotApprovals) {
+      form.plotApprovals = [];
+    }
+    const index = form.plotApprovals.indexOf(item);
+    if (index >= 0) {
+      if (form.plotApprovals.length > 1) {
+        form.plotApprovals.splice(index, 1);
+      }
+    } else {
+      form.plotApprovals.push(item);
+    }
+    form.plotApproval = form.plotApprovals.join(' & ');
+  }
+
+  isApprovalSelected(item: string, target: 'new' | 'edit'): boolean {
+    const form = target === 'new' ? this.newProp : this.editForm;
+    return form.plotApprovals ? form.plotApprovals.includes(item) : false;
   }
 
   // Quick photo upload with client-side compression
@@ -272,10 +482,14 @@ export class PropertiesComponent {
   saveProperty() {
     if (!this.newProp.title.trim()) return;
 
+    const notes = this.newProp.ownerPrivateNotes.trim();
+    const description = this.newProp.description.trim() ||
+      (notes ? `${notes}` : `${this.newProp.title} in prime ${this.newProp.locality || this.newProp.city}.`);
+
     const propData: Omit<Property, 'id' | 'createdAt' | 'updatedAt'> = {
       tenantId: this.auth.activeTenantId(),
       title: this.newProp.title.trim(),
-      description: this.newProp.description.trim() || `${this.newProp.title} in prime ${this.newProp.locality || this.newProp.city}.`,
+      description,
       propertyType: this.newProp.propertyType,
       listingType: this.newProp.listingType,
       status: this.newProp.status,
@@ -288,7 +502,10 @@ export class PropertiesComponent {
         address: this.newProp.address.trim() || `${this.newProp.locality}, ${this.newProp.city}`,
         city: this.newProp.city.trim(),
         locality: this.newProp.locality.trim() || this.newProp.city.trim(),
-        pincode: this.newProp.pincode.trim()
+        pincode: this.newProp.pincode.trim(),
+        coordinates: this.newProp.coordinates,
+        plotBoundary: this.newProp.plotBoundary,
+        view3D: this.newProp.view3D
       },
       mapsUrl: this.newProp.mapsUrl.trim() || undefined,
       infrastructure: [...this.newProp.infrastructure],
@@ -316,7 +533,9 @@ export class PropertiesComponent {
       propData.plotDetails = {
         dimensions: this.newProp.plotDimensions.trim(),
         roadWidthFt: this.newProp.plotRoadWidth,
-        approvalStatus: this.newProp.plotApproval,
+        approvalStatus: this.newProp.plotApprovals && this.newProp.plotApprovals.length > 0
+          ? (this.newProp.plotApprovals.join(' & ') as any)
+          : (this.newProp.plotApproval as any),
         isCornerPlot: this.newProp.isCornerPlot,
         hasBoundaryWall: this.newProp.hasBoundaryWall,
         isGatedLayout: this.newProp.isGatedLayout,
@@ -384,6 +603,9 @@ export class PropertiesComponent {
       address: prop.location.address,
       pincode: prop.location.pincode || '',
       mapsUrl: prop.mapsUrl || '',
+      coordinates: prop.location.coordinates,
+      plotBoundary: prop.location.plotBoundary ? [...prop.location.plotBoundary] : [],
+      view3D: prop.location.view3D ? { ...prop.location.view3D } : undefined,
       infrastructure: prop.infrastructure ? [...prop.infrastructure] : [...prop.amenities],
       images: prop.images ? [...prop.images] : [],
       videoTourUrl: prop.media?.videoTourUrl || '',
@@ -394,7 +616,10 @@ export class PropertiesComponent {
       // Plot
       plotDimensions: prop.plotDetails?.dimensions || '40 x 60',
       plotRoadWidth: prop.plotDetails?.roadWidthFt || 30,
-      plotApproval: (prop.plotDetails?.approvalStatus as any) || 'DTCP',
+      plotApprovals: prop.plotDetails?.approvalStatus
+        ? prop.plotDetails.approvalStatus.split(/\s*&\s*|\s*,\s*/)
+        : ['DTCP Approved'],
+      plotApproval: (prop.plotDetails?.approvalStatus as any) || 'DTCP Approved',
       isCornerPlot: !!prop.plotDetails?.isCornerPlot,
       hasBoundaryWall: !!prop.plotDetails?.hasBoundaryWall,
       isGatedLayout: !!prop.plotDetails?.isGatedLayout,
@@ -445,7 +670,10 @@ export class PropertiesComponent {
         address: this.editForm.address.trim() || `${this.editForm.locality}, ${this.editForm.city}`,
         city: this.editForm.city.trim(),
         locality: this.editForm.locality.trim() || this.editForm.city.trim(),
-        pincode: this.editForm.pincode.trim()
+        pincode: this.editForm.pincode.trim(),
+        coordinates: this.editForm.coordinates,
+        plotBoundary: this.editForm.plotBoundary,
+        view3D: this.editForm.view3D
       },
       mapsUrl: this.editForm.mapsUrl.trim() || undefined,
       infrastructure: [...this.editForm.infrastructure],
@@ -466,7 +694,9 @@ export class PropertiesComponent {
       updates.plotDetails = {
         dimensions: this.editForm.plotDimensions.trim(),
         roadWidthFt: this.editForm.plotRoadWidth,
-        approvalStatus: this.editForm.plotApproval,
+        approvalStatus: this.editForm.plotApprovals && this.editForm.plotApprovals.length > 0
+          ? (this.editForm.plotApprovals.join(' & ') as any)
+          : (this.editForm.plotApproval as any),
         isCornerPlot: this.editForm.isCornerPlot,
         hasBoundaryWall: this.editForm.hasBoundaryWall,
         isGatedLayout: this.editForm.isGatedLayout,
@@ -522,12 +752,100 @@ export class PropertiesComponent {
   }
 
   // --- Sharing Operations ---
+  shareDurationHours = 24;
+  shareIncludePrice = true;
+  shareAntiScreenshot = true;
+  showSecureLinkConfig = signal<boolean>(false);
+  isCustomDuration = signal<boolean>(false);
+  customDurationValue = 12;
+  customDurationUnit: 'hours' | 'days' = 'hours';
+  generatedSecureUrl = signal<string | null>(null);
+  isGeneratingSecureLink = signal<boolean>(false);
+  secureLinkCopiedNotice = signal<boolean>(false);
+
+  toggleSecureLinkConfig() {
+    this.showSecureLinkConfig.update(v => !v);
+  }
+
+  selectPresetDuration(hours: number) {
+    this.isCustomDuration.set(false);
+    this.shareDurationHours = hours;
+  }
+
+  selectCustomDuration() {
+    this.isCustomDuration.set(true);
+    this.updateCustomDuration();
+  }
+
+  updateCustomDuration() {
+    const val = Number(this.customDurationValue) || 1;
+    if (this.customDurationUnit === 'days') {
+      this.shareDurationHours = Math.max(1, val) * 24;
+    } else {
+      this.shareDurationHours = Math.max(1, val);
+    }
+  }
+
   openShareModal(prop: Property) {
     this.shareModalProperty.set(prop);
+    this.generatedSecureUrl.set(null);
+    this.showSecureLinkConfig.set(false);
+    this.isCustomDuration.set(false);
+    this.customDurationValue = 12;
+    this.customDurationUnit = 'hours';
+    this.shareIncludePrice = true;
+    this.shareDurationHours = 24;
   }
 
   closeShareModal() {
     this.shareModalProperty.set(null);
+    this.generatedSecureUrl.set(null);
+    this.showSecureLinkConfig.set(false);
+  }
+
+  async generateSecureShareLink(prop: Property) {
+    this.isGeneratingSecureLink.set(true);
+    try {
+      const link = await this.secureShareService.createSecureLink(prop, {
+        durationHours: this.shareDurationHours,
+        includePrice: this.shareIncludePrice,
+        allowScreenshots: !this.shareAntiScreenshot,
+        enableWatermark: this.shareAntiScreenshot
+      });
+      const url = this.secureShareService.getPublicShareUrl(link.id);
+      this.generatedSecureUrl.set(url);
+      this.snackbarService.success(`Secure expiring link created! (Valid for ${this.shareDurationHours} hours)`);
+    } catch (err) {
+      console.error('Error generating secure link:', err);
+      this.snackbarService.error('Failed to generate secure link. Please try again.');
+    } finally {
+      this.isGeneratingSecureLink.set(false);
+    }
+  }
+
+  async copySecureUrl() {
+    const url = this.generatedSecureUrl();
+    if (!url) return;
+    await navigator.clipboard.writeText(url);
+    this.secureLinkCopiedNotice.set(true);
+    this.snackbarService.success('Secure link copied to clipboard!');
+    setTimeout(() => this.secureLinkCopiedNotice.set(false), 2500);
+  }
+
+  shareSecureUrlViaWhatsApp(prop: Property) {
+    const url = this.generatedSecureUrl();
+    if (!url) return;
+    const priceText = this.shareIncludePrice ? `Price: ₹${prop.price?.toLocaleString('en-IN')}` : `Price: Available on Request`;
+    const text = encodeURIComponent(
+      `*Exclusive Property Opportunity: ${prop.title}*\n` +
+      `📍 Location: ${prop.location.locality}, ${prop.location.city}\n` +
+      `📐 Area: ${prop.area} ${prop.areaUnit}\n` +
+      `💰 ${priceText}\n\n` +
+      `🔒 *Confidential Property Link (Expires in ${this.shareDurationHours}h):*\n` +
+      `${url}\n\n` +
+      `_Note: Protected link. If you need extended viewing access, tap 'Request More Time' on the page._`
+    );
+    window.open(`https://wa.me/?text=${text}`, '_blank');
   }
 
   async downloadBrochure(prop: Property) {

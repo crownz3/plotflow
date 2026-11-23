@@ -1,0 +1,268 @@
+<div class="plot-viewer-card">
+  <!-- Top Navigation & Controls Toolbar -->
+  <div class="viewer-toolbar">
+    <div class="view-mode-toggle">
+      <button
+        type="button"
+        class="mode-btn"
+        [class.active]="viewMode() === '2d'"
+        (click)="setViewMode('2d')"
+        title="2D Aerial Satellite & Map View">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+          <line x1="8" y1="2" x2="8" y2="18"></line>
+          <line x1="16" y1="6" x2="16" y2="22"></line>
+        </svg>
+        <span>2D Map</span>
+      </button>
+
+      <button
+        type="button"
+        class="mode-btn"
+        [class.active]="viewMode() === '3d'"
+        (click)="setViewMode('3d')"
+        title="Interactive 3D Perspective Layout">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+          <line x1="12" y1="22.08" x2="12" y2="12"></line>
+        </svg>
+        <span>3D Layout</span>
+      </button>
+    </div>
+
+    <!-- Quick Actions Toolbar -->
+    <!-- Quick Actions Toolbar -->
+    <div class="toolbar-actions">
+      <!-- 2D Actions -->
+      <ng-container *ngIf="viewMode() === '2d'">
+        <!-- Map Layer 2-Option Selector -->
+        <div class="segmented-control" title="Choose map display type">
+          <button
+            type="button"
+            class="seg-btn"
+            [class.active]="mapLayer() === 'satellite'"
+            (click)="setMapLayer('satellite')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+            <span>Satellite</span>
+          </button>
+          <button
+            type="button"
+            class="seg-btn"
+            [class.active]="mapLayer() === 'streets'"
+            (click)="setMapLayer('streets')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+              <line x1="3" y1="9" x2="21" y2="9"></line>
+              <line x1="9" y1="21" x2="9" y2="9"></line>
+            </svg>
+            <span>Normal Map</span>
+          </button>
+        </div>
+
+        <!-- Map Marking 2-Option Selector (Pin vs Draw Boundary) -->
+        <div class="segmented-control" *ngIf="editable()" title="Choose marking mode">
+          <button
+            type="button"
+            class="seg-btn"
+            [class.active]="!isDrawingBoundary()"
+            (click)="setDrawingMode(false)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span>Pin Location</span>
+          </button>
+          <button
+            type="button"
+            class="seg-btn"
+            [class.active]="isDrawingBoundary()"
+            (click)="setDrawingMode(true)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+            <span>Draw Boundary</span>
+          </button>
+        </div>
+
+        <button
+          *ngIf="activeBoundary().length >= 2"
+          type="button"
+          class="btn-tool"
+          [class.active]="!showDimensionLabels()"
+          (click)="toggleDimensionLabels()"
+          [title]="showDimensionLabels() ? 'Hide dimension labels to clear map view' : 'Show edge dimension labels'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 7V4h16v3M9 20h6M12 4v16"></path>
+          </svg>
+          <span class="tool-label">{{ showDimensionLabels() ? 'Hide Labels' : 'Show Labels' }}</span>
+        </button>
+
+        <button
+          *ngIf="editable() && activeBoundary().length > 0"
+          type="button"
+          class="btn-tool undo-btn"
+          (click)="undoLastPoint()"
+          title="Undo last boundary corner">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10"></polyline>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+          </svg>
+          <span class="tool-label">Undo</span>
+        </button>
+      </ng-container>
+
+      <!-- 3D Actions -->
+      <ng-container *ngIf="viewMode() === '3d'">
+        <button
+          type="button"
+          class="btn-tool"
+          [class.active]="show3DWalls()"
+          (click)="toggle3DWalls()"
+          title="Toggle 5ft 3D compound wall extrusion">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+            <path d="M3 9h18M3 15h18M9 3v6M15 3v6M6 9v6M12 9v6M18 9v6M9 15v6M15 15v6"></path>
+          </svg>
+          <span class="tool-label">Walls</span>
+        </button>
+
+        <button
+          type="button"
+          class="btn-tool"
+          (click)="zoom3D(0.2)"
+          title="Zoom in">
+          <span class="tool-icon">+</span>
+        </button>
+
+        <button
+          type="button"
+          class="btn-tool"
+          (click)="zoom3D(-0.2)"
+          title="Zoom out">
+          <span class="tool-icon">&minus;</span>
+        </button>
+
+        <button
+          type="button"
+          class="btn-tool"
+          (click)="reset3DCamera()"
+          title="Reset 3D camera angle">
+          <span class="tool-icon">↺</span>
+          <span class="tool-label">Reset</span>
+        </button>
+      </ng-container>
+
+      <!-- External Navigation -->
+      <button
+        type="button"
+        class="btn-tool link-tool"
+        (click)="openExternalGoogleMaps()"
+        title="Open GPS coordinates in Google Maps app">
+        <span class="tool-icon">↗</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Viewer Canvas Container -->
+  <div class="viewer-body">
+    <!-- 2D Leaflet Interactive Map -->
+    <div
+      #mapContainer
+      class="map-viewport"
+      [class.drawing-mode]="isDrawingBoundary()"
+      [class.hidden]="viewMode() !== '2d'">
+    </div>
+
+    <!-- 3D Interactive WebGL / Canvas -->
+    <div
+      class="canvas-3d-viewport"
+      [class.hidden]="viewMode() !== '3d'">
+      <canvas
+        #canvas3D
+        class="canvas-element"
+        (pointerdown)="onPointerDown($event)"
+        (pointermove)="onPointerMove($event)"
+        (pointerup)="onPointerUp($event)"
+        (pointercancel)="onPointerUp($event)">
+      </canvas>
+
+      <!-- Center Under Development Badge -->
+      <div class="under-dev-center-overlay animate-fade-in" *ngIf="viewMode() === '3d'">
+        <div class="under-dev-pill">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+          </svg>
+          <div class="under-dev-info">
+            <span class="under-dev-title">3D Spatial Layout</span>
+            <span class="under-dev-status">Under Development</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3D Mobile Touch Hint Overlay -->
+      <div class="touch-hint animate-fade-in" *ngIf="viewMode() === '3d'">
+        <span>Drag to rotate 360° &bull; Tilt elevation</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Information Bar -->
+  <div class="viewer-footer">
+    <div class="footer-meta">
+      <div class="coord-pill" (click)="openExternalGoogleMaps()" title="Click to open coordinates in Google Maps">
+        <span class="dot"></span>
+        <span class="latlng">{{ activeCoords().lat.toFixed(5) }}, {{ activeCoords().lng.toFixed(5) }}</span>
+      </div>
+
+      <div class="boundary-badge" *ngIf="activeBoundary().length > 0">
+        <span>✓ {{ activeBoundary().length }}-Corner Mapped</span>
+      </div>
+
+      <!-- Real-time Plot / Land Area Calculation Pill -->
+      <div class="marked-area-pill animate-fade-in" *ngIf="markedArea() as m">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+        <span>Marked: <strong>{{ m.sqFt | number }} sq.ft</strong> ({{ m.cents }} cents)</span>
+      </div>
+    </div>
+
+    <div class="footer-actions" *ngIf="editable()">
+      <button type="button" class="btn-micro" (click)="useCurrentGPS()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 2v3m0 14v3M2 12h3m14 0h3"></path>
+        </svg>
+        <span>Use Device GPS</span>
+      </button>
+
+      <button type="button" class="btn-micro" (click)="centerOnLocality()" *ngIf="locality() || city()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 21h18M6 21V7l8-4v18M14 11h4v10"></path>
+        </svg>
+        <span>Center on City</span>
+      </button>
+
+      <button type="button" class="btn-micro" (click)="undoLastPoint()" *ngIf="activeBoundary().length > 0" title="Undo last corner">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="1 4 1 10 7 10"></polyline>
+          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+        </svg>
+        <span>Undo Point</span>
+      </button>
+
+      <button type="button" class="btn-micro danger" (click)="clearBoundary()" *ngIf="activeBoundary().length > 0">
+        Clear Boundary
+      </button>
+    </div>
+  </div>
+</div>
+

@@ -6,7 +6,6 @@ import { FirebaseService } from './firebase.service';
   providedIn: 'root'
 })
 export class PlatformConfigService {
-  private readonly STORAGE_KEY = 'plotflow_platform_config';
   private firebase = inject(FirebaseService);
 
   readonly platformName = signal<string>('PlotFlow');
@@ -14,22 +13,11 @@ export class PlatformConfigService {
   readonly supportEmail = signal<string>('mohamedibrahim040125@gmail.com');
 
   constructor() {
-    this.loadFromStorage();
     this.bindFirestoreConfigListener();
 
-    // Auto-persist whenever platformName or tagline changes
+    // Dynamically update document title whenever platformName changes
     effect(() => {
-      const config = {
-        platformName: this.platformName(),
-        tagline: this.tagline(),
-        supportEmail: this.supportEmail()
-      };
-      try {
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(config));
-        document.title = `${this.platformName()} — Real Estate Broker CRM & SaaS`;
-      } catch (e) {
-        // Safe fallback in non-browser or sandbox environments
-      }
+      document.title = `${this.platformName()} — Real Estate Broker CRM & SaaS`;
     });
   }
 
@@ -55,20 +43,6 @@ export class PlatformConfigService {
       );
     } catch (e) {
       console.warn('Could not bind platform_config listener:', e);
-    }
-  }
-
-  private loadFromStorage(): void {
-    try {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed.platformName) this.platformName.set(parsed.platformName);
-        if (parsed.tagline) this.tagline.set(parsed.tagline);
-        if (parsed.supportEmail) this.supportEmail.set(parsed.supportEmail);
-      }
-    } catch (e) {
-      // Ignore storage read errors
     }
   }
 

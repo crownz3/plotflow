@@ -11,6 +11,7 @@ import {
 import { SiteVisit } from '../models/models';
 import { AuthService } from './auth.service';
 import { FirebaseService } from './firebase.service';
+import { sanitizeForFirestore } from '../utils/firestore.util';
 
 @Injectable({
   providedIn: 'root'
@@ -18,9 +19,8 @@ import { FirebaseService } from './firebase.service';
 export class SiteVisitService {
   private auth = inject(AuthService);
   private firebase = inject(FirebaseService);
-  private storageKey = 'pf_visits';
 
-  readonly allVisits = signal<SiteVisit[]>(this.loadCache());
+  readonly allVisits = signal<SiteVisit[]>([]);
   private unsubscribeSnapshot: Unsubscribe | null = null;
 
   readonly tenantVisits = computed(() => {
@@ -40,24 +40,7 @@ export class SiteVisitService {
     effect(() => {
       const tenantId = this.auth.activeTenantId();
       this.bindFirestoreListener(tenantId);
-    });
-  }
-
-  private loadCache(): SiteVisit[] {
-    try {
-      const saved = localStorage.getItem(this.storageKey);
-      if (saved) {
-        const parsed: SiteVisit[] = JSON.parse(saved);
-        return parsed.filter(v => v.tenantId !== 'tenant_prime_properties');
-      }
-    } catch {}
-    return [];
-  }
-
-  private saveCache(list: SiteVisit[]): void {
-    try {
-      localStorage.setItem(this.storageKey, JSON.stringify(list));
-    } catch {}
+    }, { allowSignalWrites: true });
   }
 
   private bindFirestoreListener(tenantId: string): void {
@@ -66,7 +49,10 @@ export class SiteVisitService {
       this.unsubscribeSnapshot = null;
     }
 
-    if (!tenantId) return;
+    if (!tenantId) {
+      this.allVisits.set([]);
+      return;
+    }
 
     const path = tenantId === 'platform_global' ? 'tenants/tenant_default/site_visits' : `tenants/${tenantId}/site_visits`;
     try {
@@ -75,14 +61,11 @@ export class SiteVisitService {
         colRef,
         { includeMetadataChanges: true },
         (snapshot) => {
-          if (!snapshot.empty) {
-            const remote: SiteVisit[] = [];
-            snapshot.forEach(d => {
-              remote.push({ id: d.id, ...d.data() } as SiteVisit);
-            });
-            this.allVisits.set(remote);
-            this.saveCache(remote);
-          }
+          const remote: SiteVisit[] = [];
+          snapshot.forEach(d => {
+            remote.push({ id: d.id, ...d.data() } as SiteVisit);
+          });
+          this.allVisits.set(remote);
         },
         (error) => {
           console.warn(`Firestore real-time sync for ${path} operating in offline cache mode:`, error.message);
@@ -104,11 +87,11 @@ export class SiteVisitService {
     };
 
     this.allVisits.update(list => [newVisit, ...list]);
-    this.saveCache(this.allVisits());
 
     try {
       const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/site_visits`, id);
-      await setDoc(docRef, { ...newVisit, _cloudSyncedAt: Date.now() });
+      const payload = sanitizeForFirestore({ ...newVisit, _cloudSyncedAt: Date.now() });
+      await setDoc(docRef, payload);
     } catch (err) {
       console.warn('Firestore offline write queued for sync:', err);
     }
@@ -123,7 +106,6 @@ export class SiteVisitService {
     this.allVisits.update(list =>
       list.map(v => v.id === visitId ? { ...v, status, feedback } : v)
     );
-    this.saveCache(this.allVisits());
 
     try {
       const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/site_visits`, visitId);
@@ -152,7 +134,6 @@ export class SiteVisitService {
     this.allVisits.update(list =>
       list.map(v => v.id === visitId ? { ...v, ...updates } : v)
     );
-    this.saveCache(this.allVisits());
 
     try {
       const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/site_visits`, visitId);
@@ -167,7 +148,6 @@ export class SiteVisitService {
     const tenantId = current?.tenantId || this.auth.activeTenantId() || 'tenant_default';
 
     this.allVisits.update(list => list.filter(v => v.id !== visitId));
-    this.saveCache(this.allVisits());
 
     try {
       const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/site_visits`, visitId);

@@ -1,0 +1,512 @@
+<div class="public-viewport-container" [class.unselectable]="!link()?.allowScreenshots">
+  <!-- Privacy Window Shield (Activated when window loses focus or screenshot tool attempted) -->
+  <div class="privacy-blur-shield animate-fade-in" *ngIf="isWindowBlurred() && !link()?.allowScreenshots">
+    <div class="shield-dialog">
+      <div class="shield-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+      <h3>Confidential Property Dossier</h3>
+      <p>Content is temporarily shielded while the browser window is inactive to protect agency exclusivity.</p>
+      <span class="shield-hint">Click back on this window to resume viewing</span>
+    </div>
+  </div>
+
+  <!-- Forensic Diagonal Watermark Tiling -->
+  <div class="forensic-watermark-overlay" *ngIf="link()?.enableWatermark && !isExpired()">
+    <div class="watermark-grid">
+      <span *ngFor="let item of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]">
+        CONFIDENTIAL • {{ link()?.agencyName || 'PLOTFLOW' }} • DO NOT COPY
+      </span>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="state-container loading-state" *ngIf="isLoading()">
+    <div class="pf-spinner"></div>
+    <p>Loading Verified Property Dossier...</p>
+  </div>
+
+  <!-- Error State (Shown only when no link loaded and loadError exists) -->
+  <div class="state-container error-state animate-fade-in" *ngIf="!isLoading() && !link() && loadError()">
+    <div class="error-icon">✕</div>
+    <h2>Link Unavailable</h2>
+    <p>{{ loadError() }}</p>
+  </div>
+
+  <!-- Main Content When Link Loaded -->
+  <div class="public-dossier-wrapper" *ngIf="!isLoading() && link() as l">
+    <!-- Top Agency Branding Bar (Desktop + Mobile) -->
+    <header class="agency-branding-bar">
+      <div class="agency-info-col">
+        <div class="agency-logo-wrap" *ngIf="l.agencyLogo">
+          <img [src]="l.agencyLogo" [alt]="l.agencyName" class="agency-logo">
+        </div>
+        <div class="agency-logo-placeholder" *ngIf="!l.agencyLogo">
+          {{ (l.agencyName || 'PF').substring(0, 2).toUpperCase() }}
+        </div>
+        <div class="agency-text">
+          <div class="agency-title-row">
+            <h1 class="agency-name">{{ l.agencyName }}</h1>
+            <span class="verified-badge">✓ Verified Broker</span>
+          </div>
+          <span class="rera-pill" *ngIf="l.agencyRera">RERA: {{ l.agencyRera }}</span>
+        </div>
+      </div>
+
+      <!-- Quick Agency Contact Actions (Header Desktop) -->
+      <div class="agency-actions-desktop">
+        <button type="button" class="agency-action-btn visit-btn" (click)="openSiteVisitModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>Schedule Site Visit</span>
+        </button>
+
+        <a [href]="'tel:' + l.agentPhone" class="agency-action-btn phone-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+          </svg>
+          <span>Call: {{ l.agentPhone }}</span>
+        </a>
+
+        <a [href]="whatsappUrl()" target="_blank" class="agency-action-btn whatsapp-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+          </svg>
+          <span>WhatsApp Agent</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Expiry Timer Ribbon (When link is active) -->
+    <div class="expiry-timer-ribbon" *ngIf="!isExpired()">
+      <div class="ribbon-content">
+        <span class="timer-dot"></span>
+        <span class="timer-text">Confidential Link: {{ remainingTimeFormatted() }}</span>
+      </div>
+      <span class="security-chip">Protected Viewing</span>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 1. EXPIRED LINK SCREEN & ACCESS EXTENSION FORM                            -->
+    <!-- ========================================================================= -->
+    <div class="expired-card-container animate-fade-in" *ngIf="isExpired()">
+      <div class="expired-card">
+        <div class="expired-icon-wrap">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d93025" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 14 14"></polyline>
+          </svg>
+        </div>
+
+        <h2 class="expired-title">Access Link Expired</h2>
+        <p class="expired-desc">
+          To maintain client confidentiality and current valuation pricing, access to <strong>"{{ l.propertyTitle }}"</strong> expired after {{ l.durationHours }} hours.
+        </p>
+
+        <!-- Direct Contact Banner -->
+        <div class="direct-contact-banner">
+          <div class="agent-avatar">{{ l.agentName.substring(0, 1) }}</div>
+          <div class="agent-meta">
+            <strong>{{ l.agentName }}</strong>
+            <span>{{ l.agencyName }} &bull; {{ l.agentPhone }}</span>
+          </div>
+          <div class="direct-actions">
+            <a [href]="'tel:' + l.agentPhone" class="btn-sm call-now-btn">Call</a>
+            <a [href]="whatsappUrl()" target="_blank" class="btn-sm wa-now-btn">WhatsApp</a>
+          </div>
+        </div>
+
+        <!-- Extension Request Feedback / Live Status -->
+        <div class="extension-status-banner" *ngIf="extensionSuccessMessage() || (l.extensionRequest && l.extensionRequest.status === 'pending')">
+          <div class="status-pulse-dot"></div>
+          <div>
+            <strong>Extension Request Pending Approval</strong>
+            <p>{{ extensionSuccessMessage() || 'Your request has been submitted to the agency admin. This page will unlock immediately upon approval.' }}</p>
+          </div>
+        </div>
+
+        <!-- Extension Request Form (If not already pending) -->
+        <div class="extension-form-box" *ngIf="!extensionSuccessMessage() && (!l.extensionRequest || l.extensionRequest.status === 'rejected')">
+          <h4 class="form-title">Request Extended Viewing Time</h4>
+          <p class="form-subtitle">Enter your name and phone number to notify {{ l.agencyName }} for instant re-activation:</p>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label>Your Full Name *</label>
+              <input type="text" [(ngModel)]="reqName" placeholder="e.g. Anand Kumar">
+            </div>
+            <div class="form-field">
+              <label>Mobile Number *</label>
+              <input type="tel" [(ngModel)]="reqMobile" placeholder="e.g. 9876543210">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label>Purpose / Note (Optional)</label>
+            <input type="text" [(ngModel)]="reqNotes" placeholder="e.g. Reviewing with family, would like 24h more">
+          </div>
+
+          <button
+            type="button"
+            class="submit-extension-btn"
+            [disabled]="isSubmittingExtension() || !reqName || !reqMobile"
+            (click)="submitExtensionRequest()">
+            <span *ngIf="isSubmittingExtension()" class="btn-spinner"></span>
+            <span>{{ isSubmittingExtension() ? 'Submitting Request...' : 'Request Access Extension &rarr;' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 2. ACTIVE PROPERTY VIEW DOSSIER                                           -->
+    <!-- ========================================================================= -->
+    <main class="property-view-body" *ngIf="!isExpired() && l.propertySnapshot as p">
+      <!-- Property Title & Headline -->
+      <section class="prop-hero-header">
+        <div class="hero-badges-row">
+          <span class="status-chip">{{ p.status | uppercase }}</span>
+          <span class="type-chip">{{ p.propertyType | uppercase }} &bull; {{ p.listingType | uppercase }}</span>
+          <span class="locality-chip">{{ p.locality }}, {{ p.city }}</span>
+        </div>
+
+        <h1 class="prop-title">{{ p.title }}</h1>
+        <p class="prop-address">{{ p.address }}</p>
+
+        <!-- Pricing Banner (Honors includePrice setting) -->
+        <div class="pricing-card">
+          <div class="price-val-block" *ngIf="l.includePrice && p.price">
+            <span class="price-figure">{{ p.price | currencyFormat }}</span>
+            <span class="price-rate" *ngIf="p.area">
+              &bull; ₹{{ (p.price / p.area | number:'1.0-0') }}/{{ p.areaUnit }}
+            </span>
+            <span class="negotiable-badge" *ngIf="p.negotiable">Price Negotiable</span>
+          </div>
+
+          <!-- Price Masked State ("Price on Request") -->
+          <div class="price-masked-block" *ngIf="!l.includePrice || !p.price">
+            <div class="masked-text">
+              <span class="badge-price-on-request">Price on Request</span>
+              <span class="masked-hint">Contact {{ l.agentName }} for current valuation &amp; negotiation terms.</span>
+            </div>
+            <a [href]="whatsappUrl()" target="_blank" class="enquire-price-btn">
+              Enquire Price via WhatsApp &rarr;
+            </a>
+          </div>
+
+          <div class="area-stat-block">
+            <span class="area-label">Total Land Area</span>
+            <strong class="area-figure">{{ p.area | areaFormat:p.areaUnit }}</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- Image Showcase (Touch Carousel / Gallery) -->
+      <section class="prop-gallery-section" *ngIf="p.images && p.images.length > 0">
+        <div class="main-photo-stage">
+          <img [src]="p.images[activeImageIndex()]" [alt]="p.title" class="stage-photo" loading="eager">
+
+          <!-- Carousel Flip Controls -->
+          <button type="button" class="carousel-arrow prev" *ngIf="p.images.length > 1" (click)="prevImage()">‹</button>
+          <button type="button" class="carousel-arrow next" *ngIf="p.images.length > 1" (click)="nextImage()">›</button>
+
+          <!-- Photo Counter Badge -->
+          <span class="photo-counter-pill">{{ activeImageIndex() + 1 }} / {{ p.images.length }} Photos</span>
+        </div>
+
+        <!-- Thumbnails Strip -->
+        <div class="thumbnails-strip" *ngIf="p.images.length > 1">
+          <img
+            *ngFor="let img of p.images; let idx = index"
+            [src]="img"
+            [class.active]="activeImageIndex() === idx"
+            (click)="activeImageIndex.set(idx)"
+            class="strip-thumb"
+            alt="Thumbnail">
+        </div>
+      </section>
+
+      <!-- Key Specifications Grid -->
+      <section class="specs-section">
+        <h3 class="section-heading">Property Specifications</h3>
+        <div class="specs-grid">
+          <div class="spec-card">
+            <span class="spec-label">Property Type</span>
+            <strong class="spec-val">{{ p.propertyType | titlecase }}</strong>
+          </div>
+          <div class="spec-card">
+            <span class="spec-label">Listing Category</span>
+            <strong class="spec-val">{{ p.listingType === 'sale' ? 'Outright Sale' : 'Rental / Lease' }}</strong>
+          </div>
+          <div class="spec-card">
+            <span class="spec-label">Total Dimension</span>
+            <strong class="spec-val">{{ p.area | areaFormat:p.areaUnit }}</strong>
+          </div>
+          <div class="spec-card">
+            <span class="spec-label">Location / Locality</span>
+            <strong class="spec-val">{{ p.locality }}, {{ p.city }}</strong>
+          </div>
+
+          <!-- Plot Specifics -->
+          <ng-container *ngIf="p.plotDetails as plot">
+            <div class="spec-card" *ngIf="plot['approvalStatus']">
+              <span class="spec-label">Approval Authority</span>
+              <strong class="spec-val">{{ plot['approvalStatus'] }}</strong>
+            </div>
+            <div class="spec-card" *ngIf="plot['roadWidth']">
+              <span class="spec-label">Access Road Width</span>
+              <strong class="spec-val">{{ plot['roadWidth'] }} Ft Wide</strong>
+            </div>
+            <div class="spec-card" *ngIf="plot['isCornerPlot']">
+              <span class="spec-label">Plot Advantage</span>
+              <strong class="spec-val text-green">Corner Plot (2-Side Open)</strong>
+            </div>
+            <div class="spec-card" *ngIf="plot['isGatedLayout']">
+              <span class="spec-label">Community</span>
+              <strong class="spec-val">Gated Layout</strong>
+            </div>
+          </ng-container>
+
+          <!-- Villa Specifics -->
+          <ng-container *ngIf="p.villaDetails as villa">
+            <div class="spec-card" *ngIf="villa['bedrooms']">
+              <span class="spec-label">Bedrooms</span>
+              <strong class="spec-val">{{ villa['bedrooms'] }} BHK</strong>
+            </div>
+            <div class="spec-card" *ngIf="villa['builtUpArea']">
+              <span class="spec-label">Built-Up Area</span>
+              <strong class="spec-val">{{ villa['builtUpArea'] }} Sq.ft</strong>
+            </div>
+            <div class="spec-card" *ngIf="villa['facing']">
+              <span class="spec-label">Facing</span>
+              <strong class="spec-val">{{ villa['facing'] }} Facing</strong>
+            </div>
+          </ng-container>
+        </div>
+      </section>
+
+      <!-- Highlights / Notes -->
+      <section class="highlights-section" *ngIf="p.highlights && p.highlights.length > 0">
+        <h3 class="section-heading">Key Highlights &amp; Notes</h3>
+        <div class="highlights-box">
+          <p *ngFor="let h of p.highlights">{{ h }}</p>
+        </div>
+      </section>
+
+      <!-- Description -->
+      <section class="description-section" *ngIf="p.description">
+        <h3 class="section-heading">Detailed Overview</h3>
+        <div class="desc-content">
+          <p>{{ p.description }}</p>
+        </div>
+      </section>
+
+      <!-- VIP Site Visit Callout Section -->
+      <section class="site-visit-cta-section">
+        <div class="site-visit-cta-card">
+          <div class="cta-left">
+            <div class="cta-badge-row">
+              <span class="cta-badge">📅 VIP Inspection</span>
+              <span class="cta-subtag">Accompanied by Agency Specialist</span>
+            </div>
+            <h3>Interested in a Physical Site Visit?</h3>
+            <p>Select your preferred day and time. We will arrange exclusive access, layout inspection, and neighborhood tour.</p>
+          </div>
+          <button type="button" class="cta-schedule-btn" (click)="openSiteVisitModal()">
+            Schedule Site Visit &rarr;
+          </button>
+        </div>
+      </section>
+
+      <!-- 2D/3D Boundary Map (shown when boundary or coordinates exist) -->
+      <section class="boundary-map-section"
+               *ngIf="p.plotBoundary?.length || p.coordinates">
+        <h3 class="section-heading">
+          Site Boundary &amp; Location Map
+          <span class="verified-badge" *ngIf="p.plotBoundary && p.plotBoundary.length >= 3">
+            ✓ Verified Boundary
+          </span>
+        </h3>
+        <div class="boundary-map-wrapper">
+          <app-plot-map-viewer
+            [editable]="false"
+            [coordinates]="p.coordinates"
+            [plotBoundary]="p.plotBoundary || []"
+            [locality]="p.locality"
+            [city]="p.city"
+            [propertyTitle]="p.title"
+            [area]="p.area"
+            [areaUnit]="p.areaUnit">
+          </app-plot-map-viewer>
+        </div>
+      </section>
+
+      <!-- Google Maps Link -->
+      <section class="maps-section" *ngIf="p.mapsUrl">
+        <div class="maps-banner">
+          <div>
+            <h4>Satellite Pin &amp; Location</h4>
+            <p>View verified coordinates and driving directions on Google Maps.</p>
+          </div>
+          <a [href]="p.mapsUrl" target="_blank" class="maps-btn">
+            Open in Google Maps &rarr;
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Sticky Mobile Contact Bar (Visible on mobile screens) -->
+    <footer class="mobile-sticky-action-bar">
+      <div class="mobile-agent-meta">
+        <span class="mobile-agent-name">{{ l.agentName }}</span>
+        <span class="mobile-agency-label">{{ l.agencyName }}</span>
+      </div>
+      <div class="mobile-action-buttons">
+        <button type="button" class="mob-btn mob-visit-btn" (click)="openSiteVisitModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>Visit</span>
+        </button>
+
+        <a [href]="'tel:' + l.agentPhone" class="mob-btn mob-call-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+          </svg>
+          <span>Call</span>
+        </a>
+
+        <a [href]="whatsappUrl()" target="_blank" class="mob-btn mob-wa-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+          </svg>
+          <span>WhatsApp</span>
+        </a>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. SITE VISIT BOOKING MODAL                                               -->
+  <!-- ========================================================================= -->
+  <div class="modal-backdrop animate-fade-in" *ngIf="showSiteVisitModal()" (click)="closeSiteVisitModal()">
+    <div class="modal-card site-visit-modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <h2>Schedule VIP Site Visit</h2>
+          <span class="modal-subtitle">{{ link()?.propertyTitle }}</span>
+        </div>
+        <button type="button" class="close-btn" (click)="closeSiteVisitModal()">&times;</button>
+      </div>
+
+      <!-- State A: Form Input -->
+      <div class="modal-body" *ngIf="!createdVisitBooking()">
+        <p class="modal-intro">
+          Please provide your contact information and preferred timing. We will assign an advisor and send you a live status tracking link.
+        </p>
+
+        <form (ngSubmit)="submitSiteVisitBooking()">
+          <div class="form-row">
+            <label>Your Full Name *</label>
+            <input
+              type="text"
+              [(ngModel)]="visitName"
+              name="visitName"
+              placeholder="e.g. Anand Kumar"
+              required>
+          </div>
+
+          <div class="form-row">
+            <label>Mobile Number *</label>
+            <input
+              type="tel"
+              [(ngModel)]="visitMobile"
+              name="visitMobile"
+              placeholder="e.g. +91 98765 43210"
+              required>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-row">
+              <label>Preferred Visit Date *</label>
+              <input
+                type="date"
+                [(ngModel)]="visitDate"
+                name="visitDate"
+                required>
+            </div>
+
+            <div class="form-row">
+              <label>Preferred Time Slot *</label>
+              <select [(ngModel)]="visitSlot" name="visitSlot">
+                <option value="Morning (9:00 AM - 12:00 PM)">Morning (9:00 AM - 12:00 PM)</option>
+                <option value="Afternoon (12:00 PM - 3:00 PM)">Afternoon (12:00 PM - 3:00 PM)</option>
+                <option value="Evening (3:00 PM - 6:00 PM)">Evening (3:00 PM - 6:00 PM)</option>
+                <option value="Weekend Special Inspection">Weekend Special Inspection</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label>Notes / Requirements (Optional)</label>
+            <textarea
+              [(ngModel)]="visitNotes"
+              name="visitNotes"
+              rows="2"
+              placeholder="e.g. Coming with family, require landmark guidance from metro..."></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="cancel-btn" (click)="closeSiteVisitModal()">Cancel</button>
+            <button type="submit" class="submit-btn" [disabled]="isSubmittingVisit()">
+              <span *ngIf="isSubmittingVisit()" class="btn-spinner"></span>
+              <span>{{ isSubmittingVisit() ? 'Scheduling Visit...' : 'Confirm & Request Visit' }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- State B: Success & Public Tracking Link -->
+      <div class="modal-body success-body animate-fade-in" *ngIf="createdVisitBooking() as booking">
+        <div class="success-icon-wrap">✓</div>
+        <h3>Site Visit Request Submitted!</h3>
+        <p class="success-msg">
+          Thank you <strong>{{ booking.clientName }}</strong>. Your inspection request for <strong>{{ booking.propertyTitle }}</strong> on <strong>{{ booking.preferredDate }} ({{ booking.preferredSlot }})</strong> has been received by {{ booking.agencyName }}.
+        </p>
+
+        <div class="tracking-link-box">
+          <label class="tracking-label">Your Live Site Visit Status Link:</label>
+          <div class="tracking-input-row">
+            <input type="text" [value]="visitTrackingUrl()" readonly class="tracking-url-input" #trackInput (click)="trackInput.select()">
+            <button type="button" class="copy-track-btn" (click)="copyVisitUrl()">
+              {{ visitLinkCopied() ? '✓ Copied!' : 'Copy Link' }}
+            </button>
+          </div>
+          <span class="tracking-hint">
+            📌 Bookmark or save this link. When the agency confirms or reschedules your timing, this link updates automatically in real time!
+          </span>
+        </div>
+
+        <div class="success-actions">
+          <button type="button" class="view-status-btn" (click)="goToVisitStatus()">
+            View Site Visit Status Now ↗
+          </button>
+          <button type="button" class="done-btn" (click)="closeSiteVisitModal()">
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

@@ -12,6 +12,7 @@ import { Deal } from '../models/models';
 import { AuthService } from './auth.service';
 import { FirebaseService } from './firebase.service';
 import { fireConfetti } from '../utils/confetti.util';
+import { sanitizeForFirestore } from '../utils/firestore.util';
 
 @Injectable({
   providedIn: 'root'
@@ -19,9 +20,8 @@ import { fireConfetti } from '../utils/confetti.util';
 export class DealService {
   private auth = inject(AuthService);
   private firebase = inject(FirebaseService);
-  private storageKey = 'pf_deals';
 
-  readonly allDeals = signal<Deal[]>(this.loadCache());
+  readonly allDeals = signal<Deal[]>([]);
   private unsubscribeSnapshot: Unsubscribe | null = null;
 
   readonly tenantDeals = computed(() => {
@@ -109,24 +109,7 @@ export class DealService {
     effect(() => {
       const tenantId = this.auth.activeTenantId();
       this.bindFirestoreListener(tenantId);
-    });
-  }
-
-  private loadCache(): Deal[] {
-    try {
-      const saved = localStorage.getItem(this.storageKey);
-      if (saved) {
-        const parsed: Deal[] = JSON.parse(saved);
-        return parsed.filter(d => d.tenantId !== 'tenant_prime_properties');
-      }
-    } catch {}
-    return [];
-  }
-
-  private saveCache(list: Deal[]): void {
-    try {
-      localStorage.setItem(this.storageKey, JSON.stringify(list));
-    } catch {}
+    }, { allowSignalWrites: true });
   }
 
   private bindFirestoreListener(tenantId: string): void {
@@ -135,7 +118,10 @@ export class DealService {
       this.unsubscribeSnapshot = null;
     }
 
-    if (!tenantId) return;
+    if (!tenantId) {
+      this.allDeals.set([]);
+      return;
+    }
 
     const path = tenantId === 'platform_global' ? 'tenants/tenant_default/deals' : `tenants/${tenantId}/deals`;
     try {
@@ -144,14 +130,11 @@ export class DealService {
         colRef,
         { includeMetadataChanges: true },
         (snapshot) => {
-          if (!snapshot.empty) {
-            const remote: Deal[] = [];
-            snapshot.forEach(d => {
-              remote.push({ id: d.id, ...d.data() } as Deal);
-            });
-            this.allDeals.set(remote);
-            this.saveCache(remote);
-          }
+          const remote: Deal[] = [];
+          snapshot.forEach(d => {
+            remote.push({ id: d.id, ...d.data() } as Deal);
+          });
+          this.allDeals.set(remote);
         },
         (error) => {
           console.warn(`Firestore real-time sync for ${path} operating in offline cache mode:`, error.message);
@@ -197,12 +180,12 @@ export class DealService {
 
     // 1. Optimistic Signal Update
     this.allDeals.update(list => [newDeal, ...list]);
-    this.saveCache(this.allDeals());
 
     // 2. Cloud Firestore with IndexedDB persistence
     try {
       const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/deals`, id);
-      await setDoc(docRef, { ...newDeal, _cloudSyncedAt: Date.now() });
+      const payload = sanitizeForFirestore({ ...newDeal, _cloudSyncedAt: Date.now() });
+      await setDoc(docRef, payload);
     } catch (err) {
       console.warn('Firestore offline write queued for sync:', err);
     }
@@ -223,7 +206,6 @@ export class DealService {
     this.allDeals.update(list =>
       list.map(d => d.id === dealId ? { ...d, ...updates } : d)
     );
-    this.saveCache(this.allDeals());
 
     try {
       const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/deals`, dealId);
@@ -238,7 +220,6 @@ export class DealService {
     const tenantId = current?.tenantId || this.auth.activeTenantId() || 'tenant_default';
 
     this.allDeals.update(list => list.filter(d => d.id !== dealId));
-    this.saveCache(this.allDeals());
 
     try {
       const docRef = doc(this.firebase.firestore, `tenants/${tenantId}/deals`, dealId);

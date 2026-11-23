@@ -19,5 +19,12 @@ export class StatusPillComponent {
     if (['sold', 'rented', 'closed_lost', 'cancelled', 'urgent', 'hot'].includes(s)) return 'danger';
     return 'info';
   }
+
+  get displayLabel(): string {
+    if (this.label) return this.label;
+    if (!this.status) return 'Available';
+    const s = this.status.replace(/_/g, ' ');
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
 }
 

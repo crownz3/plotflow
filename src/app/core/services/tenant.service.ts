@@ -2,6 +2,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import {
   collection,
   doc,
+  getDoc,
   setDoc,
   updateDoc,
   deleteDoc,
@@ -11,6 +12,7 @@ import {
 import { Tenant, UserProfile, TenantApprovalNotification, TenantStatus } from '../models/models';
 import { AuthService } from './auth.service';
 import { FirebaseService } from './firebase.service';
+import { sanitizeForFirestore } from '../utils/firestore.util';
 
 @Injectable({
   providedIn: 'root'
@@ -18,13 +20,10 @@ import { FirebaseService } from './firebase.service';
 export class TenantService {
   private auth = inject(AuthService);
   private firebase = inject(FirebaseService);
-  private storageKeyTenants = 'pf_tenants';
-  private storageKeyMembers = 'pf_team_members';
-  private storageKeyNotifications = 'pf_super_admin_notifications';
 
-  readonly teamMembers = signal<UserProfile[]>(this.loadMembers());
-  readonly tenants = signal<Tenant[]>(this.loadTenants());
-  readonly pendingNotifications = signal<TenantApprovalNotification[]>(this.loadNotifications());
+  readonly teamMembers = signal<UserProfile[]>([]);
+  readonly tenants = signal<Tenant[]>([]);
+  readonly pendingNotifications = signal<TenantApprovalNotification[]>([]);
 
   readonly pendingTenants = computed(() => this.tenants().filter(t => t.status === 'pending_approval'));
   readonly activeTenants = computed(() => this.tenants().filter(t => t.status === 'active'));
@@ -49,20 +48,15 @@ export class TenantService {
         colRef,
         { includeMetadataChanges: true },
         (snapshot) => {
-          if (!snapshot.empty) {
-            const remote: Tenant[] = [];
-            snapshot.forEach(d => {
-              remote.push({ id: d.id, ...d.data() } as Tenant);
-            });
-            const clean = remote.filter(t => t.id !== 'tenant_prime_properties' && t.id !== 'platform_global');
-            this.tenants.set(clean);
-            this.saveTenants();
-            this.refreshActiveTenant();
-          }
+          const remote: Tenant[] = [];
+          snapshot.forEach(d => {
+            remote.push({ id: d.id, ...d.data() } as Tenant);
+          });
+          const clean = remote.filter(t => t.id !== 'tenant_prime_properties' && t.id !== 'platform_global');
+          this.tenants.set(clean);
+          this.refreshActiveTenant();
         },
         (err) => {
-          // When unauthenticated or before super_admin credentials sync, Firestore rules disallow full tenant collection reads.
-          // Fall back gracefully to local persistence without spamming console errors.
           if (err.code !== 'permission-denied') {
             console.warn('Firestore tenants listener operating in offline cache mode:', err.message);
           }
@@ -73,57 +67,32 @@ export class TenantService {
     }
   }
 
-  private loadTenants(): Tenant[] {
-    try {
-      const saved = localStorage.getItem(this.storageKeyTenants);
-      if (saved) {
-        const parsed: Tenant[] = JSON.parse(saved);
-        const clean = parsed.filter(t => t.id !== 'tenant_prime_properties' && t.id !== 'platform_global');
-        if (clean.length !== parsed.length) {
-          localStorage.setItem(this.storageKeyTenants, JSON.stringify(clean));
-        }
-        return clean;
-      }
-    } catch {}
-
-    return [];
-  }
-
-  private loadMembers(): UserProfile[] {
-    try {
-      const saved = localStorage.getItem(this.storageKeyMembers);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-
-    return [];
-  }
-
-  private saveTenants(): void {
-    try {
-      localStorage.setItem(this.storageKeyTenants, JSON.stringify(this.tenants()));
-    } catch (e) {
-      console.warn('Failed to persist tenants:', e);
-    }
-  }
-
-  private loadNotifications(): TenantApprovalNotification[] {
-    try {
-      const saved = localStorage.getItem(this.storageKeyNotifications);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return [];
-  }
-
-  private saveNotifications(): void {
-    try {
-      localStorage.setItem(this.storageKeyNotifications, JSON.stringify(this.pendingNotifications()));
-    } catch (e) {
-      console.warn('Failed to persist notifications:', e);
-    }
-  }
-
   getTenantById(tenantId: string): Tenant | undefined {
     return this.tenants().find(t => t.id === tenantId);
+  }
+
+  /**
+   * Fetches the latest tenant record directly from Cloud Firestore
+   */
+  async fetchTenantStatus(tenantId: string): Promise<Tenant | null> {
+    try {
+      const docRef = doc(this.firebase.firestore, 'tenants', tenantId);
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        const remoteTenant = { id: snap.id, ...snap.data() } as Tenant;
+        this.tenants.update(list => {
+          const map = new Map<string, Tenant>();
+          list.forEach(t => map.set(t.id, t));
+          map.set(remoteTenant.id, remoteTenant);
+          return Array.from(map.values());
+        });
+        this.refreshActiveTenant();
+        return remoteTenant;
+      }
+    } catch (e) {
+      console.warn('Could not fetch tenant directly from Firestore:', e);
+    }
+    return this.getTenantById(tenantId) || null;
   }
 
   submitOnboarding(data: {
@@ -175,13 +144,15 @@ export class TenantService {
     } else {
       this.tenants.update(list => [newTenant, ...list]);
     }
-    this.saveTenants();
     this.activeTenant.set(newTenant);
 
     // Persist to Cloud Firestore with IndexedDB offline queueing
     try {
       const docRef = doc(this.firebase.firestore, 'tenants', newTenant.id);
-      setDoc(docRef, { ...newTenant, _cloudSyncedAt: Date.now() });
+      const payload = sanitizeForFirestore({ ...newTenant, _cloudSyncedAt: Date.now() });
+      setDoc(docRef, payload)
+        .then(() => console.log('✅ Tenant successfully persisted to Cloud Firestore:', newTenant.id))
+        .catch(err => console.error('❌ Cloud Firestore tenant write error:', err));
     } catch (e) {
       console.warn('Firestore offline tenant write queued:', e);
     }
@@ -203,7 +174,6 @@ export class TenantService {
     };
 
     this.pendingNotifications.update(n => [notification, ...n.filter(x => x.tenantId !== newTenant.id)]);
-    this.saveNotifications();
 
     // Update current user's profile
     this.auth.updateCurrentUser({
@@ -231,18 +201,42 @@ export class TenantService {
         return t;
       })
     );
-    this.saveTenants();
 
     try {
       const docRef = doc(this.firebase.firestore, 'tenants', tenantId);
-      updateDoc(docRef, { status: 'active', approvedAt: Date.now(), updatedAt: Date.now() });
+      updateDoc(docRef, { status: 'active', approvedAt: Date.now(), updatedAt: Date.now() })
+        .then(() => console.log('Tenant approval successfully synced to Cloud Firestore:', tenantId))
+        .catch(err => console.error('Cloud Firestore tenant approval error:', err));
     } catch (e) {
       console.warn('Firestore offline approve sync queued:', e);
     }
 
     // Remove or mark notification read
     this.pendingNotifications.update(list => list.filter(n => n.tenantId !== tenantId));
-    this.saveNotifications();
+
+    this.refreshActiveTenant();
+  }
+
+  updateTenantPlan(tenantId: string, plan: 'trial' | 'starter' | 'pro' | 'enterprise'): void {
+    this.tenants.update(list =>
+      list.map(t => {
+        if (t.id === tenantId) {
+          return {
+            ...t,
+            subscriptionPlan: plan,
+            updatedAt: Date.now()
+          };
+        }
+        return t;
+      })
+    );
+
+    try {
+      const docRef = doc(this.firebase.firestore, 'tenants', tenantId);
+      updateDoc(docRef, { subscriptionPlan: plan, updatedAt: Date.now() });
+    } catch (e) {
+      console.warn('Firestore offline plan update sync queued:', e);
+    }
 
     this.refreshActiveTenant();
   }
@@ -263,7 +257,6 @@ export class TenantService {
         return t;
       })
     );
-    this.saveTenants();
 
     try {
       const docRef = doc(this.firebase.firestore, 'tenants', tenantId);
@@ -292,7 +285,6 @@ export class TenantService {
         return t;
       })
     );
-    this.saveTenants();
 
     try {
       const docRef = doc(this.firebase.firestore, 'tenants', tenantId);
@@ -306,7 +298,6 @@ export class TenantService {
 
   deleteTenant(tenantId: string): void {
     this.tenants.update(list => list.filter(t => t.id !== tenantId));
-    this.saveTenants();
 
     try {
       const docRef = doc(this.firebase.firestore, 'tenants', tenantId);
@@ -344,7 +335,6 @@ export class TenantService {
         return t;
       })
     );
-    this.saveTenants();
 
     try {
       const docRef = doc(this.firebase.firestore, 'tenants', tenantId);
@@ -354,21 +344,12 @@ export class TenantService {
     }
 
     this.pendingNotifications.update(list => list.filter(n => n.tenantId !== tenantId));
-    this.saveNotifications();
 
     this.refreshActiveTenant();
   }
 
-  private saveMembers(): void {
-    try {
-      localStorage.setItem(this.storageKeyMembers, JSON.stringify(this.teamMembers()));
-    } catch (e) {
-      console.warn('Failed to persist team members:', e);
-    }
-  }
-
   private getInitialActiveTenant(): Tenant {
-    const list = this.loadTenants();
+    const list = this.tenants();
     if (list.length > 0) return list[0];
     return {
       id: 'tenant_default',
@@ -397,7 +378,6 @@ export class TenantService {
     if (activeId === 'platform_global' || this.auth.isSuperAdmin()) {
       // Purge any accidental platform_global from tenants list
       this.tenants.update(list => list.filter(t => t.id !== 'platform_global' && t.id !== 'tenant_prime_properties'));
-      this.saveTenants();
       return;
     }
 
@@ -423,7 +403,6 @@ export class TenantService {
           updatedAt: Date.now()
         };
         this.tenants.update(t => [...t.filter(x => x.id !== activeId), found!]);
-        this.saveTenants();
       } else {
         found = this.tenants()[0];
       }
@@ -443,7 +422,6 @@ export class TenantService {
     };
     this.activeTenant.set(updated);
     this.tenants.update(list => list.map(t => t.id === updated.id ? updated : t));
-    this.saveTenants();
 
     // Persist to Cloud Firestore (/tenants/{tenantId})
     try {
@@ -484,11 +462,11 @@ export class TenantService {
     };
 
     this.tenants.update(list => [newTenant, ...list]);
-    this.saveTenants();
 
     try {
       const docRef = doc(this.firebase.firestore, 'tenants', newTenant.id);
-      setDoc(docRef, { ...newTenant, _cloudSyncedAt: Date.now() });
+      const payload = sanitizeForFirestore({ ...newTenant, _cloudSyncedAt: Date.now() });
+      setDoc(docRef, payload);
     } catch (e) {
       console.warn('Firestore offline tenant write queued:', e);
     }
@@ -510,12 +488,10 @@ export class TenantService {
       createdAt: Date.now()
     };
     this.teamMembers.update(members => [...members, newMember]);
-    this.saveMembers();
     return newMember;
   }
 
   removeAgent(uid: string): void {
     this.teamMembers.update(members => members.filter(m => m.uid !== uid));
-    this.saveMembers();
   }
 }

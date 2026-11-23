@@ -30,7 +30,7 @@ export class AuthService {
   }
 
   private restoreSession(): void {
-    const saved = localStorage.getItem('pf_user_session');
+    const saved = sessionStorage.getItem('pf_user_session');
     if (saved) {
       try {
         const user = JSON.parse(saved) as UserProfile;
@@ -38,7 +38,7 @@ export class AuthService {
         this.activeTenantId.set(user.tenantId);
         return;
       } catch (e) {
-        localStorage.removeItem('pf_user_session');
+        sessionStorage.removeItem('pf_user_session');
       }
     }
 
@@ -51,7 +51,7 @@ export class AuthService {
     this.currentUser.set(user);
     this.activeTenantId.set(user.tenantId);
     try {
-      localStorage.setItem('pf_user_session', JSON.stringify(user));
+      sessionStorage.setItem('pf_user_session', JSON.stringify(user));
     } catch {}
   }
 
@@ -64,7 +64,7 @@ export class AuthService {
       this.activeTenantId.set(updates.tenantId);
     }
     try {
-      localStorage.setItem('pf_user_session', JSON.stringify(updated));
+      sessionStorage.setItem('pf_user_session', JSON.stringify(updated));
     } catch {}
   }
 
@@ -72,7 +72,7 @@ export class AuthService {
     this.currentUser.set(null);
     this.activeTenantId.set('');
     try {
-      localStorage.removeItem('pf_user_session');
+      sessionStorage.removeItem('pf_user_session');
     } catch {}
   }
 

@@ -1,6 +1,7 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
 import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
 import { BottomTabsComponent } from './shared/components/bottom-tabs/bottom-tabs.component';
@@ -29,10 +30,27 @@ import { TenantService } from './core/services/tenant.service';
 export class AppComponent {
   auth = inject(AuthService);
   tenantService = inject(TenantService);
+  router = inject(Router);
   sidebarCollapsed = false;
+
+  readonly currentUrl = signal<string>(this.router.url || '');
+
+  constructor() {
+    this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe((e: any) => {
+        this.currentUrl.set(e.urlAfterRedirects || e.url || '');
+      });
+  }
 
   readonly isFullAppShell = computed(() => {
     if (!this.auth.isAuthenticated()) return false;
+
+    const url = this.currentUrl();
+    if (url.includes('/login') || url.includes('/onboarding') || url.includes('/pending-approval')) {
+      return false;
+    }
+
     if (this.auth.isSuperAdmin()) return true;
     const user = this.auth.currentUser();
     if (!user?.onboardingCompleted) return false;

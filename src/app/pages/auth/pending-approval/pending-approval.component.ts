@@ -1,4 +1,4 @@
-import { Component, inject, computed, signal } from '@angular/core';
+import { Component, inject, computed, signal, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -13,7 +13,7 @@ import { fireConfetti } from '../../../core/utils/confetti.util';
   templateUrl: './pending-approval.component.html',
   styleUrl: './pending-approval.component.scss'
 })
-export class PendingApprovalComponent {
+export class PendingApprovalComponent implements OnInit {
   auth = inject(AuthService);
   tenantService = inject(TenantService);
   platformConfig = inject(PlatformConfigService);
@@ -30,27 +30,57 @@ export class PendingApprovalComponent {
   readonly status = computed(() => this.tenant()?.status || 'pending_approval');
   readonly rejectionReason = computed(() => this.tenant()?.rejectionReason);
 
-  checkApprovalStatus(): void {
+  constructor() {
+    // Automatically detect real-time Firestore approval from Super Admin & route to dashboard
+    effect(() => {
+      const s = this.status();
+      if (s === 'active') {
+        fireConfetti();
+        this.checkFeedback.set('Agency Approved! Redirecting to your dashboard...');
+        setTimeout(() => {
+          this.router.navigate(['/dashboard'], { replaceUrl: true });
+        }, 1200);
+      }
+    });
+  }
+
+  ngOnInit(): void {
+    if (this.status() === 'active') {
+      this.router.navigate(['/dashboard'], { replaceUrl: true });
+    }
+  }
+
+  goToDashboard(): void {
+    this.router.navigate(['/dashboard'], { replaceUrl: true });
+  }
+
+  async checkApprovalStatus(): Promise<void> {
     this.isChecking.set(true);
     this.checkFeedback.set(null);
 
-    setTimeout(() => {
-      this.tenantService.refreshActiveTenant();
-      const current = this.tenant();
+    const tId = this.auth.currentUser()?.tenantId;
+    let current: any = null;
 
-      if (current?.status === 'active') {
-        fireConfetti();
-        this.checkFeedback.set('Congratulations! Your agency has been approved and activated by Super Admin. Redirecting to your workspace...');
-        setTimeout(() => {
-          this.router.navigate(['/dashboard']);
-        }, 1500);
-      } else if (current?.status === 'rejected') {
-        this.checkFeedback.set('Your application has been declined. Please review the notes below or contact support.');
-      } else {
-        this.checkFeedback.set('Application is under active review by Platform Super Admin (mohamedibrahim040125@gmail.com). Please check back shortly.');
-      }
-      this.isChecking.set(false);
-    }, 600);
+    if (tId) {
+      current = await this.tenantService.fetchTenantStatus(tId);
+    }
+    if (!current) {
+      this.tenantService.refreshActiveTenant();
+      current = this.tenant();
+    }
+
+    if (current?.status === 'active') {
+      fireConfetti();
+      this.checkFeedback.set('Congratulations! Your agency has been approved and activated by Super Admin. Redirecting to your workspace...');
+      setTimeout(() => {
+        this.router.navigate(['/dashboard']);
+      }, 1500);
+    } else if (current?.status === 'rejected') {
+      this.checkFeedback.set('Your application has been declined. Please review the notes below or contact support.');
+    } else {
+      this.checkFeedback.set('Application is under active review by Platform Super Admin (mohamedibrahim040125@gmail.com). Please check back shortly.');
+    }
+    this.isChecking.set(false);
   }
 
   editApplication(): void {
