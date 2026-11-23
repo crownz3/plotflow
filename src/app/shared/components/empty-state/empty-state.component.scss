@@ -10,7 +10,13 @@
   border-radius: var(--ef-radius-lg);
   margin: 16px 0;
   width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
+
+  @media (max-width: 600px) {
+    padding: 28px 14px;
+    margin: 8px 0;
+  }
 
   .empty-icon-bubble {
     width: 68px;
@@ -72,6 +78,17 @@
 
   .empty-action-wrap {
     margin-top: 4px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+    .ef-btn {
+      max-width: 100%;
+      white-space: normal;
+      text-align: center;
+      line-height: 1.35;
+      padding: 10px 18px;
+    }
   }
 }
 

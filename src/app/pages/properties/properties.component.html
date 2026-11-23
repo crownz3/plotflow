@@ -1537,15 +1537,18 @@
   <div class="lightbox-backdrop animate-fade-in" *ngIf="lightboxOpen()" (click)="closeLightbox()">
     <div class="lightbox-dialog" (click)="$event.stopPropagation()">
       <div class="lightbox-header">
-        <div class="lightbox-title-info">
-          <h3>{{ detailedProperty()?.title || 'Property Photos' }}</h3>
-          <span class="lightbox-counter">{{ (detailedProperty()?.images?.length || 0) }} Photos &bull; Pinch, Double-Tap &amp; Pan to Inspect</span>
+        <div class="lightbox-header-main">
+          <div class="lightbox-title-info">
+            <h3>{{ detailedProperty()?.title || 'Property Photos' }}</h3>
+            <span class="lightbox-counter">{{ (detailedProperty()?.images?.length || 0) }} Photos &bull; Pinch, Double-Tap &amp; Pan to Inspect</span>
+          </div>
+          <button type="button" class="lightbox-close-btn mobile-close" (click)="closeLightbox()" title="Close Lightbox">&times;</button>
         </div>
         <div class="lightbox-actions">
           <button type="button" class="lightbox-btn" (click)="zoomInLightbox()" title="Zoom In (+)">Zoom In +</button>
           <button type="button" class="lightbox-btn" (click)="zoomOutLightbox()" title="Zoom Out (-)">Zoom Out -</button>
           <button type="button" class="lightbox-btn" (click)="resetZoomLightbox()" title="Reset Zoom">Reset ({{ lightboxZoomLevel() }}x)</button>
-          <button type="button" class="lightbox-close-btn" (click)="closeLightbox()" title="Close Lightbox">&times;</button>
+          <button type="button" class="lightbox-close-btn desktop-close" (click)="closeLightbox()" title="Close Lightbox">&times;</button>
         </div>
       </div>
 
