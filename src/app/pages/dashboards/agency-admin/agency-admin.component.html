@@ -13,12 +13,15 @@
         <strong *ngIf="!expiryInfo().isExpired">Subscription Ending Soon:</strong>
         <strong *ngIf="expiryInfo().isExpired">Subscription Expired:</strong>
         <span>
-          {{ expiryInfo().isExpired ? 'Your brokerage agency subscription has expired. Please contact platform administration to renew your license.' : 'Your brokerage subscription expires in ' + expiryInfo().daysLeft + (expiryInfo().daysLeft === 1 ? ' day' : ' days') + '. Contact your administrator to extend your plan.' }}
+          {{ expiryInfo().isExpired ? 'Your brokerage agency subscription has expired. Please contact platform
+          administration to renew your license.' : 'Your brokerage subscription expires in ' + expiryInfo().daysLeft +
+          (expiryInfo().daysLeft === 1 ? ' day' : ' days') + '. Contact your administrator to extend your plan.' }}
         </span>
       </div>
     </div>
     <div class="banner-actions">
-      <span class="expiry-chip">{{ expiryInfo().isExpired ? 'Action Required' : expiryInfo().daysLeft + ' Days Remaining' }}</span>
+      <span class="expiry-chip">{{ expiryInfo().isExpired ? 'Action Required' : expiryInfo().daysLeft + ' Days
+        Remaining' }}</span>
     </div>
   </div>
 
@@ -28,7 +31,8 @@
       <span class="role-badge">Principal Broker Dashboard</span>
       <h1>{{ tenantService.activeTenant().agencyName }}</h1>
       <p class="header-desc">
-        RERA: {{ tenantService.activeTenant().reraNumber || 'TN/01/RealEstate/2024/7890' }} • Plan: {{ (tenantService.activeTenant().subscriptionPlan || 'pro') | uppercase }}
+        RERA: {{ tenantService.activeTenant().reraNumber || 'TN/01/RealEstate/2024/7890' }} • Plan: {{
+        (tenantService.activeTenant().subscriptionPlan || 'pro') | uppercase }}
       </p>
     </div>
 
@@ -38,15 +42,17 @@
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
-        <span>+ Add Property</span>
+        <span>Add Property</span>
       </a>
-      <button type="button" class="ef-btn ef-btn-tonal" (click)="openDealModal.set(true)" title="Close deal & calculate brokerage commission">
+      <button type="button" class="ef-btn ef-btn-tonal" (click)="openDealModal.set(true)"
+        title="Close deal & calculate brokerage commission">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
         <span>Close Deal &amp; Calc</span>
       </button>
-      <button type="button" class="ef-btn ef-btn-outlined" (click)="openAddExpenseModal()" title="Record marketing or site travel expense">
+      <button type="button" class="ef-btn ef-btn-outlined" (click)="openAddExpenseModal()"
+        title="Record marketing or site travel expense">
         <span>+ Record Expense</span>
       </button>
     </div>
@@ -54,10 +60,7 @@
 
   <!-- Segmented Navigation Hub Tabs -->
   <div class="dashboard-nav-tabs" role="tablist">
-    <button
-      type="button"
-      class="nav-tab-btn"
-      [class.active]="activeTab() === 'overview'"
+    <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'overview'"
       (click)="activeTab.set('overview')">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="3" width="7" height="9"></rect>
@@ -69,10 +72,7 @@
       <span class="tab-label-short">Overview</span>
     </button>
 
-    <button
-      type="button"
-      class="nav-tab-btn"
-      [class.active]="activeTab() === 'visitors_concerns'"
+    <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'visitors_concerns'"
       (click)="activeTab.set('visitors_concerns')">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -82,13 +82,11 @@
       </svg>
       <span class="tab-label-full">Buyers &amp; Visitor Concerns</span>
       <span class="tab-label-short">Buyer Concerns</span>
-      <span class="tab-badge" *ngIf="concernStats().nextProjectReady > 0">{{ concernStats().nextProjectReady }} for Next Project</span>
+      <span class="tab-badge" *ngIf="concernStats().nextProjectReady > 0">{{ concernStats().nextProjectReady }} for Next
+        Project</span>
     </button>
 
-    <button
-      type="button"
-      class="nav-tab-btn"
-      [class.active]="activeTab() === 'expenses_reports'"
+    <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'expenses_reports'"
       (click)="activeTab.set('expenses_reports')">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <line x1="12" y1="1" x2="12" y2="23"></line>
@@ -99,10 +97,7 @@
       <span class="tab-badge green">Weekly &amp; Monthly</span>
     </button>
 
-    <button
-      type="button"
-      class="nav-tab-btn"
-      [class.active]="activeTab() === 'link_requests'"
+    <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'link_requests'"
       (click)="activeTab.set('link_requests')">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -130,7 +125,8 @@
         </div>
         <div class="ai-banner-text">
           <h3>PlotFlow AI Studio</h3>
-          <p>Generate high-converting WhatsApp pitches, resolve buyer objections with micro-market pricing data, and audit sales spend.</p>
+          <p>Generate high-converting WhatsApp pitches, resolve buyer objections with micro-market pricing data, and
+            audit sales spend.</p>
         </div>
       </div>
       <div class="ai-banner-actions">
@@ -145,38 +141,23 @@
 
     <!-- Executive KPI Cards Grid -->
     <div class="kpi-grid">
-      <app-stat-card
-        title="Active Listings"
-        [value]="propertyService.activeCount()"
-        subtitle="Ready for inspection"
-        badgeText="Verified"
-        badgeColor="green"
-        iconColor="blue">
+      <app-stat-card title="Active Listings" [value]="propertyService.activeCount()" subtitle="Ready for inspection"
+        badgeText="Verified" badgeColor="green" iconColor="blue">
         <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
         </svg>
       </app-stat-card>
 
-      <app-stat-card
-        title="Hot Prospects"
-        [value]="leadService.hotLeadsCount()"
-        subtitle="Ready to close"
-        badgeText="High Intent"
-        badgeColor="green"
-        iconColor="amber">
+      <app-stat-card title="Hot Prospects" [value]="leadService.hotLeadsCount()" subtitle="Ready to close"
+        badgeText="High Intent" badgeColor="green" iconColor="amber">
         <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
           <circle cx="9" cy="7" r="4"></circle>
         </svg>
       </app-stat-card>
 
-      <app-stat-card
-        title="Site Visits Scheduled"
-        [value]="siteVisitService.upcomingCount()"
-        subtitle="Visits lined up"
-        badgeText="This Week"
-        badgeColor="blue"
-        iconColor="blue">
+      <app-stat-card title="Site Visits Scheduled" [value]="siteVisitService.upcomingCount()" subtitle="Visits lined up"
+        badgeText="This Week" badgeColor="blue" iconColor="blue">
         <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
           <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -185,12 +166,8 @@
         </svg>
       </app-stat-card>
 
-      <app-stat-card
-        title="Gross Brokerage Earned"
-        [value]="dealService.totalGrossBrokerage() | currencyFormat"
-        subtitle="Closed deals volume"
-        [badgeText]="dealService.tenantDeals().length + ' Deals'"
-        badgeColor="green"
+      <app-stat-card title="Gross Brokerage Earned" [value]="dealService.totalGrossBrokerage() | currencyFormat"
+        subtitle="Closed deals volume" [badgeText]="dealService.tenantDeals().length + ' Deals'" badgeColor="green"
         iconColor="green">
         <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="12" y1="1" x2="12" y2="23"></line>
@@ -198,26 +175,17 @@
         </svg>
       </app-stat-card>
 
-      <app-stat-card
-        title="Net Agency Profit"
+      <app-stat-card title="Net Agency Profit"
         [value]="(dealService.totalNetBrokerage() - expenseService.totalExpenses()) | currencyFormat"
-        subtitle="After Expenses &amp; Splits"
-        badgeText="In Pocket"
-        badgeColor="green"
-        iconColor="green">
+        subtitle="After Expenses &amp; Splits" badgeText="In Pocket" badgeColor="green" iconColor="green">
         <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
           <polyline points="17 6 23 6 23 12"></polyline>
         </svg>
       </app-stat-card>
 
-      <app-stat-card
-        title="Receivable Balance"
-        [value]="dealService.totalReceivable() | currencyFormat"
-        subtitle="Pending milestone tokens"
-        badgeText="Collect Soon"
-        badgeColor="blue"
-        iconColor="amber">
+      <app-stat-card title="Receivable Balance" [value]="dealService.totalReceivable() | currencyFormat"
+        subtitle="Pending milestone tokens" badgeText="Collect Soon" badgeColor="blue" iconColor="amber">
         <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"></circle>
           <polyline points="12 6 12 12 16 14"></polyline>
@@ -256,15 +224,21 @@
               <div class="agenda-actions">
                 <a [href]="'tel:' + visit.leadPhone" class="icon-btn" title="Call Prospect">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    <path
+                      d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                    </path>
                   </svg>
                 </a>
-                <a [href]="'https://wa.me/' + visit.leadPhone.replace(' ', '')" target="_blank" class="icon-btn whatsapp" title="Chat on WhatsApp">
+                <a [href]="'https://wa.me/' + visit.leadPhone.replace(' ', '')" target="_blank"
+                  class="icon-btn whatsapp" title="Chat on WhatsApp">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                    <path
+                      d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z">
+                    </path>
                   </svg>
                 </a>
-                <button class="icon-btn note" (click)="openLogConcernModal(visit)" title="Log Buyer Concern / Objection">
+                <button class="icon-btn note" (click)="openLogConcernModal(visit)"
+                  title="Log Buyer Concern / Objection">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -274,13 +248,10 @@
             </div>
           </div>
 
-          <app-empty-state
-            *ngIf="siteVisitService.tenantVisits().length === 0"
-            type="visits"
+          <app-empty-state *ngIf="siteVisitService.tenantVisits().length === 0" type="visits"
             title="No Inspection Visits Scheduled"
             description="Your agency has no upcoming site visits. Schedule one to start showing properties."
-            actionText="+ Schedule Site Visit"
-            (onAction)="scheduleInitialVisit()">
+            actionText="+ Schedule Site Visit" (onAction)="scheduleInitialVisit()">
           </app-empty-state>
         </div>
       </div>
@@ -298,7 +269,8 @@
               <div class="agent-avatar">{{ agent.initials }}</div>
               <div class="agent-info">
                 <strong>{{ agent.agentName }}</strong>
-                <span>Associate Broker • {{ agent.dealsClosed }} {{ agent.dealsClosed === 1 ? 'Deal' : 'Deals' }} Closed</span>
+                <span>Associate Broker • {{ agent.dealsClosed }} {{ agent.dealsClosed === 1 ? 'Deal' : 'Deals' }}
+                  Closed</span>
               </div>
               <div class="agent-stats">
                 <span class="payout-num">{{ agent.commissionEarned | currencyFormat }}</span>
@@ -307,13 +279,9 @@
             </div>
           </div>
 
-          <app-empty-state
-            *ngIf="agentLeaderboard().length === 0"
-            type="leaderboard"
-            title="No Closed Deals Yet"
+          <app-empty-state *ngIf="agentLeaderboard().length === 0" type="leaderboard" title="No Closed Deals Yet"
             description="Agent commissions and rankings will appear here automatically when transactions close."
-            actionText="Close Deal &amp; Calculate Commission"
-            (onAction)="openDealModal.set(true)">
+            actionText="Close Deal &amp; Calculate Commission" (onAction)="openDealModal.set(true)">
           </app-empty-state>
         </div>
       </div>
@@ -356,10 +324,7 @@
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input
-            type="text"
-            [ngModel]="visitorSearch()"
-            (ngModelChange)="visitorSearch.set($event)"
+          <input type="text" [ngModel]="visitorSearch()" (ngModelChange)="visitorSearch.set($event)"
             placeholder="Search buyer name, phone number (+91...), property inspected, or objection...">
         </div>
 
@@ -370,39 +335,27 @@
 
       <!-- Filter Chips -->
       <div class="chips-scroll-row">
-        <button
-          class="filter-chip"
-          [class.active]="selectedConcernFilter() === 'all'"
+        <button class="filter-chip" [class.active]="selectedConcernFilter() === 'all'"
           (click)="selectedConcernFilter.set('all')">
           All Visitors ({{ concernStats().totalVisits }})
         </button>
-        <button
-          class="filter-chip chip-green"
-          [class.active]="selectedConcernFilter() === 'next_project'"
+        <button class="filter-chip chip-green" [class.active]="selectedConcernFilter() === 'next_project'"
           (click)="selectedConcernFilter.set('next_project')">
           Interested in Next Project ({{ concernStats().nextProjectReady }})
         </button>
-        <button
-          class="filter-chip chip-red"
-          [class.active]="selectedConcernFilter() === 'price_budget'"
+        <button class="filter-chip chip-red" [class.active]="selectedConcernFilter() === 'price_budget'"
           (click)="selectedConcernFilter.set('price_budget')">
           Budget / Price Issue ({{ concernStats().budgetIssueCount }})
         </button>
-        <button
-          class="filter-chip chip-amber"
-          [class.active]="selectedConcernFilter() === 'location_connectivity'"
+        <button class="filter-chip chip-amber" [class.active]="selectedConcernFilter() === 'location_connectivity'"
           (click)="selectedConcernFilter.set('location_connectivity')">
           Location / Roads ({{ concernStats().locationIssueCount }})
         </button>
-        <button
-          class="filter-chip chip-blue"
-          [class.active]="selectedConcernFilter() === 'vastu_facing'"
+        <button class="filter-chip chip-blue" [class.active]="selectedConcernFilter() === 'vastu_facing'"
           (click)="selectedConcernFilter.set('vastu_facing')">
           Vastu / Facing ({{ concernStats().vastuIssueCount }})
         </button>
-        <button
-          class="filter-chip chip-amber"
-          [class.active]="selectedConcernFilter() === 'bank_loan_legal'"
+        <button class="filter-chip chip-amber" [class.active]="selectedConcernFilter() === 'bank_loan_legal'"
           (click)="selectedConcernFilter.set('bank_loan_legal')">
           Loan / Legal Documents ({{ concernStats().loanIssueCount }})
         </button>
@@ -418,12 +371,15 @@
             <div class="buyer-contact-bar">
               <a [href]="'tel:' + visit.leadPhone" class="phone-link" title="Call Buyer">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                  <path
+                    d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                  </path>
                 </svg>
                 <span>{{ visit.leadPhone }}</span>
               </a>
 
-              <a [href]="'https://wa.me/' + visit.leadPhone.replace(' ', '').replace('+', '')" target="_blank" class="wa-badge" title="WhatsApp Message">
+              <a [href]="'https://wa.me/' + visit.leadPhone.replace(' ', '').replace('+', '')" target="_blank"
+                class="wa-badge" title="WhatsApp Message">
                 <span>WhatsApp</span>
               </a>
             </div>
@@ -451,7 +407,8 @@
             <span>Why Buyer Did Not Purchase:</span>
           </div>
           <p class="reason-text">
-            {{ visit.buyerConcernNotes || visit.feedback || 'No specific objection logged yet. Click "Log Concern" to record their feedback.' }}
+            {{ visit.buyerConcernNotes || visit.feedback || 'No specific objection logged yet. Click "Log Concern" to
+            record their feedback.' }}
           </p>
         </div>
 
@@ -459,7 +416,8 @@
         <div class="next-project-box" [class.interested]="visit.interestedInNextProject">
           <div class="next-proj-header">
             <span class="next-badge">
-              {{ visit.interestedInNextProject ? 'Target for Upcoming / Next Project' : 'Not Interested in Next Project' }}
+              {{ visit.interestedInNextProject ? 'Target for Upcoming / Next Project' : 'Not Interested in Next Project'
+              }}
             </span>
           </div>
 
@@ -480,9 +438,11 @@
         </div>
 
         <div class="visitor-card-footer">
-          <small class="visit-date">Visited: {{ visit.scheduledTime | date:'mediumDate' }} • Advisor: {{ visit.agentName }}</small>
+          <small class="visit-date">Visited: {{ visit.scheduledTime | date:'mediumDate' }} • Advisor: {{ visit.agentName
+            }}</small>
           <div class="footer-btns">
-            <button class="ef-btn ef-btn-tonal ef-btn-sm ai-ask-btn" (click)="askAiForConcern(visit)" title="Generate AI Objection Battlecard">
+            <button class="ef-btn ef-btn-tonal ef-btn-sm ai-ask-btn" (click)="askAiForConcern(visit)"
+              title="Generate AI Objection Battlecard">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"></path>
               </svg>
@@ -496,13 +456,10 @@
       </div>
     </div>
 
-    <app-empty-state
-      *ngIf="visitorsWithConcerns().length === 0"
-      type="search"
+    <app-empty-state *ngIf="visitorsWithConcerns().length === 0" type="search"
       title="No Visitor Objections Match Filter"
       description="No site visitors match your search term. Clear filters to view all visitors."
-      actionText="Reset Filters"
-      (onAction)="visitorSearch.set(''); selectedConcernFilter.set('all')">
+      actionText="Reset Filters" (onAction)="visitorSearch.set(''); selectedConcernFilter.set('all')">
     </app-empty-state>
   </div>
 
@@ -520,23 +477,18 @@
       <div class="report-controls-group">
         <!-- Period Switcher: Weekly vs Monthly -->
         <div class="period-toggle-pill">
-          <button
-            type="button"
-            class="period-btn"
-            [class.active]="reportPeriod() === 'weekly'"
+          <button type="button" class="period-btn" [class.active]="reportPeriod() === 'weekly'"
             (click)="reportPeriod.set('weekly')">
             Weekly Report
           </button>
-          <button
-            type="button"
-            class="period-btn"
-            [class.active]="reportPeriod() === 'monthly'"
+          <button type="button" class="period-btn" [class.active]="reportPeriod() === 'monthly'"
             (click)="reportPeriod.set('monthly')">
             Monthly Report
           </button>
         </div>
 
-        <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="askAiForExpenseAudit()" title="Run AI Audit on expenses vs brokerage">
+        <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="askAiForExpenseAudit()"
+          title="Run AI Audit on expenses vs brokerage">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"></path>
           </svg>
@@ -552,53 +504,43 @@
     <!-- WEEKLY COMPARISON REPORT VIEW -->
     <ng-container *ngIf="reportPeriod() === 'weekly'">
       <div class="kpi-grid">
-        <app-stat-card
-          title="This Week's Property Expenses"
+        <app-stat-card title="This Week's Property Expenses"
           [value]="weeklyComparisonData().exp.thisWeekTotal | currencyFormat"
           [subtitle]="'Prior Week: ' + (weeklyComparisonData().exp.lastWeekTotal | currencyFormat)"
           [badgeText]="(weeklyComparisonData().exp.isIncrease ? '+' : '') + weeklyComparisonData().exp.percentChange + '% vs Last Week'"
-          [badgeColor]="weeklyComparisonData().exp.isIncrease ? 'blue' : 'green'"
-          iconColor="amber">
-          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          [badgeColor]="weeklyComparisonData().exp.isIncrease ? 'blue' : 'green'" iconColor="amber">
+          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
             <line x1="12" y1="1" x2="12" y2="23"></line>
             <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
           </svg>
         </app-stat-card>
 
-        <app-stat-card
-          title="This Week's Gross Brokerage"
+        <app-stat-card title="This Week's Gross Brokerage"
           [value]="weeklyComparisonData().sales.thisWeekRevenue | currencyFormat"
           [subtitle]="'Prior Week: ' + (weeklyComparisonData().sales.lastWeekRevenue | currencyFormat)"
           [badgeText]="(weeklyComparisonData().sales.isIncrease ? '+' : '') + weeklyComparisonData().sales.percentChange + '% vs Last Week'"
-          badgeColor="green"
-          iconColor="green">
-          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          badgeColor="green" iconColor="green">
+          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
             <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
             <polyline points="17 6 23 6 23 12"></polyline>
           </svg>
         </app-stat-card>
 
-        <app-stat-card
-          title="Weekly Net Brokerage Margin"
-          [value]="weeklyComparisonData().netThisWeek | currencyFormat"
-          subtitle="Brokerage minus Sales Expenses"
-          badgeText="Net Cash Flow"
-          badgeColor="green"
-          iconColor="blue">
-          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <app-stat-card title="Weekly Net Brokerage Margin" [value]="weeklyComparisonData().netThisWeek | currencyFormat"
+          subtitle="Brokerage minus Sales Expenses" badgeText="Net Cash Flow" badgeColor="green" iconColor="blue">
+          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
             <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
             <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
           </svg>
         </app-stat-card>
 
-        <app-stat-card
-          title="Cost of Sales Acquisition Ratio"
-          [value]="weeklyComparisonData().roiRatio + '%'"
-          subtitle="Expenses / Brokerage Volume"
-          badgeText="Healthy ROI"
-          badgeColor="blue"
-          iconColor="amber">
-          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <app-stat-card title="Cost of Sales Acquisition Ratio" [value]="weeklyComparisonData().roiRatio + '%'"
+          subtitle="Expenses / Brokerage Volume" badgeText="Healthy ROI" badgeColor="blue" iconColor="amber">
+          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="16" x2="12" y2="12"></line>
             <line x1="12" y1="8" x2="12.01" y2="8"></line>
@@ -610,53 +552,44 @@
     <!-- MONTHLY COMPARISON REPORT VIEW -->
     <ng-container *ngIf="reportPeriod() === 'monthly'">
       <div class="kpi-grid">
-        <app-stat-card
-          title="This Month's Property Expenses"
+        <app-stat-card title="This Month's Property Expenses"
           [value]="monthlyComparisonData().exp.thisMonthTotal | currencyFormat"
           [subtitle]="'Prior Month: ' + (monthlyComparisonData().exp.lastMonthTotal | currencyFormat)"
           [badgeText]="(monthlyComparisonData().exp.isIncrease ? '+' : '') + monthlyComparisonData().exp.percentChange + '% vs Last Month'"
-          [badgeColor]="monthlyComparisonData().exp.isIncrease ? 'blue' : 'green'"
-          iconColor="amber">
-          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          [badgeColor]="monthlyComparisonData().exp.isIncrease ? 'blue' : 'green'" iconColor="amber">
+          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
             <line x1="12" y1="1" x2="12" y2="23"></line>
             <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
           </svg>
         </app-stat-card>
 
-        <app-stat-card
-          title="This Month's Gross Brokerage"
+        <app-stat-card title="This Month's Gross Brokerage"
           [value]="monthlyComparisonData().sales.thisMonthRevenue | currencyFormat"
           [subtitle]="'Prior Month: ' + (monthlyComparisonData().sales.lastMonthRevenue | currencyFormat)"
           [badgeText]="(monthlyComparisonData().sales.isIncrease ? '+' : '') + monthlyComparisonData().sales.percentChange + '% vs Last Month'"
-          badgeColor="green"
-          iconColor="green">
-          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          badgeColor="green" iconColor="green">
+          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
             <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
             <polyline points="17 6 23 6 23 12"></polyline>
           </svg>
         </app-stat-card>
 
-        <app-stat-card
-          title="Monthly Net Brokerage Margin"
-          [value]="monthlyComparisonData().netThisMonth | currencyFormat"
-          subtitle="Brokerage minus Sales Expenses"
-          badgeText="Net In Pocket"
-          badgeColor="green"
-          iconColor="blue">
-          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <app-stat-card title="Monthly Net Brokerage Margin"
+          [value]="monthlyComparisonData().netThisMonth | currencyFormat" subtitle="Brokerage minus Sales Expenses"
+          badgeText="Net In Pocket" badgeColor="green" iconColor="blue">
+          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
             <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
             <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
           </svg>
         </app-stat-card>
 
-        <app-stat-card
-          title="Cost of Sales Acquisition Ratio"
-          [value]="monthlyComparisonData().roiRatio + '%'"
-          subtitle="Expenses / Brokerage Volume"
-          badgeText="Healthy ROI"
-          badgeColor="blue"
-          iconColor="amber">
-          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <app-stat-card title="Cost of Sales Acquisition Ratio" [value]="monthlyComparisonData().roiRatio + '%'"
+          subtitle="Expenses / Brokerage Volume" badgeText="Healthy ROI" badgeColor="blue" iconColor="amber">
+          <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="16" x2="12" y2="12"></line>
             <line x1="12" y1="8" x2="12.01" y2="8"></line>
@@ -687,13 +620,10 @@
             </div>
           </div>
 
-          <app-empty-state
-            *ngIf="expenseService.expensesByCategory().length === 0"
-            type="general"
+          <app-empty-state *ngIf="expenseService.expensesByCategory().length === 0" type="general"
             title="No Expenses Recorded Yet"
             description="Record site visit fuel, client refreshments, or digital advertising costs to populate breakdown."
-            actionText="+ Record Property Expense"
-            (onAction)="openAddExpenseModal()">
+            actionText="+ Record Property Expense" (onAction)="openAddExpenseModal()">
           </app-empty-state>
         </div>
       </div>
@@ -729,13 +659,10 @@
             </table>
           </div>
 
-          <app-empty-state
-            *ngIf="expenseService.expensesByProperty().length === 0"
-            type="general"
+          <app-empty-state *ngIf="expenseService.expensesByProperty().length === 0" type="general"
             title="No Property Expenses"
             description="Assign expenses to specific listings to analyze property sale costs."
-            actionText="+ Record Expense"
-            (onAction)="openAddExpenseModal()">
+            actionText="+ Record Expense" (onAction)="openAddExpenseModal()">
           </app-empty-state>
         </div>
       </div>
@@ -768,7 +695,8 @@
           </thead>
           <tbody>
             <tr *ngIf="expenseService.tenantExpenses().length === 0">
-              <td colspan="7" style="text-align: center; padding: 36px 16px; color: var(--ef-text-secondary); font-size: 0.9rem;">
+              <td colspan="7"
+                style="text-align: center; padding: 36px 16px; color: var(--ef-text-secondary); font-size: 0.9rem;">
                 No expenses logged yet. Click "+ Record Sale Expense" above to start tracking property sales costs.
               </td>
             </tr>
@@ -857,7 +785,8 @@
                 <span>{{ item.expiresAt | date:'short' }}</span>
               </td>
               <td>
-                <span class="status-badge" [class.green]="item.status === 'active'" [class.red]="item.status !== 'active'">
+                <span class="status-badge" [class.green]="item.status === 'active'"
+                  [class.red]="item.status !== 'active'">
                   {{ item.status | uppercase }}
                 </span>
               </td>
@@ -866,17 +795,11 @@
               </td>
               <td>
                 <div class="table-actions">
-                  <button
-                    type="button"
-                    class="btn-micro"
-                    (click)="approveLinkExtension(item.id, 24)"
+                  <button type="button" class="btn-micro" (click)="approveLinkExtension(item.id, 24)"
                     title="Extend expiration by +24 hours">
                     +24h
                   </button>
-                  <button
-                    type="button"
-                    class="btn-micro red"
-                    (click)="rejectLinkExtension(item.id)"
+                  <button type="button" class="btn-micro red" (click)="rejectLinkExtension(item.id)"
                     title="Revoke / Expire link now">
                     Revoke
                   </button>
@@ -887,9 +810,7 @@
         </table>
       </div>
 
-      <app-empty-state
-        *ngIf="secureShareService.tenantShareLinks().length === 0"
-        title="No Shared Links Created Yet"
+      <app-empty-state *ngIf="secureShareService.tenantShareLinks().length === 0" title="No Shared Links Created Yet"
         description="Generate secure expiring links from the Properties page by clicking Share on any listing."
         icon="🔗">
       </app-empty-state>
@@ -926,9 +847,7 @@
 
           <div class="ef-form-group col-span-2">
             <label>Detailed Feedback &amp; Conversation Notes</label>
-            <textarea
-              rows="3"
-              [(ngModel)]="concernForm.notes"
+            <textarea rows="3" [(ngModel)]="concernForm.notes"
               placeholder="e.g. Buyer loved the locality but their approved bank loan was only 40L while property was 52L. Looking for smaller plot or upcoming phase.">
             </textarea>
           </div>
@@ -938,7 +857,8 @@
               <input type="checkbox" [(ngModel)]="concernForm.interestedInNextProject">
               <span><strong>Mark as Target Buyer for Next / Upcoming Project</strong></span>
             </label>
-            <small class="sub-text">Check this so your agency can immediately contact this buyer when you launch your next layout or project.</small>
+            <small class="sub-text">Check this so your agency can immediately contact this buyer when you launch your
+              next layout or project.</small>
           </div>
 
           <ng-container *ngIf="concernForm.interestedInNextProject">
@@ -954,7 +874,8 @@
 
             <div class="ef-form-group col-span-2">
               <label>Preferred Plot Size or Unit Type</label>
-              <input type="text" [(ngModel)]="concernForm.preferredSize" placeholder="e.g. 1200 sqft / 30x40 / 3 BHK Villa">
+              <input type="text" [(ngModel)]="concernForm.preferredSize"
+                placeholder="e.g. 1200 sqft / 30x40 / 3 BHK Villa">
             </div>
           </ng-container>
         </div>
@@ -984,7 +905,8 @@
         <div class="form-grid">
           <div class="ef-form-group col-span-2">
             <label>Expense Title / Description</label>
-            <input type="text" [(ngModel)]="expenseForm.title" placeholder="e.g. Client Site Visit Petrol &amp; Cab, 99acres Portal Listing, Site Signboard Flex">
+            <input type="text" [(ngModel)]="expenseForm.title"
+              placeholder="e.g. Client Site Visit Petrol &amp; Cab, 99acres Portal Listing, Site Signboard Flex">
           </div>
 
           <div class="ef-form-group">
@@ -1023,7 +945,8 @@
 
           <div class="ef-form-group col-span-2">
             <label>Optional Notes / Vendor / Bill Reference</label>
-            <input type="text" [(ngModel)]="expenseForm.notes" placeholder="e.g. Fastrack Taxi Bill #4592, Uber receipt">
+            <input type="text" [(ngModel)]="expenseForm.notes"
+              placeholder="e.g. Fastrack Taxi Bill #4592, Uber receipt">
           </div>
         </div>
       </div>
@@ -1036,10 +959,6 @@
   </div>
 
   <!-- Deal Closing Modal with Confetti -->
-  <app-deal-modal
-    *ngIf="openDealModal()"
-    (onClose)="openDealModal.set(false)"
-    (onDealClosed)="handleDealClosed()">
+  <app-deal-modal *ngIf="openDealModal()" (onClose)="openDealModal.set(false)" (onDealClosed)="handleDealClosed()">
   </app-deal-modal>
 </div>
-
