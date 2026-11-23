@@ -24,7 +24,7 @@
 
   <!-- Dashboard Header -->
   <div class="dashboard-header">
-    <div>
+    <div class="header-titles">
       <span class="role-badge">Principal Broker Dashboard</span>
       <h1>{{ tenantService.activeTenant().agencyName }}</h1>
       <p class="header-desc">
@@ -33,21 +33,22 @@
     </div>
 
     <div class="quick-action-bar">
-      <a routerLink="/ai" class="ef-btn ef-btn-primary ai-sparkle-btn" title="Open PlotFlow AI Studio">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"></path>
+      <a routerLink="/properties" class="ef-btn ef-btn-primary btn-primary-action" title="Add a new property listing">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
-        <span>PlotFlow AI</span>
-      </a>
-      <button class="ef-btn ef-btn-tonal" (click)="openDealModal.set(true)">
-        <span>Close Deal &amp; Calculator</span>
-      </button>
-      <button class="ef-btn ef-btn-outlined" (click)="openAddExpenseModal()">
-        <span>+ Record Expense</span>
-      </button>
-      <a routerLink="/properties" class="ef-btn ef-btn-outlined">
         <span>+ Add Property</span>
       </a>
+      <button type="button" class="ef-btn ef-btn-tonal" (click)="openDealModal.set(true)" title="Close deal & calculate brokerage commission">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>Close Deal &amp; Calc</span>
+      </button>
+      <button type="button" class="ef-btn ef-btn-outlined" (click)="openAddExpenseModal()" title="Record marketing or site travel expense">
+        <span>+ Record Expense</span>
+      </button>
     </div>
   </div>
 
@@ -64,7 +65,8 @@
         <rect x="14" y="12" width="7" height="9"></rect>
         <rect x="3" y="16" width="7" height="5"></rect>
       </svg>
-      <span>Overview &amp; Agenda</span>
+      <span class="tab-label-full">Overview &amp; Agenda</span>
+      <span class="tab-label-short">Overview</span>
     </button>
 
     <button
@@ -78,7 +80,8 @@
         <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
         <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
       </svg>
-      <span>Buyers &amp; Visitor Concerns</span>
+      <span class="tab-label-full">Buyers &amp; Visitor Concerns</span>
+      <span class="tab-label-short">Buyer Concerns</span>
       <span class="tab-badge" *ngIf="concernStats().nextProjectReady > 0">{{ concernStats().nextProjectReady }} for Next Project</span>
     </button>
 
@@ -91,7 +94,8 @@
         <line x1="12" y1="1" x2="12" y2="23"></line>
         <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
       </svg>
-      <span>Property Sale Expenses &amp; Reports</span>
+      <span class="tab-label-full">Property Sale Expenses &amp; Reports</span>
+      <span class="tab-label-short">Expenses</span>
       <span class="tab-badge green">Weekly &amp; Monthly</span>
     </button>
 
@@ -104,7 +108,8 @@
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
         <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
       </svg>
-      <span>Shared Property Links</span>
+      <span class="tab-label-full">Shared Property Links</span>
+      <span class="tab-label-short">Shared Links</span>
       <span class="tab-badge amber" *ngIf="secureShareService.pendingCount() > 0">
         {{ secureShareService.pendingCount() }} Pending
       </span>
