@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
@@ -11,5 +11,11 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 })
 export class SidebarComponent {
   @Input() collapsed = false;
+  @Input() mobileOpen = false;
+  @Output() onNavigate = new EventEmitter<void>();
+
+  handleNavClick(): void {
+    this.onNavigate.emit();
+  }
 }
 

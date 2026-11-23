@@ -6,6 +6,8 @@
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  padding-top: max(env(safe-area-inset-top), 0px);
+  padding-bottom: max(env(safe-area-inset-bottom), 16px);
   -webkit-overflow-scrolling: touch;
 }
 
@@ -65,6 +67,7 @@
   width: 100%;
   overflow: hidden;
   background-color: var(--ef-bg-canvas);
+  position: relative;
 }
 
 .app-body {
@@ -82,10 +85,73 @@
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-  padding-bottom: 24px;
+  padding-left: max(env(safe-area-inset-left), 0px);
+  padding-right: max(env(safe-area-inset-right), 0px);
+  padding-bottom: max(env(safe-area-inset-bottom), 32px);
   box-sizing: border-box;
 
   @media (max-width: 991px) {
-    padding-bottom: calc(var(--ef-bottom-nav-height) + env(safe-area-inset-bottom) + 24px);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 84px);
   }
+}
+
+/* Mobile Drawer Backdrop Overlay */
+.mobile-drawer-backdrop {
+  display: none;
+
+  @media (max-width: 991px) {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1999;
+    animation: fadeIn 0.2s ease;
+  }
+}
+
+/* Mobile Menu FAB (Floating Action Button) */
+.mobile-menu-fab {
+  display: none;
+
+  @media (max-width: 991px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    right: 20px;
+    bottom: max(env(safe-area-inset-bottom), 20px);
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: #1a73e8;
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 14px rgba(26, 115, 232, 0.4), 0 2px 6px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    z-index: 1050;
+    transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), background-color 0.2s ease;
+
+    &:active {
+      transform: scale(0.92);
+    }
+
+    &.active {
+      background: #334155;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    svg {
+      stroke: #ffffff;
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

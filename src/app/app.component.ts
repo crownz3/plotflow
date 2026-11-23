@@ -4,7 +4,6 @@ import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
 import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
-import { BottomTabsComponent } from './shared/components/bottom-tabs/bottom-tabs.component';
 import { LoaderComponent } from './shared/components/loader/loader.component';
 import { SnackbarComponent } from './shared/components/snackbar/snackbar.component';
 import { AiPromptDialogComponent } from './shared/components/ai-prompt-dialog/ai-prompt-dialog.component';
@@ -19,7 +18,6 @@ import { TenantService } from './core/services/tenant.service';
     RouterOutlet,
     NavbarComponent,
     SidebarComponent,
-    BottomTabsComponent,
     LoaderComponent,
     SnackbarComponent,
     AiPromptDialogComponent
@@ -32,6 +30,7 @@ export class AppComponent {
   tenantService = inject(TenantService);
   router = inject(Router);
   sidebarCollapsed = false;
+  readonly mobileDrawerOpen = signal(false);
 
   readonly currentUrl = signal<string>(this.router.url || '');
 
@@ -40,6 +39,7 @@ export class AppComponent {
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe((e: any) => {
         this.currentUrl.set(e.urlAfterRedirects || e.url || '');
+        this.mobileDrawerOpen.set(false);
       });
   }
 
@@ -59,7 +59,19 @@ export class AppComponent {
   });
 
   toggleSidebar(): void {
-    this.sidebarCollapsed = !this.sidebarCollapsed;
+    if (typeof window !== 'undefined' && window.innerWidth < 992) {
+      this.mobileDrawerOpen.set(!this.mobileDrawerOpen());
+    } else {
+      this.sidebarCollapsed = !this.sidebarCollapsed;
+    }
+  }
+
+  toggleMobileDrawer(): void {
+    this.mobileDrawerOpen.set(!this.mobileDrawerOpen());
+  }
+
+  closeMobileDrawer(): void {
+    this.mobileDrawerOpen.set(false);
   }
 
   exitSupportContext(): void {

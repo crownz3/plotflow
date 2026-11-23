@@ -19,9 +19,20 @@
   <!-- Top Navigation Bar -->
   <app-navbar (onToggleSidebar)="toggleSidebar()"></app-navbar>
 
+  <!-- Mobile Drawer Backdrop Overlay -->
+  <div
+    class="mobile-drawer-backdrop"
+    *ngIf="mobileDrawerOpen()"
+    (click)="closeMobileDrawer()">
+  </div>
+
   <div class="app-body">
-    <!-- Desktop Collapsible Navigation Drawer -->
-    <app-sidebar [collapsed]="sidebarCollapsed"></app-sidebar>
+    <!-- Navigation Drawer (Desktop Collapsible + Mobile Slide-Out Drawer) -->
+    <app-sidebar
+      [collapsed]="sidebarCollapsed"
+      [mobileOpen]="mobileDrawerOpen()"
+      (onNavigate)="closeMobileDrawer()">
+    </app-sidebar>
 
     <!-- Main Dynamic Workspace View -->
     <main class="main-content">
@@ -29,8 +40,24 @@
     </main>
   </div>
 
-  <!-- Mobile Bottom Tab Bar (Visible on Android / < 992px) -->
-  <app-bottom-tabs></app-bottom-tabs>
+  <!-- Mobile Floating Action Button (FAB) to Open Menu -->
+  <button
+    type="button"
+    class="mobile-menu-fab"
+    [class.active]="mobileDrawerOpen()"
+    (click)="toggleMobileDrawer()"
+    aria-label="Toggle Navigation Menu"
+    title="Navigation Menu">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" *ngIf="!mobileDrawerOpen()">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" *ngIf="mobileDrawerOpen()">
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+  </button>
 </div>
 
 <!-- Global Full-Screen Major Action Loader -->

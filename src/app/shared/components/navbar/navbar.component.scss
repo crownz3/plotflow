@@ -1,11 +1,13 @@
 .app-navbar {
-  height: var(--ef-header-height);
+  height: calc(var(--ef-header-height) + env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top);
+  padding-left: max(env(safe-area-inset-left), 16px);
+  padding-right: max(env(safe-area-inset-right), 16px);
   background-color: #ffffff;
   border-bottom: 1px solid var(--ef-border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
   position: sticky;
   top: 0;
   z-index: 100;
