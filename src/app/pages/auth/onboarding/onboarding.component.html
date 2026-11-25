@@ -10,7 +10,7 @@
       </div>
       <div class="brand-text">
         <span class="platform-name">{{ platformConfig.platformName() }}</span>
-        <span class="portal-tag">Brokerage Onboarding</span>
+        <span class="portal-tag">Agency Onboarding</span>
       </div>
     </div>
 
@@ -68,18 +68,18 @@
       <!-- STEP 1: Agency Brand & License -->
       <div class="step-panel animate-step-in" *ngIf="currentStep() === 1">
         <div class="step-title-box">
-          <span class="step-badge">Step 1 of 4 • Identity &amp; Compliance</span>
-          <h2>Register Your Brokerage Organization</h2>
-          <p class="step-desc">Establish your agency identity on PlotFlow and register your official RERA regulatory license.</p>
+          <span class="step-badge">Step 1 of 4 • Identity &amp; Setup</span>
+          <h2>Register Your Agency Organization</h2>
+          <p class="step-desc">Establish your agency identity on PlotFlow and configure your business profile.</p>
         </div>
 
         <div class="form-grid">
           <div class="ef-form-group col-span-2">
-            <label>Broker Work Email Address <span class="required">*</span></label>
+            <label>Work Email Address <span class="required">*</span></label>
             <input
               type="email"
               [(ngModel)]="email"
-              placeholder="principal.broker&#64;realty.com"
+              placeholder="director&#64;realty.com"
               required>
             <small class="field-hint">Super Admin updates &amp; approval notifications will be sent to this email.</small>
           </div>
@@ -89,40 +89,39 @@
             <input
               type="text"
               [(ngModel)]="agencyName"
-              placeholder="e.g. Skyline Heights Realty &amp; Broking"
+              placeholder="e.g. Skyline Heights Realty"
               required>
           </div>
 
           <div class="ef-form-group col-span-2">
-            <label>RERA Registration / Real Estate License Number <span class="required">*</span></label>
+            <label>Registration ID / License (Optional)</label>
             <input
               type="text"
               [(ngModel)]="reraNumber"
-              placeholder="e.g. TN/01/RealEstate/2026/7890 (or enter Applied / In Process)"
-              required>
-            <small class="field-hint">Validated by Super Admin before client brochure generation is unlocked.</small>
+              placeholder="e.g. ID-7890 or Govt License (Optional)">
+            <small class="field-hint">Optional business identifier stamped on branded brochures.</small>
           </div>
         </div>
 
         <div class="step-footer">
           <div></div>
           <button class="ef-btn ef-btn-primary next-btn" (click)="nextStep()">
-            <span>Continue to Broker Details &rarr;</span>
+            <span>Continue to Contact Details &rarr;</span>
           </button>
         </div>
       </div>
 
-      <!-- STEP 2: Principal Broker & Territory -->
+      <!-- STEP 2: Authorized Contact & Territory -->
       <div class="step-panel animate-step-in" *ngIf="currentStep() === 2">
         <div class="step-title-box">
-          <span class="step-badge">Step 2 of 4 • Principal Broker &amp; Territory</span>
-          <h2>Who is the Licensee Principal?</h2>
+          <span class="step-badge">Step 2 of 4 • Primary Contact &amp; Territory</span>
+          <h2>Primary Authorized Contact</h2>
           <p class="step-desc">Provide direct contact details and the primary city where your agency operates.</p>
         </div>
 
         <div class="form-grid">
           <div class="ef-form-group">
-            <label>Principal Broker / Applicant Full Name <span class="required">*</span></label>
+            <label>Authorized Person / Applicant Full Name <span class="required">*</span></label>
             <input
               type="text"
               [(ngModel)]="brokerName"
@@ -243,11 +242,11 @@
           <p class="step-desc">Inspect your agency credentials before dispatching to the Platform Super Admin.</p>
         </div>
 
-        <!-- Live Brokerage ID Card Preview -->
+        <!-- Live Agency ID Card Preview -->
         <div class="live-identity-preview">
           <div class="preview-badge-row">
-            <span class="preview-tag">Live Brokerage Card Preview</span>
-            <span class="rera-pill">✓ RERA Applied Compliance</span>
+            <span class="preview-tag">Live Agency Card Preview</span>
+            <span class="rera-pill">Verified Agency Profile</span>
           </div>
 
           <div class="agency-preview-body">
@@ -258,10 +257,10 @@
               <h3>{{ agencyName || 'Your Agency Name' }}</h3>
               <p class="meta-row">
                 <span>{{ city || 'Market Territory' }}</span> •
-                <span>License: <strong>{{ reraNumber || 'Pending' }}</strong></span>
+                <span>ID: <strong>{{ reraNumber || 'Optional' }}</strong></span>
               </p>
               <p class="broker-row">
-                Principal Broker: <strong>{{ brokerName }}</strong> • <span>{{ phone }}</span>
+                Primary Contact: <strong>{{ brokerName }}</strong> • <span>{{ phone }}</span>
               </p>
             </div>
           </div>

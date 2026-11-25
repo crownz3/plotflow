@@ -2,16 +2,14 @@
   <div class="page-header">
     <div>
       <h1>Property Inventory &amp; Analytics</h1>
-      <p class="sub-desc">Manage verified residential plots, luxury villas, apartments, on-site infrastructure, and branded marketing brochures.</p>
+      <p class="sub-desc">Manage verified residential plots, luxury villas, apartments, on-site infrastructure, and
+        branded marketing brochures.</p>
     </div>
 
     <div class="header-right-actions">
       <!-- Table vs Card View Toggle (Mobile Friendly) -->
       <div class="view-toggle-group" *ngIf="propertyService.tenantProperties().length > 0">
-        <button
-          class="view-toggle-btn"
-          [class.active]="viewMode() === 'cards'"
-          (click)="toggleView('cards')"
+        <button class="view-toggle-btn" [class.active]="viewMode() === 'cards'" (click)="toggleView('cards')"
           title="Card View (Mobile Optimized)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="3" width="7" height="7"></rect>
@@ -21,10 +19,7 @@
           </svg>
           <span>Cards</span>
         </button>
-        <button
-          class="view-toggle-btn"
-          [class.active]="viewMode() === 'table'"
-          (click)="toggleView('table')"
+        <button class="view-toggle-btn" [class.active]="viewMode() === 'table'" (click)="toggleView('table')"
           title="Dense Table View">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -66,7 +61,8 @@
       </div>
       <div class="stat-content">
         <span class="stat-lbl">Active Inventory for Sale</span>
-        <span class="stat-val text-primary">{{ analyticsService.portfolioStats().activeInventoryValue | currencyFormat }}</span>
+        <span class="stat-val text-primary">{{ analyticsService.portfolioStats().activeInventoryValue | currencyFormat
+          }}</span>
         <span class="stat-sub">{{ analyticsService.portfolioStats().activePropertiesCount }} Ready for Purchase</span>
       </div>
     </div>
@@ -80,8 +76,10 @@
       </div>
       <div class="stat-content">
         <span class="stat-lbl">Projected Brokerage (4%)</span>
-        <span class="stat-val text-success">{{ analyticsService.portfolioStats().totalProjectedBrokerage | currencyFormat }}</span>
-        <span class="stat-sub">Est. Net Profit: {{ analyticsService.portfolioStats().totalProjectedNetProfit | currencyFormat }}</span>
+        <span class="stat-val text-success">{{ analyticsService.portfolioStats().totalProjectedBrokerage |
+          currencyFormat }}</span>
+        <span class="stat-sub">Est. Net Profit: {{ analyticsService.portfolioStats().totalProjectedNetProfit |
+          currencyFormat }}</span>
       </div>
     </div>
 
@@ -109,37 +107,25 @@
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
-      <input type="text" [(ngModel)]="searchQuery" placeholder="Search by locality, title, DTCP/RERA approval, or dimensions...">
+      <input type="text" [(ngModel)]="searchQuery"
+        placeholder="Search by locality, title, DTCP/RERA approval, or dimensions...">
     </div>
 
     <div class="type-filter-chips">
-      <button
-        class="filter-chip"
-        [class.active]="selectedType() === 'all'"
-        (click)="selectedType.set('all')">
+      <button class="filter-chip" [class.active]="selectedType() === 'all'" (click)="selectedType.set('all')">
         All ({{ propertyService.tenantProperties().length }})
       </button>
-      <button
-        class="filter-chip"
-        [class.active]="selectedType() === 'plot'"
-        (click)="selectedType.set('plot')">
+      <button class="filter-chip" [class.active]="selectedType() === 'plot'" (click)="selectedType.set('plot')">
         Plots &amp; Land
       </button>
-      <button
-        class="filter-chip"
-        [class.active]="selectedType() === 'villa'"
-        (click)="selectedType.set('villa')">
+      <button class="filter-chip" [class.active]="selectedType() === 'villa'" (click)="selectedType.set('villa')">
         Villas &amp; Houses
       </button>
-      <button
-        class="filter-chip"
-        [class.active]="selectedType() === 'apartment'"
+      <button class="filter-chip" [class.active]="selectedType() === 'apartment'"
         (click)="selectedType.set('apartment')">
         Apartments
       </button>
-      <button
-        class="filter-chip"
-        [class.active]="selectedType() === 'commercial'"
+      <button class="filter-chip" [class.active]="selectedType() === 'commercial'"
         (click)="selectedType.set('commercial')">
         Commercial
       </button>
@@ -148,13 +134,8 @@
 
   <!-- 1. CARDS VIEW (Mobile-Friendly & Interactive) -->
   <div class="properties-grid animate-fade-in" *ngIf="viewMode() === 'cards' && filteredProperties().length > 0">
-    <app-property-card
-      *ngFor="let prop of filteredProperties()"
-      [property]="prop"
-      (onSelect)="openDetails($event)"
-      (onViewStats)="openStatsDrawer($event)"
-      (onShare)="openShareModal($event)"
-      (onEdit)="startEditProperty($event)"
+    <app-property-card *ngFor="let prop of filteredProperties()" [property]="prop" (onSelect)="openDetails($event)"
+      (onViewStats)="openStatsDrawer($event)" (onShare)="openShareModal($event)" (onEdit)="startEditProperty($event)"
       (onDelete)="deleteProperty($event)">
     </app-property-card>
   </div>
@@ -182,7 +163,8 @@
             <td>
               <strong class="clickable-title" (click)="openDetails(prop)">{{ prop.title }}</strong>
               <div class="prop-sub-id">
-                <span *ngIf="prop.plotDetails?.approvalStatus" class="sub-badge">{{ prop.plotDetails?.approvalStatus }}</span>
+                <span *ngIf="prop.plotDetails?.approvalStatus" class="sub-badge">{{ prop.plotDetails?.approvalStatus
+                  }}</span>
                 <span>{{ prop.id }}</span>
               </div>
             </td>
@@ -198,7 +180,8 @@
             </td>
             <td>
               <div>{{ prop.area }} {{ prop.areaUnit }}</div>
-              <small class="rate-sub" *ngIf="getIntel(prop) as intel">₹{{ intel.financials.pricePerUnit }}/{{ prop.areaUnit }}</small>
+              <small class="rate-sub" *ngIf="getIntel(prop) as intel">₹{{ intel.financials.pricePerUnit }}/{{
+                prop.areaUnit }}</small>
             </td>
             <td>
               <strong class="price-text">{{ prop.price | currencyFormat }}</strong>
@@ -215,7 +198,8 @@
             </td>
             <td>
               <span class="profit-val text-success" *ngIf="getIntel(prop) as intel">
-                {{ intel.financials.isClosed ? (intel.financials.realizedNetProfit | currencyFormat) : (intel.financials.projectedNetProfit | currencyFormat) }}
+                {{ intel.financials.isClosed ? (intel.financials.realizedNetProfit | currencyFormat) :
+                (intel.financials.projectedNetProfit | currencyFormat) }}
               </span>
             </td>
             <td>
@@ -223,16 +207,19 @@
             </td>
             <td>
               <div class="actions-row">
-                <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="openShareModal(prop)" title="Share PDF or WhatsApp Pitch">
+                <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="openShareModal(prop)"
+                  title="Share PDF or WhatsApp Pitch">
                   Share
                 </button>
-                <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="openStatsDrawer(prop)" title="Property Analytics &amp; Matched Clients">
+                <button class="ef-btn ef-btn-tonal ef-btn-sm" (click)="openStatsDrawer(prop)"
+                  title="Property Analytics &amp; Matched Clients">
                   Stats
                 </button>
                 <button class="ef-btn ef-btn-outlined ef-btn-sm" (click)="startEditProperty(prop)">
                   Edit
                 </button>
-                <button class="ef-btn ef-btn-outlined ef-btn-sm" (click)="deleteProperty(prop)" style="color: var(--ef-danger);">
+                <button class="ef-btn ef-btn-outlined ef-btn-sm" (click)="deleteProperty(prop)"
+                  style="color: var(--ef-danger);">
                   Delete
                 </button>
               </div>
@@ -244,37 +231,25 @@
   </div>
 
   <!-- EMPTY STATE FOR PROPERTIES -->
-  <app-empty-state
-    *ngIf="filteredProperties().length === 0 && propertyService.tenantProperties().length > 0"
-    type="search"
-    title="No Matching Properties"
-    description="No property listings match your active filters or search terms."
-    actionText="Reset Filters"
+  <app-empty-state *ngIf="filteredProperties().length === 0 && propertyService.tenantProperties().length > 0"
+    type="search" title="No Matching Properties"
+    description="No property listings match your active filters or search terms." actionText="Reset Filters"
     (onAction)="resetFilters()">
   </app-empty-state>
 
-  <app-empty-state
-    *ngIf="propertyService.tenantProperties().length === 0"
-    type="properties"
+  <app-empty-state *ngIf="propertyService.tenantProperties().length === 0" type="properties"
     title="No Properties in Inventory"
     description="Your agency has not ingested any properties yet. Add verified residential plots, independent villas, or high-rise apartments."
-    actionText="+ Ingest First Property"
-    (onAction)="openAddModal.set(true)">
+    actionText="+ Ingest First Property" (onAction)="openAddModal.set(true)">
   </app-empty-state>
 
   <!-- Property Deep-Dive Analytics & Intelligence Drawer -->
-  <app-property-stats-drawer
-    *ngIf="selectedPropertyForStats()"
-    [property]="selectedPropertyForStats()!"
-    (onClose)="selectedPropertyForStats.set(null)"
-    (onCloseDeal)="handleCloseDeal($event)">
+  <app-property-stats-drawer *ngIf="selectedPropertyForStats()" [property]="selectedPropertyForStats()!"
+    (onClose)="selectedPropertyForStats.set(null)" (onCloseDeal)="handleCloseDeal($event)">
   </app-property-stats-drawer>
 
   <!-- Deal Closing Modal -->
-  <app-deal-modal
-    *ngIf="dealModalOpen()"
-    [property]="dealModalProp"
-    (onClose)="dealModalOpen.set(false)">
+  <app-deal-modal *ngIf="dealModalOpen()" [property]="dealModalProp" (onClose)="dealModalOpen.set(false)">
   </app-deal-modal>
 
   <!-- ========================================================================= -->
@@ -285,7 +260,8 @@
       <div class="modal-header">
         <div class="modal-header-title">
           <h2>Ingest Verified Property Listing</h2>
-          <span class="header-sub">Dynamic specifications for plots, villas, apartments, on-site infrastructure, and media</span>
+          <span class="header-sub">Dynamic specifications for plots, villas, apartments, on-site infrastructure, and
+            media</span>
         </div>
         <button class="close-btn" (click)="openAddModal.set(false)">&times;</button>
       </div>
@@ -296,7 +272,8 @@
           <div class="form-grid">
             <div class="ef-form-group col-span-2">
               <label>Property Title *</label>
-              <input type="text" [(ngModel)]="newProp.title" placeholder="e.g. 2400 Sq.ft East-Facing Villa Plot in ECR Panaiyur">
+              <input type="text" [(ngModel)]="newProp.title"
+                placeholder="e.g. 2400 Sq.ft East-Facing Villa Plot in ECR Panaiyur">
             </div>
 
             <div class="ef-form-group">
@@ -343,7 +320,8 @@
                   <option value="guntha">Guntha</option>
                 </select>
               </div>
-              <div class="converted-area-box animate-fade-in" *ngIf="getConvertedAreaHint(newProp.area, newProp.areaUnit) as hint">
+              <div class="converted-area-box animate-fade-in"
+                *ngIf="getConvertedAreaHint(newProp.area, newProp.areaUnit) as hint">
                 <div class="conversion-row-main">
                   <span class="conv-label">Auto Converted:</span>
                   <span class="conv-val">{{ hint.primary }}</span>
@@ -374,23 +352,23 @@
               <label>Approval Authority (Multi-Select)</label>
               <div class="multi-select-container">
                 <div class="multi-select-trigger" (click)="approvalDropdownOpen.set(!approvalDropdownOpen())">
-                  <span class="trigger-placeholder" *ngIf="newProp.plotApprovals.length === 0">Select approval authorities...</span>
+                  <span class="trigger-placeholder" *ngIf="newProp.plotApprovals.length === 0">Select approval
+                    authorities...</span>
                   <div class="trigger-summary" *ngIf="newProp.plotApprovals.length > 0">
                     <span class="count-badge">{{ newProp.plotApprovals.length }} Selected</span>
                     <span class="summary-text">{{ newProp.plotApprovals.join(', ') }}</span>
                   </div>
-                  <svg class="dropdown-chevron" [class.open]="approvalDropdownOpen()" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <svg class="dropdown-chevron" [class.open]="approvalDropdownOpen()" width="16" height="16"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="6 9 12 15 18 9"></polyline>
                   </svg>
                 </div>
 
                 <div class="multi-select-menu animate-fade-in" *ngIf="approvalDropdownOpen()">
-                  <div
-                    class="dropdown-option"
-                    *ngFor="let apprv of availableApprovals"
-                    [class.selected]="isApprovalSelected(apprv, 'new')"
-                    (click)="toggleApproval(apprv, 'new')">
-                    <input type="checkbox" [checked]="isApprovalSelected(apprv, 'new')" (click)="$event.stopPropagation(); toggleApproval(apprv, 'new')">
+                  <div class="dropdown-option" *ngFor="let apprv of availableApprovals"
+                    [class.selected]="isApprovalSelected(apprv, 'new')" (click)="toggleApproval(apprv, 'new')">
+                    <input type="checkbox" [checked]="isApprovalSelected(apprv, 'new')"
+                      (click)="$event.stopPropagation(); toggleApproval(apprv, 'new')">
                     <span>{{ apprv }}</span>
                   </div>
                 </div>
@@ -401,7 +379,8 @@
                 <div class="selected-chip approval-chip" *ngFor="let apprv of newProp.plotApprovals">
                   <span class="chip-check">✓</span>
                   <span class="chip-label">{{ apprv }}</span>
-                  <button type="button" class="chip-remove" (click)="toggleApproval(apprv, 'new')" title="Remove">×</button>
+                  <button type="button" class="chip-remove" (click)="toggleApproval(apprv, 'new')"
+                    title="Remove">×</button>
                 </div>
               </div>
             </div>
@@ -430,13 +409,100 @@
 
         <!-- 2. CONDITIONAL SPECIFICATIONS: VILLA / HOUSE -->
         <div class="form-section highlight-box" *ngIf="newProp.propertyType === 'villa'">
-          <h3 class="section-heading">2. Villa / Independent House Details</h3>
-          <div class="form-grid">
-            <div class="ef-form-group">
-              <label>Built-up Area (Sq.ft)</label>
-              <input type="number" [(ngModel)]="newProp.villaBuiltUpArea" placeholder="e.g. 3200">
+          <div class="section-title-wrap">
+            <h3 class="section-heading">2. Villa / Independent House Architecture</h3>
+            <span class="section-pill-tag">Multi-Floor Architecture</span>
+          </div>
+
+          <!-- Floor-by-Floor Architecture Builder -->
+          <div class="floor-builder-container">
+            <div class="builder-header">
+              <div>
+                <span class="builder-title">Floor-by-Floor Blueprint</span>
+                <span class="builder-sub">Specify built-up area, BHK, and bathrooms per level</span>
+              </div>
+              <button type="button" class="btn-action-sm btn-add-floor" (click)="addVillaFloor('new')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Add Floor</span>
+              </button>
             </div>
 
+            <!-- Floor Cards List -->
+            <div class="floor-cards-list">
+              <div class="floor-plan-card" *ngFor="let floor of newProp.villaFloorsList; let idx = index">
+                <div class="floor-card-header">
+                  <div class="floor-card-left">
+                    <span class="floor-level-badge">{{ floor.floorLevel }}</span>
+                    <button type="button" class="btn-copy-floor" *ngIf="idx > 0" (click)="copyPreviousFloor(idx, 'new')"
+                      title="Copy layout specifications from {{ idx === 1 ? 'Ground Floor' : 'Previous Floor' }}">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                      </svg>
+                      <span>{{ idx === 1 ? 'Same as Ground Floor' : 'Same as Previous Floor' }}</span>
+                    </button>
+                  </div>
+                  <button type="button" class="btn-remove-floor" *ngIf="newProp.villaFloorsList.length > 1"
+                    (click)="removeVillaFloor(idx, 'new')" title="Remove this floor">
+                    &times; Remove
+                  </button>
+                </div>
+
+                <div class="floor-inputs-grid">
+                  <div class="ef-form-group">
+                    <label>Built-up Area (Sq.ft)</label>
+                    <input type="number" [(ngModel)]="floor.builtUpAreaSqFt" (ngModelChange)="recalcVillaTotals('new')"
+                      placeholder="e.g. 1400">
+                  </div>
+
+                  <div class="ef-form-group">
+                    <label>Configuration</label>
+                    <select [(ngModel)]="floor.bedroomsCount" (ngModelChange)="recalcVillaTotals('new')">
+                      <option [ngValue]="1">1 BHK</option>
+                      <option [ngValue]="2">2 BHK</option>
+                      <option [ngValue]="3">3 BHK</option>
+                      <option [ngValue]="4">4 BHK</option>
+                      <option [ngValue]="5">5 BHK</option>
+                      <option [ngValue]="0">Hall / Living</option>
+                    </select>
+                  </div>
+
+                  <div class="ef-form-group">
+                    <label>Bathrooms</label>
+                    <input type="number" [(ngModel)]="floor.bathroomsCount" (ngModelChange)="recalcVillaTotals('new')"
+                      placeholder="e.g. 2">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live Calculated Totals Bar -->
+            <div class="villa-totals-bar">
+              <div class="total-metric">
+                <span class="lbl">Total Built-up</span>
+                <span class="val">{{ newProp.villaBuiltUpArea }} Sq.ft</span>
+              </div>
+              <div class="total-metric">
+                <span class="lbl">Total BHK</span>
+                <span class="val">{{ newProp.villaBedrooms }} BHK</span>
+              </div>
+              <div class="total-metric">
+                <span class="lbl">Total Bathrooms</span>
+                <span class="val">{{ newProp.villaBathrooms }} Baths</span>
+              </div>
+              <div class="total-metric">
+                <span class="lbl">Structure</span>
+                <span class="val">{{ newProp.villaFloors }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Villa Construction, Facing & Parking Details -->
+          <div class="form-grid" style="margin-top: 16px;">
             <div class="ef-form-group">
               <label>Plot Area (Sq.ft)</label>
               <input type="number" [(ngModel)]="newProp.villaPlotArea" placeholder="e.g. 2400">
@@ -447,43 +513,81 @@
               <input type="text" [(ngModel)]="newProp.villaFloors" placeholder="e.g. G+1 Duplex, G+2 Triplex">
             </div>
 
+            <!-- Building Structure: Framed vs Load Bearing -->
+            <div class="ef-form-group col-span-2">
+              <label>Building Structure Type *</label>
+              <div class="structure-radio-grid">
+                <label class="structure-card-option" [class.selected]="newProp.villaBuildingStructure === 'framed'">
+                  <input type="radio" name="buildingStructureNew" value="framed"
+                    [(ngModel)]="newProp.villaBuildingStructure">
+                  <div class="option-content">
+                    <strong>RCC Framed Structure</strong>
+                    <span>Columns, beams, and foundation engineered for vertical extension</span>
+                  </div>
+                </label>
+                <label class="structure-card-option"
+                  [class.selected]="newProp.villaBuildingStructure === 'load_bearing'">
+                  <input type="radio" name="buildingStructureNew" value="load_bearing"
+                    [(ngModel)]="newProp.villaBuildingStructure">
+                  <div class="option-content">
+                    <strong>Load Bearing Structure</strong>
+                    <span>Traditional load-bearing brickwork masonry construction</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Facing & Vastu: Road Facing vs Main Entrance Facing -->
             <div class="ef-form-group">
-              <label>Bedrooms (BHK)</label>
-              <select [(ngModel)]="newProp.villaBedrooms">
-                <option [ngValue]="2">2 BHK</option>
-                <option [ngValue]="3">3 BHK</option>
-                <option [ngValue]="4">4 BHK</option>
-                <option [ngValue]="5">5+ BHK</option>
+              <label>Road Facing</label>
+              <select [(ngModel)]="newProp.villaRoadFacing">
+                <option value="North">North Road</option>
+                <option value="South">South Road</option>
+                <option value="East">East Road</option>
+                <option value="West">West Road</option>
+                <option value="North-East">North-East Road</option>
+                <option value="North-West">North-West Road</option>
+                <option value="South-East">South-East Road</option>
+                <option value="South-West">South-West Road</option>
               </select>
             </div>
 
             <div class="ef-form-group">
-              <label>Facing / Vastu</label>
-              <select [(ngModel)]="newProp.villaFacing">
-                <option value="East">East Facing</option>
-                <option value="North">North Facing</option>
-                <option value="North-East">North-East Facing</option>
+              <label>Main Entrance Facing (Vastu)</label>
+              <select [(ngModel)]="newProp.villaMainEntranceFacing">
+                <option value="North">North Facing (Kubera)</option>
+                <option value="East">East Facing (Surya)</option>
+                <option value="North-East">North-East (Ishanya)</option>
                 <option value="West">West Facing</option>
                 <option value="South">South Facing</option>
+                <option value="North-West">North-West Facing</option>
+                <option value="South-East">South-East Facing</option>
+                <option value="South-West">South-West Facing</option>
               </select>
             </div>
 
             <div class="ef-form-group">
               <label>Covered Car Parking</label>
-              <input type="number" [(ngModel)]="newProp.villaCarParking" placeholder="e.g. 2">
+              <label class="toggle-pill-sm" [class.active]="newProp.villaCoveredParking"
+                style="height: 42px; width: 100%; justify-content: flex-start; padding: 0 14px;">
+                <input type="checkbox" [(ngModel)]="newProp.villaCoveredParking">
+                <span>Covered Parking Available</span>
+              </label>
+            </div>
+
+            <div class="ef-form-group">
+              <label>Furnishing Status</label>
+              <select [(ngModel)]="newProp.villaFurnishing">
+                <option value="unfurnished">Unfurnished</option>
+                <option value="semi-furnished">Semi-Furnished</option>
+                <option value="fully-furnished">Fully Furnished</option>
+              </select>
             </div>
 
             <div class="ef-form-group col-span-2 toggles-row">
               <label class="toggle-pill">
                 <input type="checkbox" [(ngModel)]="newProp.villaHasGarden">
                 <span>Private Garden / Terrace Deck</span>
-              </label>
-              <label class="toggle-pill">
-                <select [(ngModel)]="newProp.villaFurnishing" style="border:none; background:transparent; font-size:inherit;">
-                  <option value="unfurnished">Unfurnished</option>
-                  <option value="semi-furnished">Semi-Furnished</option>
-                  <option value="fully-furnished">Fully Furnished</option>
-                </select>
               </label>
             </div>
           </div>
@@ -526,30 +630,48 @@
         <!-- 3. ON-SITE INFRASTRUCTURE & SERVICES -->
         <div class="form-section">
           <h3 class="section-heading">3. On-Site Infrastructure &amp; Amenities</h3>
-          <p class="section-sub">Select verified facilities available on the property site from the multi-select dropdown:</p>
+          <p class="section-sub">Select verified facilities available on the property site from the multi-select
+            dropdown:</p>
 
           <div class="multi-select-container">
             <div class="multi-select-trigger" (click)="infraDropdownOpen.set(!infraDropdownOpen())">
-              <span class="trigger-placeholder" *ngIf="newProp.infrastructure.length === 0">Select on-site infrastructure &amp; amenities...</span>
+              <span class="trigger-placeholder" *ngIf="newProp.infrastructure.length === 0">Select on-site
+                infrastructure &amp; amenities...</span>
               <div class="trigger-summary" *ngIf="newProp.infrastructure.length > 0">
                 <span class="count-badge">{{ newProp.infrastructure.length }} Selected</span>
                 <span class="summary-text">{{ newProp.infrastructure.join(', ') }}</span>
               </div>
-              <svg class="dropdown-chevron" [class.open]="infraDropdownOpen()" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg class="dropdown-chevron" [class.open]="infraDropdownOpen()" width="16" height="16"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </div>
 
             <div class="multi-select-menu animate-fade-in" *ngIf="infraDropdownOpen()">
-              <div
-                class="dropdown-option"
-                *ngFor="let infra of availableInfrastructure"
-                [class.selected]="isInfraSelected(infra, 'new')"
-                (click)="toggleInfra(infra, 'new')">
-                <input type="checkbox" [checked]="isInfraSelected(infra, 'new')" (click)="$event.stopPropagation(); toggleInfra(infra, 'new')">
+              <div class="dropdown-option" *ngFor="let infra of availableInfrastructure"
+                [class.selected]="isInfraSelected(infra, 'new')" (click)="toggleInfra(infra, 'new')">
+                <input type="checkbox" [checked]="isInfraSelected(infra, 'new')"
+                  (click)="$event.stopPropagation(); toggleInfra(infra, 'new')">
                 <span>{{ infra }}</span>
               </div>
             </div>
+          </div>
+
+          <!-- Custom Infrastructure & Amenity Input Row -->
+          <div class="custom-infra-input-row">
+            <div class="custom-infra-input-wrap">
+              <span class="input-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 5v14M5 12h14"></path>
+                </svg>
+              </span>
+              <input type="text" [(ngModel)]="customInfraInput" (keyup.enter)="addCustomInfra('new')"
+                placeholder="Type custom amenity (e.g. Swimming Pool, Solar Lighting, EV Charging)...">
+            </div>
+            <button type="button" class="btn-add-custom-infra" (click)="addCustomInfra('new')"
+              [disabled]="!customInfraInput.trim()">
+              <span>+ Add Custom</span>
+            </button>
           </div>
 
           <!-- Selected Infrastructure Facilities Displayed Below -->
@@ -557,14 +679,15 @@
             <div class="selected-chip infra-chip-selected" *ngFor="let item of newProp.infrastructure">
               <span class="chip-check">✓</span>
               <span class="chip-label">{{ item }}</span>
-              <button type="button" class="chip-remove" (click)="toggleInfra(item, 'new')" title="Remove facility">×</button>
+              <button type="button" class="chip-remove" (click)="toggleInfra(item, 'new')"
+                title="Remove facility">×</button>
             </div>
           </div>
         </div>
 
         <!-- 4. LOCATION & VICINITY CONNECTIVITY -->
         <div class="form-section">
-          <h3 class="section-heading">4. Location &amp; Vicinity Connectivity</h3>
+          <h3 class="section-heading">4. Location</h3>
           <div class="form-grid">
             <div class="ef-form-group">
               <label>Locality / Neighborhood *</label>
@@ -579,21 +702,13 @@
             <!-- Interactive 2D & 3D Plot Map & Boundary Tool -->
             <div class="ef-form-group col-span-2 plot-map-field">
               <label>Interactive Plot Location &amp; 2D/3D Boundary</label>
-              <app-plot-map-viewer
-                [editable]="true"
-                [coordinates]="newProp.coordinates"
-                [plotBoundary]="newProp.plotBoundary"
-                [view3D]="newProp.view3D"
-                [locality]="newProp.locality"
-                [city]="newProp.city"
-                [propertyTitle]="newProp.title"
-                [plotDimensions]="newProp.plotDimensions"
-                [area]="newProp.area"
-                [areaUnit]="newProp.areaUnit"
+              <app-plot-map-viewer [editable]="true" [coordinates]="newProp.coordinates"
+                [plotBoundary]="newProp.plotBoundary" [view3D]="newProp.view3D" [locality]="newProp.locality"
+                [city]="newProp.city" [propertyTitle]="newProp.title" [plotDimensions]="newProp.plotDimensions"
+                [area]="newProp.area" [areaUnit]="newProp.areaUnit"
                 (coordinatesChange)="onCoordinatesChange($event, 'new')"
                 (plotBoundaryChange)="onBoundaryChange($event, 'new')"
-                (markedAreaChange)="onMarkedAreaChange($event, 'new')"
-                (view3DChange)="onView3DChange($event, 'new')">
+                (markedAreaChange)="onMarkedAreaChange($event, 'new')" (view3DChange)="onView3DChange($event, 'new')">
               </app-plot-map-viewer>
             </div>
 
@@ -612,8 +727,10 @@
                   </a>
                 </div>
               </div>
-              <input type="url" [(ngModel)]="newProp.mapsUrl" placeholder="https://maps.google.com/?q=... or https://maps.app.goo.gl/...">
-              <small class="field-hint">Clients will receive this exact Google Maps pin in brochures, WhatsApp pitches, and navigation directions.</small>
+              <input type="url" [(ngModel)]="newProp.mapsUrl"
+                placeholder="https://maps.google.com/?q=... or https://maps.app.goo.gl/...">
+              <small class="field-hint">Clients will receive this exact Google Maps pin in brochures, WhatsApp pitches,
+                and navigation directions.</small>
             </div>
 
             <div class="ef-form-group">
@@ -623,7 +740,81 @@
 
             <div class="ef-form-group">
               <label>Highway / Arterial Road</label>
-              <input type="text" [(ngModel)]="newProp.vicinityHighway" placeholder="e.g. Direct access to Coastal Highway">
+              <input type="text" [(ngModel)]="newProp.vicinityHighway"
+                placeholder="e.g. Direct access to Coastal Highway">
+            </div>
+
+            <div class="ef-form-group">
+              <label>Nearby Bus Stop / Bus Stand</label>
+              <input type="text" [(ngModel)]="newProp.vicinityBusStop"
+                placeholder="e.g. 200m / 3 mins walk to Bus Stop">
+            </div>
+
+            <div class="ef-form-group">
+              <label>Grocery / Vegetable Market</label>
+              <input type="text" [(ngModel)]="newProp.vicinityMarket" placeholder="e.g. Daily market within 500m">
+            </div>
+
+            <!-- Custom Nearby Landmarks & Connectivity Builder -->
+            <div class="ef-form-group col-span-2 custom-vicinity-container">
+              <div class="custom-vicinity-header">
+                <div>
+                  <span class="custom-vicinity-title">Custom Vicinity Landmarks &amp; Distances</span>
+                  <span class="custom-vicinity-sub">Add any nearby landmarks, beaches, schools, tech parks, or
+                    junctions</span>
+                </div>
+                <button type="button" class="btn-action-sm btn-add-vicinity" (click)="addCustomVicinityPoint('new')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span>+ Add Landmark</span>
+                </button>
+              </div>
+
+              <!-- List of Custom Vicinity Points -->
+              <div class="custom-vicinity-list" *ngIf="newProp.vicinityCustomPoints.length > 0">
+                <div class="custom-vicinity-row" *ngFor="let point of newProp.vicinityCustomPoints; let vIdx = index">
+                  <div class="vicinity-input-field">
+                    <label>Landmark Name</label>
+                    <input type="text" [(ngModel)]="point.landmark"
+                      placeholder="e.g. Marina Beach, Apollo Clinic, Tidel Park">
+                  </div>
+                  <div class="vicinity-input-field">
+                    <label>Distance / Travel Time</label>
+                    <input type="text" [(ngModel)]="point.distance" placeholder="e.g. 500 meters / 5 mins walk">
+                  </div>
+                  <button type="button" class="btn-remove-vicinity" (click)="removeCustomVicinityPoint(vIdx, 'new')"
+                    title="Remove landmark">&times;</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Location & Vicinity Route Map Image Upload -->
+            <div class="ef-form-group col-span-2 location-map-upload-box">
+              <label>Location &amp; Vicinity Route Map Image</label>
+              <div class="location-map-uploader">
+                <label class="location-map-dropzone" *ngIf="!newProp.vicinityLocationMap">
+                  <input type="file" accept="image/*" (change)="onLocationMapSelected($event, 'new')">
+                  <div class="dropzone-inner">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+                      <line x1="8" y1="2" x2="8" y2="18"></line>
+                      <line x1="16" y1="6" x2="16" y2="22"></line>
+                    </svg>
+                    <span>Upload Vicinity / Key Route Map Image (Auto-compressed &lt;300KB)</span>
+                  </div>
+                </label>
+
+                <div class="location-map-preview-card" *ngIf="newProp.vicinityLocationMap">
+                  <img [src]="newProp.vicinityLocationMap" alt="Location Map Preview">
+                  <div class="preview-overlay">
+                    <span>Vicinity Route Map</span>
+                    <button type="button" class="btn-remove-map" (click)="removeLocationMap('new')">&times; Remove
+                      Map</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -631,7 +822,7 @@
         <!-- 5. MEDIA & SITE PHOTOS -->
         <div class="form-section">
           <h3 class="section-heading">5. Media of the Site (Photos &amp; Video Tour)</h3>
-          
+
           <div class="media-upload-box">
             <label class="upload-dropzone">
               <input type="file" multiple accept="image/*" (change)="onFileSelected($event, 'new')">
@@ -642,7 +833,8 @@
                   <polyline points="21 15 16 10 5 21"></polyline>
                 </svg>
                 <span>Upload Site Photos (Auto-compressed on device &lt;300KB)</span>
-                <small *ngIf="isCompressingImage()" style="color: var(--ef-primary); font-weight:700;">Compressing photos on device...</small>
+                <small *ngIf="isCompressingImage()" style="color: var(--ef-primary); font-weight:700;">Compressing
+                  photos on device...</small>
               </div>
             </label>
 
@@ -656,7 +848,8 @@
 
             <div class="ef-form-group" style="margin-top: 10px;">
               <label>Walkthrough Video Tour URL (YouTube / Vimeo / Cloud link)</label>
-              <input type="url" [(ngModel)]="newProp.videoTourUrl" placeholder="e.g. https://www.youtube.com/watch?v=...">
+              <input type="url" [(ngModel)]="newProp.videoTourUrl"
+                placeholder="e.g. https://www.youtube.com/watch?v=...">
             </div>
           </div>
         </div>
@@ -664,7 +857,8 @@
         <!-- 6. CONFIDENTIAL OWNER DETAILS -->
         <div class="form-section confidential-box">
           <h3 class="section-heading">6. Confidential Owner Details (Protected from Buyers)</h3>
-          <p class="section-sub">These details remain strictly private to your agency. Client brochures and shared summaries will NEVER display owner contact info.</p>
+          <p class="section-sub">These details remain strictly private to your agency. Client brochures and shared
+            summaries will NEVER display owner contact info.</p>
           <div class="form-grid">
             <div class="ef-form-group">
               <label>Owner Full Name</label>
@@ -678,7 +872,8 @@
 
             <div class="ef-form-group col-span-2">
               <label>Property Highlights &amp; Notes (Included in Share Pitch &amp; Brochure)</label>
-              <input type="text" [(ngModel)]="newProp.ownerPrivateNotes" placeholder="e.g. Clear parent title, DTCP verified, ready for immediate registration.">
+              <input type="text" [(ngModel)]="newProp.ownerPrivateNotes"
+                placeholder="e.g. Clear parent title, DTCP verified, ready for immediate registration.">
             </div>
           </div>
         </div>
@@ -760,7 +955,8 @@
                   <option value="guntha">Guntha</option>
                 </select>
               </div>
-              <div class="converted-area-box animate-fade-in" *ngIf="getConvertedAreaHint(editForm.area, editForm.areaUnit) as hint">
+              <div class="converted-area-box animate-fade-in"
+                *ngIf="getConvertedAreaHint(editForm.area, editForm.areaUnit) as hint">
                 <div class="conversion-row-main">
                   <span class="conv-label">Auto Converted:</span>
                   <span class="conv-val">{{ hint.primary }}</span>
@@ -791,30 +987,32 @@
               <label>Approval Authority (Multi-Select)</label>
               <div class="multi-select-container">
                 <div class="multi-select-trigger" (click)="editApprovalDropdownOpen.set(!editApprovalDropdownOpen())">
-                  <span class="trigger-placeholder" *ngIf="!editForm.plotApprovals || editForm.plotApprovals.length === 0">Select approval authorities...</span>
+                  <span class="trigger-placeholder"
+                    *ngIf="!editForm.plotApprovals || editForm.plotApprovals.length === 0">Select approval
+                    authorities...</span>
                   <div class="trigger-summary" *ngIf="editForm.plotApprovals && editForm.plotApprovals.length > 0">
                     <span class="count-badge">{{ editForm.plotApprovals.length }} Selected</span>
                     <span class="summary-text">{{ editForm.plotApprovals.join(', ') }}</span>
                   </div>
-                  <svg class="dropdown-chevron" [class.open]="editApprovalDropdownOpen()" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <svg class="dropdown-chevron" [class.open]="editApprovalDropdownOpen()" width="16" height="16"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="6 9 12 15 18 9"></polyline>
                   </svg>
                 </div>
 
                 <div class="multi-select-menu animate-fade-in" *ngIf="editApprovalDropdownOpen()">
-                  <div
-                    class="dropdown-option"
-                    *ngFor="let item of availableApprovals"
-                    [class.selected]="isApprovalSelected(item, 'edit')"
-                    (click)="toggleApproval(item, 'edit')">
-                    <input type="checkbox" [checked]="isApprovalSelected(item, 'edit')" (click)="$event.stopPropagation(); toggleApproval(item, 'edit')">
+                  <div class="dropdown-option" *ngFor="let item of availableApprovals"
+                    [class.selected]="isApprovalSelected(item, 'edit')" (click)="toggleApproval(item, 'edit')">
+                    <input type="checkbox" [checked]="isApprovalSelected(item, 'edit')"
+                      (click)="$event.stopPropagation(); toggleApproval(item, 'edit')">
                     <span>{{ item }}</span>
                   </div>
                 </div>
               </div>
 
               <!-- Selected Badges -->
-              <div class="selected-chips-grid animate-fade-in" *ngIf="editForm.plotApprovals && editForm.plotApprovals.length > 0">
+              <div class="selected-chips-grid animate-fade-in"
+                *ngIf="editForm.plotApprovals && editForm.plotApprovals.length > 0">
                 <div class="selected-chip" *ngFor="let item of editForm.plotApprovals">
                   <span class="chip-check">✓</span>
                   <span class="chip-label">{{ item }}</span>
@@ -849,50 +1047,187 @@
 
         <!-- 2. CONDITIONAL SPECIFICATIONS: VILLA -->
         <div class="form-section highlight-box" *ngIf="editForm.propertyType === 'villa'">
-          <h3 class="section-heading">2. Independent Villa Specific Details</h3>
-          <div class="form-grid">
+          <div class="section-title-wrap">
+            <h3 class="section-heading">2. Villa / Independent House Architecture</h3>
+            <span class="section-pill-tag">Multi-Floor Architecture</span>
+          </div>
+
+          <!-- Floor-by-Floor Architecture Builder -->
+          <div class="floor-builder-container">
+            <div class="builder-header">
+              <div>
+                <span class="builder-title">Floor-by-Floor Blueprint</span>
+                <span class="builder-sub">Specify built-up area, BHK, and bathrooms per level</span>
+              </div>
+              <button type="button" class="btn-action-sm btn-add-floor" (click)="addVillaFloor('edit')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Add Floor</span>
+              </button>
+            </div>
+
+            <!-- Floor Cards List -->
+            <div class="floor-cards-list">
+              <div class="floor-plan-card" *ngFor="let floor of editForm.villaFloorsList; let idx = index">
+                <div class="floor-card-header">
+                  <div class="floor-card-left">
+                    <span class="floor-level-badge">{{ floor.floorLevel }}</span>
+                    <!-- 1-Click Copy Button: NO EMOJIS! -->
+                    <button type="button" class="btn-copy-floor" *ngIf="idx > 0"
+                      (click)="copyPreviousFloor(idx, 'edit')"
+                      title="Copy layout specifications from {{ idx === 1 ? 'Ground Floor' : 'Previous Floor' }}">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                      </svg>
+                      <span>{{ idx === 1 ? 'Same as Ground Floor' : 'Same as Previous Floor' }}</span>
+                    </button>
+                  </div>
+                  <button type="button" class="btn-remove-floor" *ngIf="editForm.villaFloorsList.length > 1"
+                    (click)="removeVillaFloor(idx, 'edit')" title="Remove this floor">
+                    &times; Remove
+                  </button>
+                </div>
+
+                <div class="floor-inputs-grid">
+                  <div class="ef-form-group">
+                    <label>Built-up Area (Sq.ft)</label>
+                    <input type="number" [(ngModel)]="floor.builtUpAreaSqFt" (ngModelChange)="recalcVillaTotals('edit')"
+                      placeholder="e.g. 1400">
+                  </div>
+
+                  <div class="ef-form-group">
+                    <label>Configuration</label>
+                    <select [(ngModel)]="floor.bedroomsCount" (ngModelChange)="recalcVillaTotals('edit')">
+                      <option [ngValue]="1">1 BHK</option>
+                      <option [ngValue]="2">2 BHK</option>
+                      <option [ngValue]="3">3 BHK</option>
+                      <option [ngValue]="4">4 BHK</option>
+                      <option [ngValue]="5">5 BHK</option>
+                      <option [ngValue]="0">Hall / Living</option>
+                    </select>
+                  </div>
+
+                  <div class="ef-form-group">
+                    <label>Bathrooms</label>
+                    <input type="number" [(ngModel)]="floor.bathroomsCount" (ngModelChange)="recalcVillaTotals('edit')"
+                      placeholder="e.g. 2">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live Calculated Totals Bar -->
+            <div class="villa-totals-bar">
+              <div class="total-metric">
+                <span class="lbl">Total Built-up</span>
+                <span class="val">{{ editForm.villaBuiltUpArea }} Sq.ft</span>
+              </div>
+              <div class="total-metric">
+                <span class="lbl">Total BHK</span>
+                <span class="val">{{ editForm.villaBedrooms }} BHK</span>
+              </div>
+              <div class="total-metric">
+                <span class="lbl">Total Bathrooms</span>
+                <span class="val">{{ editForm.villaBathrooms }} Baths</span>
+              </div>
+              <div class="total-metric">
+                <span class="lbl">Structure</span>
+                <span class="val">{{ editForm.villaFloors }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Villa Construction, Facing & Parking Details -->
+          <div class="form-grid" style="margin-top: 16px;">
             <div class="ef-form-group">
-              <label>Structure / Floors</label>
-              <input type="text" [(ngModel)]="editForm.villaFloors" placeholder="e.g. G+1 Duplex">
+              <label>Plot Area (Sq.ft)</label>
+              <input type="number" [(ngModel)]="editForm.villaPlotArea" placeholder="e.g. 2400">
             </div>
 
             <div class="ef-form-group">
-              <label>Bedrooms (BHK)</label>
-              <select [(ngModel)]="editForm.villaBedrooms">
-                <option [ngValue]="2">2 BHK</option>
-                <option [ngValue]="3">3 BHK</option>
-                <option [ngValue]="4">4 BHK</option>
-                <option [ngValue]="5">5+ BHK</option>
+              <label>Structure / Floors</label>
+              <input type="text" [(ngModel)]="editForm.villaFloors" placeholder="e.g. G+1 Duplex, G+2 Triplex">
+            </div>
+
+            <!-- Building Structure: Framed vs Load Bearing -->
+            <div class="ef-form-group col-span-2">
+              <label>Building Structure Type *</label>
+              <div class="structure-radio-grid">
+                <label class="structure-card-option" [class.selected]="editForm.villaBuildingStructure === 'framed'">
+                  <input type="radio" name="buildingStructureEdit" value="framed"
+                    [(ngModel)]="editForm.villaBuildingStructure">
+                  <div class="option-content">
+                    <strong>RCC Framed Structure</strong>
+                    <span>Columns, beams, and foundation engineered for vertical extension</span>
+                  </div>
+                </label>
+                <label class="structure-card-option"
+                  [class.selected]="editForm.villaBuildingStructure === 'load_bearing'">
+                  <input type="radio" name="buildingStructureEdit" value="load_bearing"
+                    [(ngModel)]="editForm.villaBuildingStructure">
+                  <div class="option-content">
+                    <strong>Load Bearing Structure</strong>
+                    <span>Traditional load-bearing brickwork masonry construction</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Facing & Vastu: Road Facing vs Main Entrance Facing -->
+            <div class="ef-form-group">
+              <label>Road Facing</label>
+              <select [(ngModel)]="editForm.villaRoadFacing">
+                <option value="North">North Road</option>
+                <option value="South">South Road</option>
+                <option value="East">East Road</option>
+                <option value="West">West Road</option>
+                <option value="North-East">North-East Road</option>
+                <option value="North-West">North-West Road</option>
+                <option value="South-East">South-East Road</option>
+                <option value="South-West">South-West Road</option>
               </select>
             </div>
 
             <div class="ef-form-group">
-              <label>Facing / Vastu</label>
-              <select [(ngModel)]="editForm.villaFacing">
-                <option value="East">East Facing</option>
-                <option value="North">North Facing</option>
-                <option value="North-East">North-East Facing</option>
+              <label>Main Entrance Facing (Vastu)</label>
+              <select [(ngModel)]="editForm.villaMainEntranceFacing">
+                <option value="North">North Facing (Kubera)</option>
+                <option value="East">East Facing (Surya)</option>
+                <option value="North-East">North-East (Ishanya)</option>
                 <option value="West">West Facing</option>
                 <option value="South">South Facing</option>
+                <option value="North-West">North-West Facing</option>
+                <option value="South-East">South-East Facing</option>
+                <option value="South-West">South-West Facing</option>
               </select>
             </div>
 
             <div class="ef-form-group">
               <label>Covered Car Parking</label>
-              <input type="number" [(ngModel)]="editForm.villaCarParking" placeholder="e.g. 2">
+              <label class="toggle-pill-sm" [class.active]="editForm.villaCoveredParking"
+                style="height: 42px; width: 100%; justify-content: flex-start; padding: 0 14px;">
+                <input type="checkbox" [(ngModel)]="editForm.villaCoveredParking">
+                <span>Covered Parking Available</span>
+              </label>
+            </div>
+
+            <div class="ef-form-group">
+              <label>Furnishing Status</label>
+              <select [(ngModel)]="editForm.villaFurnishing">
+                <option value="unfurnished">Unfurnished</option>
+                <option value="semi-furnished">Semi-Furnished</option>
+                <option value="fully-furnished">Fully Furnished</option>
+              </select>
             </div>
 
             <div class="ef-form-group col-span-2 toggles-row">
               <label class="toggle-pill">
                 <input type="checkbox" [(ngModel)]="editForm.villaHasGarden">
                 <span>Private Garden / Terrace Deck</span>
-              </label>
-              <label class="toggle-pill">
-                <select [(ngModel)]="editForm.villaFurnishing" style="border:none; background:transparent; font-size:inherit;">
-                  <option value="unfurnished">Unfurnished</option>
-                  <option value="semi-furnished">Semi-Furnished</option>
-                  <option value="fully-furnished">Fully Furnished</option>
-                </select>
               </label>
             </div>
           </div>
@@ -935,30 +1270,48 @@
         <!-- 3. ON-SITE INFRASTRUCTURE & SERVICES -->
         <div class="form-section">
           <h3 class="section-heading">3. On-Site Infrastructure &amp; Amenities</h3>
-          <p class="section-sub">Select verified facilities available on the property site from the multi-select dropdown:</p>
+          <p class="section-sub">Select verified facilities available on the property site from the multi-select
+            dropdown:</p>
 
           <div class="multi-select-container">
             <div class="multi-select-trigger" (click)="editInfraDropdownOpen.set(!editInfraDropdownOpen())">
-              <span class="trigger-placeholder" *ngIf="editForm.infrastructure.length === 0">Select on-site infrastructure &amp; amenities...</span>
+              <span class="trigger-placeholder" *ngIf="editForm.infrastructure.length === 0">Select on-site
+                infrastructure &amp; amenities...</span>
               <div class="trigger-summary" *ngIf="editForm.infrastructure.length > 0">
                 <span class="count-badge">{{ editForm.infrastructure.length }} Selected</span>
                 <span class="summary-text">{{ editForm.infrastructure.join(', ') }}</span>
               </div>
-              <svg class="dropdown-chevron" [class.open]="editInfraDropdownOpen()" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg class="dropdown-chevron" [class.open]="editInfraDropdownOpen()" width="16" height="16"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </div>
 
             <div class="multi-select-menu animate-fade-in" *ngIf="editInfraDropdownOpen()">
-              <div
-                class="dropdown-option"
-                *ngFor="let infra of availableInfrastructure"
-                [class.selected]="isInfraSelected(infra, 'edit')"
-                (click)="toggleInfra(infra, 'edit')">
-                <input type="checkbox" [checked]="isInfraSelected(infra, 'edit')" (click)="$event.stopPropagation(); toggleInfra(infra, 'edit')">
+              <div class="dropdown-option" *ngFor="let infra of availableInfrastructure"
+                [class.selected]="isInfraSelected(infra, 'edit')" (click)="toggleInfra(infra, 'edit')">
+                <input type="checkbox" [checked]="isInfraSelected(infra, 'edit')"
+                  (click)="$event.stopPropagation(); toggleInfra(infra, 'edit')">
                 <span>{{ infra }}</span>
               </div>
             </div>
+          </div>
+
+          <!-- Custom Infrastructure & Amenity Input Row -->
+          <div class="custom-infra-input-row">
+            <div class="custom-infra-input-wrap">
+              <span class="input-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 5v14M5 12h14"></path>
+                </svg>
+              </span>
+              <input type="text" [(ngModel)]="customInfraEditInput" (keyup.enter)="addCustomInfra('edit')"
+                placeholder="Type custom amenity (e.g. Swimming Pool, Solar Lighting, EV Charging)...">
+            </div>
+            <button type="button" class="btn-add-custom-infra" (click)="addCustomInfra('edit')"
+              [disabled]="!customInfraEditInput.trim()">
+              <span>+ Add Custom</span>
+            </button>
           </div>
 
           <!-- Selected Infrastructure Facilities Displayed Below -->
@@ -966,14 +1319,15 @@
             <div class="selected-chip infra-chip-selected" *ngFor="let item of editForm.infrastructure">
               <span class="chip-check">✓</span>
               <span class="chip-label">{{ item }}</span>
-              <button type="button" class="chip-remove" (click)="toggleInfra(item, 'edit')" title="Remove facility">&times;</button>
+              <button type="button" class="chip-remove" (click)="toggleInfra(item, 'edit')"
+                title="Remove facility">&times;</button>
             </div>
           </div>
         </div>
 
         <!-- 4. LOCATION & VICINITY CONNECTIVITY -->
         <div class="form-section">
-          <h3 class="section-heading">4. Location &amp; Vicinity Connectivity</h3>
+          <h3 class="section-heading">4. Location</h3>
           <div class="form-grid">
             <div class="ef-form-group">
               <label>Locality / Neighborhood *</label>
@@ -988,21 +1342,13 @@
             <!-- Interactive 2D & 3D Plot Map & Boundary Tool -->
             <div class="ef-form-group col-span-2 plot-map-field">
               <label>Interactive Plot Location &amp; 2D/3D Boundary</label>
-              <app-plot-map-viewer
-                [editable]="true"
-                [coordinates]="editForm.coordinates"
-                [plotBoundary]="editForm.plotBoundary"
-                [view3D]="editForm.view3D"
-                [locality]="editForm.locality"
-                [city]="editForm.city"
-                [propertyTitle]="editForm.title"
-                [plotDimensions]="editForm.plotDimensions"
-                [area]="editForm.area"
-                [areaUnit]="editForm.areaUnit"
+              <app-plot-map-viewer [editable]="true" [coordinates]="editForm.coordinates"
+                [plotBoundary]="editForm.plotBoundary" [view3D]="editForm.view3D" [locality]="editForm.locality"
+                [city]="editForm.city" [propertyTitle]="editForm.title" [plotDimensions]="editForm.plotDimensions"
+                [area]="editForm.area" [areaUnit]="editForm.areaUnit"
                 (coordinatesChange)="onCoordinatesChange($event, 'edit')"
                 (plotBoundaryChange)="onBoundaryChange($event, 'edit')"
-                (markedAreaChange)="onMarkedAreaChange($event, 'edit')"
-                (view3DChange)="onView3DChange($event, 'edit')">
+                (markedAreaChange)="onMarkedAreaChange($event, 'edit')" (view3DChange)="onView3DChange($event, 'edit')">
               </app-plot-map-viewer>
             </div>
 
@@ -1021,7 +1367,8 @@
                   </a>
                 </div>
               </div>
-              <input type="url" [(ngModel)]="editForm.mapsUrl" placeholder="https://maps.google.com/?q=... or https://maps.app.goo.gl/...">
+              <input type="url" [(ngModel)]="editForm.mapsUrl"
+                placeholder="https://maps.google.com/?q=... or https://maps.app.goo.gl/...">
             </div>
 
             <div class="ef-form-group">
@@ -1031,7 +1378,81 @@
 
             <div class="ef-form-group">
               <label>Highway / Arterial Road</label>
-              <input type="text" [(ngModel)]="editForm.vicinityHighway" placeholder="e.g. Direct access to Coastal Highway">
+              <input type="text" [(ngModel)]="editForm.vicinityHighway"
+                placeholder="e.g. Direct access to Coastal Highway">
+            </div>
+
+            <div class="ef-form-group">
+              <label>Nearby Bus Stop / Bus Stand</label>
+              <input type="text" [(ngModel)]="editForm.vicinityBusStop"
+                placeholder="e.g. 200m / 3 mins walk to Bus Stop">
+            </div>
+
+            <div class="ef-form-group">
+              <label>Grocery / Vegetable Market</label>
+              <input type="text" [(ngModel)]="editForm.vicinityMarket" placeholder="e.g. Daily market within 500m">
+            </div>
+
+            <!-- Custom Nearby Landmarks & Connectivity Builder -->
+            <div class="ef-form-group col-span-2 custom-vicinity-container">
+              <div class="custom-vicinity-header">
+                <div>
+                  <span class="custom-vicinity-title">Custom Vicinity Landmarks &amp; Distances</span>
+                  <span class="custom-vicinity-sub">Add any nearby landmarks, beaches, schools, tech parks, or
+                    junctions</span>
+                </div>
+                <button type="button" class="btn-action-sm btn-add-vicinity" (click)="addCustomVicinityPoint('edit')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span>+ Add Landmark</span>
+                </button>
+              </div>
+
+              <!-- List of Custom Vicinity Points -->
+              <div class="custom-vicinity-list" *ngIf="editForm.vicinityCustomPoints.length > 0">
+                <div class="custom-vicinity-row" *ngFor="let point of editForm.vicinityCustomPoints; let vIdx = index">
+                  <div class="vicinity-input-field">
+                    <label>Landmark Name</label>
+                    <input type="text" [(ngModel)]="point.landmark"
+                      placeholder="e.g. Marina Beach, Apollo Clinic, Tidel Park">
+                  </div>
+                  <div class="vicinity-input-field">
+                    <label>Distance / Travel Time</label>
+                    <input type="text" [(ngModel)]="point.distance" placeholder="e.g. 500 meters / 5 mins walk">
+                  </div>
+                  <button type="button" class="btn-remove-vicinity" (click)="removeCustomVicinityPoint(vIdx, 'edit')"
+                    title="Remove landmark">&times;</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Location & Vicinity Route Map Image Upload -->
+            <div class="ef-form-group col-span-2 location-map-upload-box">
+              <label>Location &amp; Vicinity Route Map Image</label>
+              <div class="location-map-uploader">
+                <label class="location-map-dropzone" *ngIf="!editForm.vicinityLocationMap">
+                  <input type="file" accept="image/*" (change)="onLocationMapSelected($event, 'edit')">
+                  <div class="dropzone-inner">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+                      <line x1="8" y1="2" x2="8" y2="18"></line>
+                      <line x1="16" y1="6" x2="16" y2="22"></line>
+                    </svg>
+                    <span>Upload Vicinity / Key Route Map Image (Auto-compressed &lt;300KB)</span>
+                  </div>
+                </label>
+
+                <div class="location-map-preview-card" *ngIf="editForm.vicinityLocationMap">
+                  <img [src]="editForm.vicinityLocationMap" alt="Location Map Preview">
+                  <div class="preview-overlay">
+                    <span>Vicinity Route Map</span>
+                    <button type="button" class="btn-remove-map" (click)="removeLocationMap('edit')">&times; Remove
+                      Map</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1039,7 +1460,7 @@
         <!-- 5. MEDIA & SITE PHOTOS -->
         <div class="form-section">
           <h3 class="section-heading">5. Media of the Site (Photos &amp; Video Tour)</h3>
-          
+
           <div class="media-upload-box">
             <label class="upload-dropzone">
               <input type="file" multiple accept="image/*" (change)="onFileSelected($event, 'edit')">
@@ -1050,7 +1471,8 @@
                   <polyline points="21 15 16 10 5 21"></polyline>
                 </svg>
                 <span>Upload Site Photos (Auto-compressed on device &lt;300KB)</span>
-                <small *ngIf="isCompressingImage()" style="color: var(--ef-primary); font-weight:700;">Compressing photos on device...</small>
+                <small *ngIf="isCompressingImage()" style="color: var(--ef-primary); font-weight:700;">Compressing
+                  photos on device...</small>
               </div>
             </label>
 
@@ -1064,7 +1486,8 @@
 
             <div class="ef-form-group" style="margin-top: 10px;">
               <label>Walkthrough Video Tour URL (YouTube / Vimeo / Cloud link)</label>
-              <input type="url" [(ngModel)]="editForm.videoTourUrl" placeholder="e.g. https://www.youtube.com/watch?v=...">
+              <input type="url" [(ngModel)]="editForm.videoTourUrl"
+                placeholder="e.g. https://www.youtube.com/watch?v=...">
             </div>
           </div>
         </div>
@@ -1072,7 +1495,8 @@
         <!-- 6. CONFIDENTIAL OWNER DETAILS & NOTES -->
         <div class="form-section confidential-box">
           <h3 class="section-heading">6. Confidential Owner Details &amp; Notes</h3>
-          <p class="section-sub">These details remain strictly private to your agency. Client brochures and shared summaries will NEVER display owner contact info.</p>
+          <p class="section-sub">These details remain strictly private to your agency. Client brochures and shared
+            summaries will NEVER display owner contact info.</p>
           <div class="form-grid">
             <div class="ef-form-group">
               <label>Owner Full Name</label>
@@ -1086,7 +1510,8 @@
 
             <div class="ef-form-group col-span-2">
               <label>Property Highlights &amp; Notes (Included in Share Pitch &amp; Brochure)</label>
-              <input type="text" [(ngModel)]="editForm.ownerPrivateNotes" placeholder="e.g. Clear parent title, DTCP verified, ready for immediate registration.">
+              <input type="text" [(ngModel)]="editForm.ownerPrivateNotes"
+                placeholder="e.g. Clear parent title, DTCP verified, ready for immediate registration.">
             </div>
           </div>
         </div>
@@ -1112,6 +1537,53 @@
       </div>
 
       <div class="modal-body" *ngIf="shareModalProperty() as prop">
+        <!-- MASTER CONFIDENTIALITY & PRIVACY CONTROLS (GOVERNS ALL 5 SHARING MODES) -->
+        <div class="share-master-controls-card">
+          <div class="master-header">
+            <div class="master-header-left">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+              <strong>Master Confidentiality &amp; Visibility Controls</strong>
+            </div>
+          </div>
+
+
+          <div class="master-toggles-grid">
+            <!-- Master Toggle 1: Show Price -->
+            <label class="master-toggle-pill" [class.active]="shareIncludePrice">
+              <input type="checkbox" [(ngModel)]="shareIncludePrice">
+              <div class="master-toggle-content">
+                <div class="toggle-title-row">
+                  <span class="toggle-title">Show Price</span>
+                  <span class="toggle-status-pill" [class.on]="shareIncludePrice">{{ shareIncludePrice ? 'Visible' :
+                    'Masked' }}</span>
+                </div>
+                <span class="toggle-sub" *ngIf="shareIncludePrice">Includes price ({{ prop.price | currencyFormat }}) in
+                  all materials</span>
+                <span class="toggle-sub masked" *ngIf="!shareIncludePrice">Masks price as "Price on Request" across all
+                  materials</span>
+              </div>
+            </label>
+
+            <!-- Master Toggle 2: Show Location -->
+            <label class="master-toggle-pill" [class.active]="shareIncludeLocation">
+              <input type="checkbox" [(ngModel)]="shareIncludeLocation">
+              <div class="master-toggle-content">
+                <div class="toggle-title-row">
+                  <span class="toggle-title">Show Exact Location</span>
+                  <span class="toggle-status-pill" [class.on]="shareIncludeLocation">{{ shareIncludeLocation ? 'Visible'
+                    : 'Masked' }}</span>
+                </div>
+                <span class="toggle-sub" *ngIf="shareIncludeLocation">Includes exact address, Google Maps pin &amp;
+                  survey map</span>
+                <span class="toggle-sub masked" *ngIf="!shareIncludeLocation">Masks exact address, hides map &amp; GPS
+                  pins (territory only)</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
         <!-- Attached Notes Preview in Share Modal -->
         <div class="share-notes-card" *ngIf="prop.ownerDetails.privateNotes || prop.description">
           <div class="share-notes-title-row">
@@ -1123,7 +1595,8 @@
 
         <div class="share-options-grid">
           <!-- Option 0: Secure Expiring Link (Collapsible on Click) -->
-          <div class="share-card secure-card" [class.active-card]="showSecureLinkConfig()" (click)="toggleSecureLinkConfig()">
+          <div class="share-card secure-card" [class.active-card]="showSecureLinkConfig()"
+            (click)="toggleSecureLinkConfig()">
             <div class="share-icon-wrap indigo">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -1151,45 +1624,28 @@
                 <span class="duration-active-pill">{{ shareDurationHours }} Hours Total</span>
               </div>
               <div class="duration-chips-row">
-                <button
-                  type="button"
-                  class="duration-chip"
-                  [class.active]="!isCustomDuration() && shareDurationHours === 2"
-                  (click)="selectPresetDuration(2)">
+                <button type="button" class="duration-chip"
+                  [class.active]="!isCustomDuration() && shareDurationHours === 2" (click)="selectPresetDuration(2)">
                   2 Hours
                 </button>
-                <button
-                  type="button"
-                  class="duration-chip"
-                  [class.active]="!isCustomDuration() && shareDurationHours === 6"
-                  (click)="selectPresetDuration(6)">
+                <button type="button" class="duration-chip"
+                  [class.active]="!isCustomDuration() && shareDurationHours === 6" (click)="selectPresetDuration(6)">
                   6 Hours
                 </button>
-                <button
-                  type="button"
-                  class="duration-chip"
-                  [class.active]="!isCustomDuration() && shareDurationHours === 24"
-                  (click)="selectPresetDuration(24)">
+                <button type="button" class="duration-chip"
+                  [class.active]="!isCustomDuration() && shareDurationHours === 24" (click)="selectPresetDuration(24)">
                   24h (1 Day)
                 </button>
-                <button
-                  type="button"
-                  class="duration-chip"
-                  [class.active]="!isCustomDuration() && shareDurationHours === 48"
-                  (click)="selectPresetDuration(48)">
+                <button type="button" class="duration-chip"
+                  [class.active]="!isCustomDuration() && shareDurationHours === 48" (click)="selectPresetDuration(48)">
                   48 Hours
                 </button>
-                <button
-                  type="button"
-                  class="duration-chip"
+                <button type="button" class="duration-chip"
                   [class.active]="!isCustomDuration() && shareDurationHours === 168"
                   (click)="selectPresetDuration(168)">
                   7 Days
                 </button>
-                <button
-                  type="button"
-                  class="duration-chip custom-chip"
-                  [class.active]="isCustomDuration()"
+                <button type="button" class="duration-chip custom-chip" [class.active]="isCustomDuration()"
                   (click)="selectCustomDuration()">
                   Custom Time...
                 </button>
@@ -1199,13 +1655,8 @@
               <div class="custom-duration-input-row animate-fade-in" *ngIf="isCustomDuration()">
                 <label class="custom-sublabel">Enter Custom Duration:</label>
                 <div class="custom-input-group">
-                  <input
-                    type="number"
-                    min="1"
-                    max="720"
-                    [(ngModel)]="customDurationValue"
-                    (ngModelChange)="updateCustomDuration()"
-                    placeholder="e.g. 12">
+                  <input type="number" min="1" max="720" [(ngModel)]="customDurationValue"
+                    (ngModelChange)="updateCustomDuration()" placeholder="e.g. 12">
                   <select [(ngModel)]="customDurationUnit" (ngModelChange)="updateCustomDuration()">
                     <option value="hours">Hours</option>
                     <option value="days">Days</option>
@@ -1214,16 +1665,19 @@
               </div>
             </div>
 
-            <!-- 2. Price Visibility Toggle ("Share Amount or Not?") -->
+            <!-- 2. Dual Master Privacy Toggles inside Link Panel -->
             <div class="config-block">
-              <label class="config-label">Price Visibility:</label>
-              <label class="toggle-pill" style="width: fit-content; cursor: pointer;">
-                <input type="checkbox" [(ngModel)]="shareIncludePrice">
-                <span>Display Price in Link ({{ prop.price | currencyFormat }})</span>
-              </label>
-              <span class="config-hint" *ngIf="!shareIncludePrice">
-                Price will be hidden and displayed as <strong>"Price on Request"</strong> with 1-tap WhatsApp enquiry buttons.
-              </span>
+              <label class="config-label">Data Privacy Controls:</label>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label class="toggle-pill" style="width: fit-content; cursor: pointer;">
+                  <input type="checkbox" [(ngModel)]="shareIncludePrice">
+                  <span>Display Price in Link ({{ prop.price | currencyFormat }})</span>
+                </label>
+                <label class="toggle-pill" style="width: fit-content; cursor: pointer;">
+                  <input type="checkbox" [(ngModel)]="shareIncludeLocation">
+                  <span>Display Exact Address &amp; Maps Pin</span>
+                </label>
+              </div>
             </div>
 
             <!-- 3. Security & Anti-Screenshot -->
@@ -1237,14 +1691,11 @@
 
             <!-- Generation Button & Resulting Link -->
             <div class="secure-action-section">
-              <button
-                type="button"
-                class="ef-btn ef-btn-primary generate-link-btn"
-                *ngIf="!generatedSecureUrl()"
-                [disabled]="isGeneratingSecureLink()"
-                (click)="generateSecureShareLink(prop)">
+              <button type="button" class="ef-btn ef-btn-primary generate-link-btn" *ngIf="!generatedSecureUrl()"
+                [disabled]="isGeneratingSecureLink()" (click)="generateSecureShareLink(prop)">
                 <span *ngIf="isGeneratingSecureLink()" class="btn-spinner"></span>
-                <span>{{ isGeneratingSecureLink() ? 'Creating Secure Link...' : 'Generate Secure Expiring Link' }}</span>
+                <span>{{ isGeneratingSecureLink() ? 'Creating Secure Link...' : 'Generate Secure Expiring Link'
+                  }}</span>
               </button>
 
               <!-- Output When Generated -->
@@ -1279,7 +1730,8 @@
               <strong>Branded PDF Brochure</strong>
               <span>High-resolution PDF with agency logo, RERA #, specs &amp; owner details masked.</span>
             </div>
-            <button class="ef-btn ef-btn-sm ef-btn-primary" [class.loading]="isGeneratingBrochure()" [disabled]="isGeneratingBrochure()">
+            <button class="ef-btn ef-btn-sm ef-btn-primary" [class.loading]="isGeneratingBrochure()"
+              [disabled]="isGeneratingBrochure()">
               <span *ngIf="isGeneratingBrochure()" class="btn-spinner"></span>
               <span>{{ isGeneratingBrochure() ? 'Generating...' : 'Download PDF' }}</span>
             </button>
@@ -1289,7 +1741,9 @@
           <div class="share-card whatsapp-card" (click)="shareViaWhatsApp(prop)">
             <div class="share-icon-wrap green">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                <path
+                  d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z">
+                </path>
               </svg>
             </div>
             <div class="share-text">
@@ -1354,7 +1808,8 @@
       <div class="modal-header">
         <div class="modal-header-title" *ngIf="detailedProperty() as prop">
           <h2>{{ prop.title }}</h2>
-          <span class="header-sub">{{ prop.location.locality }}, {{ prop.location.city }} &bull; {{ prop.price | currencyFormat }}</span>
+          <span class="header-sub">{{ prop.location.locality }}, {{ prop.location.city }} &bull; {{ prop.price |
+            currencyFormat }}</span>
         </div>
         <button class="close-btn" (click)="detailedProperty.set(null)">&times;</button>
       </div>
@@ -1369,28 +1824,19 @@
             </button>
           </div>
 
-          <swiper-container
-            slides-per-view="1"
-            navigation="true"
-            pagination="true"
-            zoom="true"
-            keyboard="true"
-            grab-cursor="true"
-            class="dossier-swiper">
+          <swiper-container slides-per-view="1" navigation="true" pagination="true" zoom="true" keyboard="true"
+            grab-cursor="true" class="dossier-swiper">
             <swiper-slide *ngFor="let img of prop.images; let idx = index">
               <div class="swiper-zoom-container">
-                <img [src]="img" [alt]="prop.title" (click)="openLightbox(idx)" title="Double click or pinch to zoom. Click to open fullscreen.">
+                <img [src]="img" [alt]="prop.title" (click)="openLightbox(idx)"
+                  title="Double click or pinch to zoom. Click to open fullscreen.">
               </div>
             </swiper-slide>
           </swiper-container>
 
           <div class="gallery-thumbs-strip" *ngIf="prop.images.length > 1">
-            <img
-              *ngFor="let img of prop.images; let idx = index"
-              [src]="img"
-              class="strip-thumb"
-              (click)="openLightbox(idx)"
-              title="Click to view photo {{ idx + 1 }}">
+            <img *ngFor="let img of prop.images; let idx = index" [src]="img" class="strip-thumb"
+              (click)="openLightbox(idx)" title="Click to view photo {{ idx + 1 }}">
           </div>
         </div>
 
@@ -1402,17 +1848,10 @@
               ✓ Verified Boundary
             </span>
           </div>
-          <app-plot-map-viewer
-            [editable]="false"
-            [coordinates]="prop.location.coordinates"
-            [plotBoundary]="prop.location.plotBoundary || []"
-            [view3D]="prop.location.view3D"
-            [locality]="prop.location.locality"
-            [city]="prop.location.city"
-            [propertyTitle]="prop.title"
-            [plotDimensions]="prop.plotDetails?.dimensions || ''"
-            [area]="prop.area"
-            [areaUnit]="prop.areaUnit">
+          <app-plot-map-viewer [editable]="false" [coordinates]="prop.location.coordinates"
+            [plotBoundary]="prop.location.plotBoundary || []" [view3D]="prop.location.view3D"
+            [locality]="prop.location.locality" [city]="prop.location.city" [propertyTitle]="prop.title"
+            [plotDimensions]="prop.plotDetails?.dimensions || ''" [area]="prop.area" [areaUnit]="prop.areaUnit">
           </app-plot-map-viewer>
         </div>
 
@@ -1421,23 +1860,72 @@
           <h3>Specifications &amp; Approvals</h3>
           <div class="specs-pill-grid">
             <div class="dossier-pill" *ngIf="prop.plotDetails?.dimensions">
-              <strong>Dimensions:</strong> {{ prop.plotDetails?.dimensions?.includes('ft') || prop.plotDetails?.dimensions?.includes('Corner') || prop.plotDetails?.dimensions?.includes('Polygon') ? prop.plotDetails?.dimensions : prop.plotDetails?.dimensions + ' ft' }}
+              <strong>Dimensions:</strong> {{ prop.plotDetails?.dimensions?.includes('ft') ||
+              prop.plotDetails?.dimensions?.includes('Corner') || prop.plotDetails?.dimensions?.includes('Polygon') ?
+              prop.plotDetails?.dimensions : prop.plotDetails?.dimensions + ' ft' }}
             </div>
             <div class="dossier-pill" *ngIf="prop.plotDetails?.roadWidthFt">
               <strong>Road Width:</strong> {{ prop.plotDetails?.roadWidthFt }} Ft Road
             </div>
             <div class="dossier-pill highlight" *ngIf="prop.plotDetails?.approvalStatus">
-              <strong>Approval:</strong> {{ prop.plotDetails?.approvalStatus?.includes('Approved') || prop.plotDetails?.approvalStatus?.includes('Registered') || prop.plotDetails?.approvalStatus?.includes('Title') ? prop.plotDetails?.approvalStatus : prop.plotDetails?.approvalStatus + ' Approved' }}
+              <strong>Approval:</strong> {{ prop.plotDetails?.approvalStatus?.includes('Approved') ||
+              prop.plotDetails?.approvalStatus?.includes('Registered') ||
+              prop.plotDetails?.approvalStatus?.includes('Title') ? prop.plotDetails?.approvalStatus :
+              prop.plotDetails?.approvalStatus + ' Approved' }}
             </div>
             <div class="dossier-pill" *ngIf="prop.villaDetails?.floors">
               <strong>Structure:</strong> {{ prop.villaDetails?.floors }}
             </div>
+            <div class="dossier-pill highlight" *ngIf="prop.villaDetails?.buildingStructure">
+              <strong>Construction:</strong> {{ prop.villaDetails?.buildingStructure === 'framed' ? 'RCC Framed
+              Structure' : 'Load Bearing Structure' }}
+            </div>
+            <div class="dossier-pill" *ngIf="prop.villaDetails?.roadFacing">
+              <strong>Road Facing:</strong> {{ prop.villaDetails?.roadFacing }}
+            </div>
+            <div class="dossier-pill" *ngIf="prop.villaDetails?.mainEntranceFacing">
+              <strong>Entrance Vastu:</strong> {{ prop.villaDetails?.mainEntranceFacing }}
+            </div>
+            <div class="dossier-pill" *ngIf="prop.villaDetails?.carParking">
+              <strong>Car Parking:</strong> {{ prop.villaDetails?.carParking }} {{ prop.villaDetails?.coveredParking ?
+              'Covered Slots' : 'Slots' }}
+            </div>
             <div class="dossier-pill" *ngIf="prop.apartmentDetails?.floorNumber">
-              <strong>Floor:</strong> {{ prop.apartmentDetails?.floorNumber }} of {{ prop.apartmentDetails?.totalFloors }}
+              <strong>Floor:</strong> {{ prop.apartmentDetails?.floorNumber }} of {{ prop.apartmentDetails?.totalFloors
+              }}
             </div>
             <div class="dossier-pill" *ngIf="prop.apartmentDetails?.udsSqFt">
               <strong>UDS Share:</strong> {{ prop.apartmentDetails?.udsSqFt }} Sq.ft
             </div>
+          </div>
+        </div>
+
+        <!-- Villa Multi-Floor Architecture Blueprint Table -->
+        <div class="dossier-section"
+          *ngIf="prop.villaDetails?.floorBreakdown && prop.villaDetails!.floorBreakdown!.length > 0">
+          <div class="dossier-section-title-row">
+            <h3>Floor-by-Floor Architectural Blueprint</h3>
+            <span class="dossier-badge">{{ prop.villaDetails!.floorBreakdown!.length }} Levels</span>
+          </div>
+          <div class="blueprint-table-container">
+            <table class="blueprint-table">
+              <thead>
+                <tr>
+                  <th>Floor Level</th>
+                  <th>Built-up Area</th>
+                  <th>Configuration</th>
+                  <th>Bathrooms</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let f of prop.villaDetails?.floorBreakdown">
+                  <td><strong class="floor-name-cell">{{ f.floorLevel }}</strong></td>
+                  <td>{{ f.builtUpAreaSqFt }} Sq.ft</td>
+                  <td>{{ f.bedroomsCount ? f.bedroomsCount + ' BHK' : 'Hall / Living' }}</td>
+                  <td>{{ f.bathroomsCount }} {{ f.bathroomsCount === 1 ? 'Bath' : 'Baths' }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -1461,10 +1949,34 @@
               <span>Highway / Road:</span>
               <strong>{{ prop.vicinity.highwayDistance }}</strong>
             </div>
+            <div class="vicinity-item" *ngIf="prop.vicinity.busStopDistance">
+              <span>Bus Stop / Stand:</span>
+              <strong>{{ prop.vicinity.busStopDistance }}</strong>
+            </div>
+            <div class="vicinity-item" *ngIf="prop.vicinity.marketDistance">
+              <span>Grocery / Market:</span>
+              <strong>{{ prop.vicinity.marketDistance }}</strong>
+            </div>
             <div class="vicinity-item" *ngIf="prop.vicinity.schoolDistance">
               <span>Schools:</span>
               <strong>{{ prop.vicinity.schoolDistance }}</strong>
             </div>
+            <div class="vicinity-item" *ngIf="prop.vicinity.hospitalDistance">
+              <span>Hospital:</span>
+              <strong>{{ prop.vicinity.hospitalDistance }}</strong>
+            </div>
+            <div class="vicinity-item" *ngFor="let cp of prop.vicinity.customPoints">
+              <span>{{ cp.landmark }}:</span>
+              <strong>{{ cp.distance }}</strong>
+            </div>
+          </div>
+          <!-- Vicinity Location / Route Map Image -->
+          <div class="dossier-location-map" *ngIf="prop.vicinity.locationMapUrl" style="margin-top: 14px;">
+            <div
+              style="font-size: 0.76rem; font-weight: 700; color: #475569; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;">
+              Vicinity Route &amp; Key Location Map</div>
+            <img [src]="prop.vicinity.locationMapUrl" alt="Vicinity Route Map"
+              style="width: 100%; border-radius: 8px; border: 1px solid #e2e8f0; max-height: 320px; object-fit: contain; background: #f8fafc;">
           </div>
         </div>
 
@@ -1486,7 +1998,8 @@
         <div class="dossier-section confidential-notes-section" *ngIf="prop.ownerDetails">
           <div class="confidential-notes-header">
             <div class="confidential-title-row">
-              <svg class="lock-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg class="lock-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
@@ -1504,7 +2017,8 @@
               <span class="field-label">Broker / Private Notes:</span>
               <p class="notes-body text-muted">No private notes entered for this listing.</p>
             </div>
-            <div class="owner-meta-row" *ngIf="prop.ownerDetails.name || prop.ownerDetails.phone || prop.ownerDetails.expectedPrice">
+            <div class="owner-meta-row"
+              *ngIf="prop.ownerDetails.name || prop.ownerDetails.phone || prop.ownerDetails.expectedPrice">
               <div class="meta-item" *ngIf="prop.ownerDetails.name">
                 <span class="meta-label">Owner Name:</span>
                 <strong>{{ prop.ownerDetails.name }}</strong>
@@ -1523,7 +2037,8 @@
       </div>
 
       <div class="modal-footer" *ngIf="detailedProperty() as prop">
-        <a [href]="getMapsUrlForProp(prop)" target="_blank" class="ef-btn ef-btn-subtle" title="Open Google Maps Location">Maps Pin ↗</a>
+        <a [href]="getMapsUrlForProp(prop)" target="_blank" class="ef-btn ef-btn-subtle"
+          title="Open Google Maps Location">Maps Pin ↗</a>
         <button class="ef-btn ef-btn-outlined" (click)="detailedProperty.set(null)">Close</button>
         <button class="ef-btn ef-btn-tonal" (click)="openShareModal(prop)">Share Brochure</button>
         <button class="ef-btn ef-btn-primary" (click)="handleCloseDeal(prop)">Record Deal</button>
@@ -1540,30 +2055,29 @@
         <div class="lightbox-header-main">
           <div class="lightbox-title-info">
             <h3>{{ detailedProperty()?.title || 'Property Photos' }}</h3>
-            <span class="lightbox-counter">{{ (detailedProperty()?.images?.length || 0) }} Photos &bull; Pinch, Double-Tap &amp; Pan to Inspect</span>
+            <span class="lightbox-counter">{{ (detailedProperty()?.images?.length || 0) }} Photos &bull; Pinch,
+              Double-Tap &amp; Pan to Inspect</span>
           </div>
-          <button type="button" class="lightbox-close-btn mobile-close" (click)="closeLightbox()" title="Close Lightbox">&times;</button>
+          <button type="button" class="lightbox-close-btn mobile-close" (click)="closeLightbox()"
+            title="Close Lightbox">&times;</button>
         </div>
         <div class="lightbox-actions">
           <button type="button" class="lightbox-btn" (click)="zoomInLightbox()" title="Zoom In (+)">Zoom In +</button>
-          <button type="button" class="lightbox-btn" (click)="zoomOutLightbox()" title="Zoom Out (-)">Zoom Out -</button>
-          <button type="button" class="lightbox-btn" (click)="resetZoomLightbox()" title="Reset Zoom">Reset ({{ lightboxZoomLevel() }}x)</button>
-          <button type="button" class="lightbox-close-btn desktop-close" (click)="closeLightbox()" title="Close Lightbox">&times;</button>
+          <button type="button" class="lightbox-btn" (click)="zoomOutLightbox()" title="Zoom Out (-)">Zoom Out
+            -</button>
+          <button type="button" class="lightbox-btn" (click)="resetZoomLightbox()" title="Reset Zoom">Reset ({{
+            lightboxZoomLevel() }}x)</button>
+          <button type="button" class="lightbox-close-btn desktop-close" (click)="closeLightbox()"
+            title="Close Lightbox">&times;</button>
         </div>
       </div>
 
       <div class="lightbox-body" *ngIf="detailedProperty() as prop">
-        <swiper-container
-          [attr.initial-slide]="lightboxActiveIndex()"
-          slides-per-view="1"
-          navigation="true"
-          pagination="true"
-          zoom="true"
-          keyboard="true"
-          grab-cursor="true"
-          class="lightbox-swiper">
+        <swiper-container [attr.initial-slide]="lightboxActiveIndex()" slides-per-view="1" navigation="true"
+          pagination="true" zoom="true" keyboard="true" grab-cursor="true" class="lightbox-swiper">
           <swiper-slide *ngFor="let img of prop.images">
-            <div class="swiper-zoom-container" [style.transform]="lightboxZoomLevel() > 1 ? 'scale(' + lightboxZoomLevel() + ')' : null">
+            <div class="swiper-zoom-container"
+              [style.transform]="lightboxZoomLevel() > 1 ? 'scale(' + lightboxZoomLevel() + ')' : null">
               <img [src]="img" [alt]="prop.title" class="lightbox-img">
             </div>
           </swiper-slide>
@@ -1572,12 +2086,8 @@
 
       <div class="lightbox-footer" *ngIf="detailedProperty() as prop">
         <div class="lightbox-thumbs">
-          <img
-            *ngFor="let img of prop.images; let idx = index"
-            [src]="img"
-            class="lightbox-thumb"
-            [class.active]="lightboxActiveIndex() === idx"
-            (click)="lightboxActiveIndex.set(idx)">
+          <img *ngFor="let img of prop.images; let idx = index" [src]="img" class="lightbox-thumb"
+            [class.active]="lightboxActiveIndex() === idx" (click)="lightboxActiveIndex.set(idx)">
         </div>
       </div>
     </div>

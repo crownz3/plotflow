@@ -307,7 +307,7 @@ export class LoginComponent implements OnInit {
 
     // BLOCK UNREGISTERED USERS
     if (!registeredTenant && !registeredMember) {
-      this.errorMessage = `Access Denied: "${email}" is not registered. Switch to the "Register Agency" tab to submit your brokerage for approval.`;
+      this.errorMessage = `Access Denied: "${email}" is not registered. Switch to the "Register Agency" tab to submit your agency for approval.`;
       this.isLoggingIn = false;
       this.loadingService.hide();
       return;
@@ -343,7 +343,7 @@ export class LoginComponent implements OnInit {
     if (registeredMember) {
       const tenant = this.tenantService.getTenantById(registeredMember.tenantId);
       if (!tenant || tenant.status !== 'active') {
-        this.errorMessage = 'Access Denied: Your brokerage agency account is currently inactive or pending approval.';
+        this.errorMessage = 'Access Denied: Your agency account is currently inactive or pending approval.';
         this.isLoggingIn = false;
         this.loadingService.hide();
         return;
@@ -362,10 +362,6 @@ export class LoginComponent implements OnInit {
     if (event) event.preventDefault();
     this.regErrorMessage = '';
 
-    if (!this.regReraNumber.trim()) {
-      this.regErrorMessage = 'Please enter RERA registration or license number (or "Applied / In Process").';
-      return;
-    }
     if (!this.regCity.trim()) {
       this.regErrorMessage = 'Please enter your primary operating city/territory.';
       return;

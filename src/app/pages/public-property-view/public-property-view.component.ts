@@ -100,35 +100,65 @@ export class PublicPropertyViewComponent implements OnInit, OnDestroy {
     return true;
   }
 
+  @HostListener('copy', ['$event'])
+  onCopy(event: ClipboardEvent) {
+    if (this.link() && !this.link()?.allowScreenshots) {
+      event.preventDefault();
+      return false;
+    }
+    return true;
+  }
+
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
     if (!this.link() || this.link()?.allowScreenshots) return;
 
-    // Block PrintScreen
-    if (event.key === 'PrintScreen') {
+    // 1. Block PrintScreen / PrtScn on Windows/Linux and clear clipboard
+    if (event.key === 'PrintScreen' || event.code === 'PrintScreen' || event.keyCode === 44) {
       event.preventDefault();
       this.isWindowBlurred.set(true);
-      setTimeout(() => this.isWindowBlurred.set(false), 2000);
+      try {
+        navigator.clipboard?.writeText('CONFIDENTIAL PROPERTY DOSSIER - SCREENSHOTS PROHIBITED');
+      } catch {}
       return;
     }
 
-    // Block Ctrl+P / Cmd+P
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'p') {
-      event.preventDefault();
-      return;
-    }
-
-    // Block Ctrl+S / Cmd+S
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
-      event.preventDefault();
-      return;
-    }
-
-    // Block Mac screenshot shortcuts (Cmd+Shift+3, Cmd+Shift+4, Cmd+Shift+5)
-    if (event.metaKey && event.shiftKey && ['3', '4', '5'].includes(event.key)) {
+    // 2. Block Ctrl+P / Cmd+P (Print or Save as PDF)
+    if ((event.ctrlKey || event.metaKey) && (event.key.toLowerCase() === 'p' || event.code === 'KeyP')) {
       event.preventDefault();
       this.isWindowBlurred.set(true);
-      setTimeout(() => this.isWindowBlurred.set(false), 2500);
+      return;
+    }
+
+    // 3. Block Ctrl+S / Cmd+S (Save webpage HTML/images)
+    if ((event.ctrlKey || event.metaKey) && (event.key.toLowerCase() === 's' || event.code === 'KeyS')) {
+      event.preventDefault();
+      return;
+    }
+
+    // 4. Block Developer Tools / Inspect Element (F12, Cmd+Opt+I, Ctrl+Shift+I)
+    if (
+      event.key === 'F12' ||
+      ((event.ctrlKey || event.metaKey) && event.shiftKey && ['i', 'c', 'j'].includes(event.key.toLowerCase())) ||
+      ((event.metaKey && event.altKey) && ['i', 'c', 'j'].includes(event.key.toLowerCase()))
+    ) {
+      event.preventDefault();
+      this.isWindowBlurred.set(true);
+      return;
+    }
+
+    // 5. Pre-emptively BLANK the screen whenever user holds down Cmd+Shift or Ctrl+Shift
+    // On macOS: Cmd+Shift+3, Cmd+Shift+4, Cmd+Shift+5
+    // On Windows: Win+Shift+S
+    if ((event.metaKey || event.ctrlKey) && event.shiftKey) {
+      this.isWindowBlurred.set(true);
+      return;
+    }
+
+    // 6. Direct capture key codes (Digit3, Digit4, Digit5 with Cmd/Ctrl)
+    if ((event.metaKey || event.ctrlKey) && ['Digit3', 'Digit4', 'Digit5', 'KeyS'].includes(event.code)) {
+      event.preventDefault();
+      this.isWindowBlurred.set(true);
       return;
     }
   }
@@ -142,16 +172,28 @@ export class PublicPropertyViewComponent implements OnInit, OnDestroy {
 
   @HostListener('window:focus')
   onWindowFocus() {
+    // Keep shield active until user taps or interacts if needed, or resume
     this.isWindowBlurred.set(false);
+  }
+
+  @HostListener('document:mouseleave')
+  onMouseLeave() {
+    if (this.link() && !this.link()?.allowScreenshots) {
+      this.isWindowBlurred.set(true);
+    }
   }
 
   @HostListener('document:visibilitychange')
   onVisibilityChange() {
     if (document.hidden && this.link() && !this.link()?.allowScreenshots) {
       this.isWindowBlurred.set(true);
-    } else {
+    } else if (!document.hidden && this.link() && this.link()?.allowScreenshots) {
       this.isWindowBlurred.set(false);
     }
+  }
+
+  dismissShield() {
+    this.isWindowBlurred.set(false);
   }
 
   ngOnInit(): void {

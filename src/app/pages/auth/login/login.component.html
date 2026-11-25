@@ -67,7 +67,7 @@
       <form class="login-form" (submit)="handleLogin($event)">
         <div class="ef-form-group">
           <label>Work Email Address</label>
-          <input type="email" [(ngModel)]="email" name="email" placeholder="broker.realty&#64;company.com">
+          <input type="email" [(ngModel)]="email" name="email" placeholder="agency.realty&#64;company.com">
           <div *ngIf="errorMessage" class="error-banner">
             {{ errorMessage }}
           </div>
@@ -86,7 +86,7 @@
 
       <div class="login-footer">
         <p>
-          New Brokerage?
+          New Agency / Firm?
           <button type="button" class="link-btn" (click)="setTab('register')">
             Register Agency &rarr;
           </button>
@@ -137,7 +137,7 @@
           </div>
 
           <div class="ef-form-group">
-            <label>Principal Broker / Director Full Name *</label>
+            <label>Authorized Person / Director Full Name *</label>
             <input
               type="text"
               [(ngModel)]="regBrokerName"
@@ -197,12 +197,12 @@
         <!-- STEP 3: VERIFICATION & SECURITY -->
         <div *ngIf="regStep() === 3" class="step-slide-pane" [ngClass]="regDirection() === 'forward' ? 'slide-in-right' : 'slide-in-left'">
           <div class="ef-form-group">
-            <label>RERA Number / License *</label>
+            <label>Registration ID (Optional)</label>
             <input
               type="text"
               [(ngModel)]="regReraNumber"
               name="regReraNumber"
-              placeholder="e.g. TN/01/AGENT/2024/0089"
+              placeholder="e.g. ID-89421 or Registration Number (Optional)"
               autofocus>
           </div>
 

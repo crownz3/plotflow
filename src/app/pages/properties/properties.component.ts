@@ -12,7 +12,7 @@ import { DealModalComponent } from '../../shared/components/deal-modal/deal-moda
 import { PlotMapViewerComponent } from '../../shared/components/plot-map-viewer/plot-map-viewer.component';
 import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
 import { AreaFormatPipe } from '../../shared/pipes/area-format.pipe';
-import { Property, PlotCoordinate, PlotBoundaryPoint, Plot3DConfig } from '../../core/models/models';
+import { Property, PlotCoordinate, PlotBoundaryPoint, Plot3DConfig, VillaFloorPlan } from '../../core/models/models';
 import { AuthService } from '../../core/services/auth.service';
 import { LoadingService } from '../../core/services/loading.service';
 import { SnackbarService } from '../../core/services/snackbar.service';
@@ -98,25 +98,60 @@ export class PropertiesComponent {
   // View Mode Toggle (Cards vs Table)
   readonly viewMode = signal<'cards' | 'table'>('cards');
 
-  readonly availableInfrastructure = [
-    '24/7 Gated Security & CCTV',
+  availableInfrastructure: string[] = [
+    '100% Gated Community',
+    '24/7 Security',
+    '24/7 CCTV Surveillance',
+    'Municipal / Corporation Water Connection',
+    'Panchayat Water Connection',
     'Metro Water Connection',
     'Copious Borewell Water',
-    '30ft/40ft Wide Blacktop Road',
-    'Underground Sewage Drainage',
+    'EB Connection',
+    'Drainage Connection (Corporation)',
+    'Rainwater Drainage & Harvesting',
+    '30/40 Ft Wide Road',
+    '50/60 Ft Wide Road',
+    '70/80 Ft Wide Road',
     '100% DG Power Backup',
-    'Clubhouse with Gym & Pool',
-    'Children Play Area & Park',
     'Solar Street Lighting',
-    'Rainwater Harvesting'
+    'Grand Arch Entrance',
+    'Badminton Court',
+    'Basketball Court',
+    'Open Air Amphitheatre',
+    'Celebration Lounge',
+    'Jogging & Walking Track',
+    'Tree-Lined Avenue Trees',
+    'Acupressure Walking Path',
+    'Elevated Overhead Water Tank (OHT)',
+    'Dedicated Cycling Track',
+    'Yoga Pavilion',
+    'Clubhouse with Gym & Pool',
+    'Children Play Area & Park'
+  ];
+
+  readonly availableAmenities = [
+    'Grand Arch Entrance',
+    'Badminton Court',
+    'Basketball Court',
+    'Open Air Amphitheatre',
+    'Celebration Lounge',
+    'Jogging & Walking Track',
+    'Tree-Lined Avenue Trees',
+    'Acupressure Walking Path',
+    'Elevated Overhead Water Tank (OHT)',
+    'Dedicated Cycling Track',
+    'Yoga Pavilion',
+    'Clubhouse with Gym & Pool',
+    'Children Play Area & Park'
   ];
 
   readonly availableApprovals = [
     'DTCP Approved',
-    'CMDA Approved',
     'RERA Registered',
-    'Patta / Clean Title',
+    'Corporation Approved',
     'Panchayat Approved',
+    'CMDA Approved',
+    'Patta / Clean Title',
     'BMRDA Approved',
     'BDA Approved',
     'HMDA Approved'
@@ -158,16 +193,40 @@ export class PropertiesComponent {
       hasBoundaryWall: false,
       isGatedLayout: true,
       soilType: '',
-      // Villa specific
+      // Villa specific & Dynamic Multi-Floor Architecture
       villaPlotArea: 2400,
-      villaBuiltUpArea: 3200,
+      villaBuiltUpArea: 2600,
       villaFloors: 'G+1 Duplex',
+      villaBuildingStructure: 'framed' as 'framed' | 'load_bearing',
       villaBedrooms: 4,
       villaBathrooms: 4,
+      villaCoveredParking: true,
       villaCarParking: 2,
       villaHasGarden: true,
       villaFacing: 'East',
+      villaRoadFacing: 'East',
+      villaMainEntranceFacing: 'East',
       villaFurnishing: 'semi-furnished' as 'unfurnished' | 'semi-furnished' | 'fully-furnished',
+      villaFloorsList: [
+        {
+          floorLevel: 'Ground Floor',
+          builtUpAreaSqFt: 1400,
+          bhk: '2 BHK',
+          bedroomsCount: 2,
+          bathroomsCount: 2,
+          hasAttachedBath: true,
+          hasBalcony: false
+        },
+        {
+          floorLevel: '1st Floor',
+          builtUpAreaSqFt: 1200,
+          bhk: '2 BHK',
+          bedroomsCount: 2,
+          bathroomsCount: 2,
+          hasAttachedBath: true,
+          hasBalcony: true
+        }
+      ] as VillaFloorPlan[],
       // Apartment specific
       aptFloorNumber: 5,
       aptTotalFloors: 12,
@@ -179,9 +238,10 @@ export class PropertiesComponent {
       aptFacing: 'East',
       // On-Site Services & Infrastructure
       infrastructure: [
-        '24/7 Gated Security & CCTV',
-        'Metro Water Connection',
-        '30ft/40ft Wide Blacktop Road'
+        '100% Gated Community',
+        '24/7 Security',
+        'EB Connection',
+        'Drainage Connection (Corporation)'
       ] as string[],
       // Vicinity distances
       vicinityMetro: '',
@@ -189,6 +249,10 @@ export class PropertiesComponent {
       vicinitySchool: '',
       vicinityHospital: '',
       vicinityAirport: '',
+      vicinityBusStop: '',
+      vicinityMarket: '',
+      vicinityLocationMap: '',
+      vicinityCustomPoints: [] as { landmark: string; distance: string }[],
       // Media
       images: [
         'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&auto=format&fit=crop&q=80'
@@ -201,6 +265,81 @@ export class PropertiesComponent {
       ownerExpectedPrice: 0,
       ownerPrivateNotes: ''
     };
+  }
+
+  addVillaFloor(mode: 'new' | 'edit') {
+    const target = mode === 'new' ? this.newProp : this.editForm;
+    const list = target.villaFloorsList;
+    const count = list.length;
+    let label = `${count}th Floor`;
+    if (count === 1) label = '1st Floor';
+    else if (count === 2) label = '2nd Floor';
+    else if (count === 3) label = '3rd Floor';
+    else if (count === 4) label = '4th Floor';
+
+    const prev = list[count - 1];
+    list.push({
+      floorLevel: label,
+      builtUpAreaSqFt: prev ? prev.builtUpAreaSqFt : 1000,
+      bhk: prev ? prev.bhk : '2 BHK',
+      bedroomsCount: prev ? prev.bedroomsCount : 2,
+      bathroomsCount: prev ? prev.bathroomsCount : 2,
+      hasAttachedBath: prev ? prev.hasAttachedBath : true,
+      hasBalcony: true
+    });
+    this.recalcVillaTotals(mode);
+  }
+
+  removeVillaFloor(index: number, mode: 'new' | 'edit') {
+    const target = mode === 'new' ? this.newProp : this.editForm;
+    const list = target.villaFloorsList;
+    if (list.length <= 1) return;
+    list.splice(index, 1);
+    this.recalcVillaTotals(mode);
+  }
+
+  copyPreviousFloor(index: number, mode: 'new' | 'edit') {
+    const target = mode === 'new' ? this.newProp : this.editForm;
+    const list = target.villaFloorsList;
+    if (index <= 0 || !list[index]) return;
+    const source = list[0]; // Ground floor is always at index 0
+    list[index].builtUpAreaSqFt = source.builtUpAreaSqFt;
+    list[index].bhk = source.bhk;
+    list[index].bedroomsCount = source.bedroomsCount;
+    list[index].bathroomsCount = source.bathroomsCount;
+    list[index].hasAttachedBath = source.hasAttachedBath;
+    list[index].hasBalcony = source.hasBalcony;
+    this.recalcVillaTotals(mode);
+  }
+
+  recalcVillaTotals(mode: 'new' | 'edit') {
+    const target = mode === 'new' ? this.newProp : this.editForm;
+    const list = target.villaFloorsList;
+    if (!list || list.length === 0) return;
+
+    let totalArea = 0;
+    let totalBhk = 0;
+    let totalBaths = 0;
+
+    for (const f of list) {
+      totalArea += Number(f.builtUpAreaSqFt) || 0;
+      totalBhk += Number(f.bedroomsCount) || 0;
+      totalBaths += Number(f.bathroomsCount) || 0;
+    }
+
+    target.villaBuiltUpArea = totalArea;
+    target.villaBedrooms = totalBhk;
+    target.villaBathrooms = totalBaths;
+
+    if (list.length === 1) {
+      target.villaFloors = 'Ground Floor Only (Independent House)';
+    } else if (list.length === 2) {
+      target.villaFloors = 'G+1 Duplex';
+    } else if (list.length === 3) {
+      target.villaFloors = 'G+2 Triplex';
+    } else {
+      target.villaFloors = `G+${list.length - 1} Multi-Level Villa`;
+    }
   }
 
   toggleView(mode: 'cards' | 'table') {
@@ -395,6 +534,79 @@ export class PropertiesComponent {
     }
   }
 
+  customInfraInput = '';
+  customInfraEditInput = '';
+
+  addCustomInfra(target: 'new' | 'edit') {
+    const raw = (target === 'new' ? this.customInfraInput : this.customInfraEditInput).trim();
+    if (!raw) return;
+
+    const list = target === 'new' ? this.newProp.infrastructure : this.editForm.infrastructure;
+    if (!list.includes(raw)) {
+      list.push(raw);
+    }
+    if (!this.availableInfrastructure.includes(raw)) {
+      this.availableInfrastructure.push(raw);
+    }
+
+    if (target === 'new') {
+      this.customInfraInput = '';
+    } else {
+      this.customInfraEditInput = '';
+    }
+  }
+
+  // Custom vicinity landmark points
+  addCustomVicinityPoint(mode: 'new' | 'edit') {
+    const target = mode === 'new' ? this.newProp : this.editForm;
+    if (!target.vicinityCustomPoints) target.vicinityCustomPoints = [];
+    target.vicinityCustomPoints.push({ landmark: '', distance: '' });
+  }
+
+  removeCustomVicinityPoint(index: number, mode: 'new' | 'edit') {
+    const target = mode === 'new' ? this.newProp : this.editForm;
+    if (target.vicinityCustomPoints) {
+      target.vicinityCustomPoints.splice(index, 1);
+    }
+  }
+
+  async onLocationMapSelected(event: Event, target: 'new' | 'edit') {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    this.isCompressingImage.set(true);
+    try {
+      const file = input.files[0];
+      const compressedBlob = await imageCompression(file, {
+        maxSizeMB: 0.3,
+        maxWidthOrHeight: 1600,
+        useWebWorker: true
+      });
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (target === 'new') {
+          this.newProp.vicinityLocationMap = reader.result as string;
+        } else {
+          this.editForm.vicinityLocationMap = reader.result as string;
+        }
+        this.isCompressingImage.set(false);
+      };
+      reader.readAsDataURL(compressedBlob);
+    } catch (err) {
+      console.error('Failed to compress location map:', err);
+      this.isCompressingImage.set(false);
+    }
+  }
+
+  removeLocationMap(target: 'new' | 'edit') {
+    if (target === 'new') {
+      this.newProp.vicinityLocationMap = '';
+    } else {
+      this.editForm.vicinityLocationMap = '';
+    }
+  }
+
   // Toggle on-site infrastructure item
   toggleInfra(item: string, target: 'new' | 'edit') {
     const list = target === 'new' ? this.newProp.infrastructure : this.editForm.infrastructure;
@@ -544,15 +756,23 @@ export class PropertiesComponent {
     } else if (this.newProp.propertyType === 'villa') {
       propData.bhk = `${this.newProp.villaBedrooms}BHK`;
       propData.bathrooms = this.newProp.villaBathrooms;
+      propData.facing = this.newProp.villaFacing;
       propData.villaDetails = {
         plotArea: this.newProp.villaPlotArea,
         builtUpArea: this.newProp.villaBuiltUpArea,
+        groundFloorBuiltUpArea: this.newProp.villaFloorsList[0]?.builtUpAreaSqFt || undefined,
+        firstFloorBuiltUpArea: this.newProp.villaFloorsList[1]?.builtUpAreaSqFt || undefined,
         floors: this.newProp.villaFloors,
+        buildingStructure: this.newProp.villaBuildingStructure,
+        floorBreakdown: this.newProp.villaFloorsList.map(f => ({ ...f })),
         bedrooms: this.newProp.villaBedrooms,
         bathrooms: this.newProp.villaBathrooms,
-        carParking: this.newProp.villaCarParking,
+        coveredParking: this.newProp.villaCoveredParking,
+        carParking: this.newProp.villaCoveredParking ? (this.newProp.villaCarParking || 1) : 0,
         hasGarden: this.newProp.villaHasGarden,
         facing: this.newProp.villaFacing,
+        roadFacing: this.newProp.villaRoadFacing,
+        mainEntranceFacing: this.newProp.villaMainEntranceFacing,
         furnishing: this.newProp.villaFurnishing
       };
     } else if (this.newProp.propertyType === 'apartment') {
@@ -576,7 +796,13 @@ export class PropertiesComponent {
       highwayDistance: this.newProp.vicinityHighway.trim() || undefined,
       schoolDistance: this.newProp.vicinitySchool.trim() || undefined,
       hospitalDistance: this.newProp.vicinityHospital.trim() || undefined,
-      airportDistance: this.newProp.vicinityAirport.trim() || undefined
+      airportDistance: this.newProp.vicinityAirport.trim() || undefined,
+      busStopDistance: this.newProp.vicinityBusStop.trim() || undefined,
+      marketDistance: this.newProp.vicinityMarket.trim() || undefined,
+      locationMapUrl: this.newProp.vicinityLocationMap || undefined,
+      customPoints: (this.newProp.vicinityCustomPoints || [])
+        .filter(p => p.landmark && p.landmark.trim())
+        .map(p => ({ landmark: p.landmark.trim(), distance: p.distance.trim() }))
     };
 
     this.propertyService.addProperty(propData);
@@ -626,14 +852,40 @@ export class PropertiesComponent {
       soilType: prop.plotDetails?.soilType || '',
       // Villa
       villaPlotArea: prop.villaDetails?.plotArea || 2000,
-      villaBuiltUpArea: prop.villaDetails?.builtUpArea || 2800,
-      villaFloors: prop.villaDetails?.floors || 'G+1',
-      villaBedrooms: prop.villaDetails?.bedrooms || 3,
-      villaBathrooms: prop.villaDetails?.bathrooms || 3,
-      villaCarParking: prop.villaDetails?.carParking || 1,
+      villaBuiltUpArea: prop.villaDetails?.builtUpArea || 2600,
+      villaFloors: prop.villaDetails?.floors || 'G+1 Duplex',
+      villaBuildingStructure: prop.villaDetails?.buildingStructure || 'framed',
+      villaBedrooms: prop.villaDetails?.bedrooms || 4,
+      villaBathrooms: prop.villaDetails?.bathrooms || 4,
+      villaCoveredParking: prop.villaDetails?.coveredParking !== undefined ? prop.villaDetails.coveredParking : true,
+      villaCarParking: prop.villaDetails?.carParking || 2,
       villaHasGarden: !!prop.villaDetails?.hasGarden,
       villaFacing: prop.villaDetails?.facing || 'East',
+      villaRoadFacing: prop.villaDetails?.roadFacing || prop.villaDetails?.facing || 'East',
+      villaMainEntranceFacing: prop.villaDetails?.mainEntranceFacing || 'East',
       villaFurnishing: prop.villaDetails?.furnishing || 'semi-furnished',
+      villaFloorsList: prop.villaDetails?.floorBreakdown && prop.villaDetails.floorBreakdown.length > 0
+        ? prop.villaDetails.floorBreakdown.map(f => ({ ...f }))
+        : [
+            {
+              floorLevel: 'Ground Floor',
+              builtUpAreaSqFt: prop.villaDetails?.groundFloorBuiltUpArea || Math.round((prop.villaDetails?.builtUpArea || 2600) * 0.55),
+              bhk: '2 BHK',
+              bedroomsCount: 2,
+              bathroomsCount: 2,
+              hasAttachedBath: true,
+              hasBalcony: false
+            },
+            {
+              floorLevel: '1st Floor',
+              builtUpAreaSqFt: prop.villaDetails?.firstFloorBuiltUpArea || Math.round((prop.villaDetails?.builtUpArea || 2600) * 0.45),
+              bhk: '2 BHK',
+              bedroomsCount: 2,
+              bathroomsCount: 2,
+              hasAttachedBath: true,
+              hasBalcony: true
+            }
+          ],
       // Apartment
       aptFloorNumber: prop.apartmentDetails?.floorNumber || 3,
       aptTotalFloors: prop.apartmentDetails?.totalFloors || 10,
@@ -648,7 +900,11 @@ export class PropertiesComponent {
       vicinityHighway: prop.vicinity?.highwayDistance || '',
       vicinitySchool: prop.vicinity?.schoolDistance || '',
       vicinityHospital: prop.vicinity?.hospitalDistance || '',
-      vicinityAirport: prop.vicinity?.airportDistance || ''
+      vicinityAirport: prop.vicinity?.airportDistance || '',
+      vicinityBusStop: prop.vicinity?.busStopDistance || '',
+      vicinityMarket: prop.vicinity?.marketDistance || '',
+      vicinityLocationMap: prop.vicinity?.locationMapUrl || '',
+      vicinityCustomPoints: prop.vicinity?.customPoints ? prop.vicinity.customPoints.map(p => ({ ...p })) : []
     };
   }
 
@@ -705,15 +961,23 @@ export class PropertiesComponent {
     } else if (this.editForm.propertyType === 'villa') {
       updates.bhk = `${this.editForm.villaBedrooms}BHK`;
       updates.bathrooms = this.editForm.villaBathrooms;
+      updates.facing = this.editForm.villaFacing;
       updates.villaDetails = {
         plotArea: this.editForm.villaPlotArea,
         builtUpArea: this.editForm.villaBuiltUpArea,
+        groundFloorBuiltUpArea: this.editForm.villaFloorsList[0]?.builtUpAreaSqFt || undefined,
+        firstFloorBuiltUpArea: this.editForm.villaFloorsList[1]?.builtUpAreaSqFt || undefined,
         floors: this.editForm.villaFloors,
+        buildingStructure: this.editForm.villaBuildingStructure,
+        floorBreakdown: this.editForm.villaFloorsList.map(f => ({ ...f })),
         bedrooms: this.editForm.villaBedrooms,
         bathrooms: this.editForm.villaBathrooms,
-        carParking: this.editForm.villaCarParking,
+        coveredParking: this.editForm.villaCoveredParking,
+        carParking: this.editForm.villaCoveredParking ? (this.editForm.villaCarParking || 1) : 0,
         hasGarden: this.editForm.villaHasGarden,
         facing: this.editForm.villaFacing,
+        roadFacing: this.editForm.villaRoadFacing,
+        mainEntranceFacing: this.editForm.villaMainEntranceFacing,
         furnishing: this.editForm.villaFurnishing
       };
     } else if (this.editForm.propertyType === 'apartment') {
@@ -736,7 +1000,13 @@ export class PropertiesComponent {
       highwayDistance: this.editForm.vicinityHighway.trim() || undefined,
       schoolDistance: this.editForm.vicinitySchool.trim() || undefined,
       hospitalDistance: this.editForm.vicinityHospital.trim() || undefined,
-      airportDistance: this.editForm.vicinityAirport.trim() || undefined
+      airportDistance: this.editForm.vicinityAirport.trim() || undefined,
+      busStopDistance: this.editForm.vicinityBusStop.trim() || undefined,
+      marketDistance: this.editForm.vicinityMarket.trim() || undefined,
+      locationMapUrl: this.editForm.vicinityLocationMap || undefined,
+      customPoints: (this.editForm.vicinityCustomPoints || [])
+        .filter(p => p.landmark && p.landmark.trim())
+        .map(p => ({ landmark: p.landmark.trim(), distance: p.distance.trim() }))
     };
 
     this.propertyService.updateProperty(cur.id, updates);
@@ -754,6 +1024,7 @@ export class PropertiesComponent {
   // --- Sharing Operations ---
   shareDurationHours = 24;
   shareIncludePrice = true;
+  shareIncludeLocation = true;
   shareAntiScreenshot = true;
   showSecureLinkConfig = signal<boolean>(false);
   isCustomDuration = signal<boolean>(false);
@@ -794,6 +1065,7 @@ export class PropertiesComponent {
     this.customDurationValue = 12;
     this.customDurationUnit = 'hours';
     this.shareIncludePrice = true;
+    this.shareIncludeLocation = true;
     this.shareDurationHours = 24;
   }
 
@@ -809,6 +1081,7 @@ export class PropertiesComponent {
       const link = await this.secureShareService.createSecureLink(prop, {
         durationHours: this.shareDurationHours,
         includePrice: this.shareIncludePrice,
+        includeLocation: this.shareIncludeLocation,
         allowScreenshots: !this.shareAntiScreenshot,
         enableWatermark: this.shareAntiScreenshot
       });
@@ -835,15 +1108,20 @@ export class PropertiesComponent {
   shareSecureUrlViaWhatsApp(prop: Property) {
     const url = this.generatedSecureUrl();
     if (!url) return;
-    const priceText = this.shareIncludePrice ? `Price: ₹${prop.price?.toLocaleString('en-IN')}` : `Price: Available on Request`;
+    const priceText = this.shareIncludePrice
+      ? `Price: Rs. ${prop.price?.toLocaleString('en-IN')}`
+      : `Price: Available on Request`;
+    const locationText = this.shareIncludeLocation
+      ? `Location: ${prop.location.locality}, ${prop.location.city}`
+      : `Territory: ${prop.location.locality}, ${prop.location.city} (Exact location confidential)`;
     const text = encodeURIComponent(
       `*Exclusive Property Opportunity: ${prop.title}*\n` +
-      `📍 Location: ${prop.location.locality}, ${prop.location.city}\n` +
-      `📐 Area: ${prop.area} ${prop.areaUnit}\n` +
-      `💰 ${priceText}\n\n` +
-      `🔒 *Confidential Property Link (Expires in ${this.shareDurationHours}h):*\n` +
+      `${locationText}\n` +
+      `Area: ${prop.area} ${prop.areaUnit}\n` +
+      `${priceText}\n\n` +
+      `*Confidential Property Link (Expires in ${this.shareDurationHours}h):*\n` +
       `${url}\n\n` +
-      `_Note: Protected link. If you need extended viewing access, tap 'Request More Time' on the page._`
+      `Note: Protected link. If you need extended viewing access, tap 'Request More Time' on the page.`
     );
     window.open(`https://wa.me/?text=${text}`, '_blank');
   }
@@ -852,7 +1130,10 @@ export class PropertiesComponent {
     this.isGeneratingBrochure.set(true);
     this.loadingService.show('Generating Client Brochure...', 'Compiling specifications, images, and maps pin');
     try {
-      await this.brochureService.generateAndShareBrochure(prop);
+      await this.brochureService.generateAndShareBrochure(prop, {
+        includePrice: this.shareIncludePrice,
+        includeLocation: this.shareIncludeLocation
+      });
       this.snackbarService.success('Client brochure generated successfully!');
     } catch (err) {
       console.error('Error generating brochure:', err);
@@ -864,11 +1145,17 @@ export class PropertiesComponent {
   }
 
   shareViaWhatsApp(prop: Property) {
-    this.brochureService.shareToWhatsApp(prop);
+    this.brochureService.shareToWhatsApp(prop, {
+      includePrice: this.shareIncludePrice,
+      includeLocation: this.shareIncludeLocation
+    });
   }
 
   async copyPitch(prop: Property) {
-    const success = await this.brochureService.copyPitch(prop);
+    const success = await this.brochureService.copyPitch(prop, {
+      includePrice: this.shareIncludePrice,
+      includeLocation: this.shareIncludeLocation
+    });
     if (success) {
       this.copiedNotice.set(true);
       this.snackbarService.success('Pitch message copied to clipboard!');
@@ -877,7 +1164,10 @@ export class PropertiesComponent {
   }
 
   async shareDeviceNative(prop: Property) {
-    await this.brochureService.shareNative(prop);
+    await this.brochureService.shareNative(prop, {
+      includePrice: this.shareIncludePrice,
+      includeLocation: this.shareIncludeLocation
+    });
   }
 
   // Stats & Deal Triggers

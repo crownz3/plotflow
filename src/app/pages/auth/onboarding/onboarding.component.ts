@@ -56,7 +56,7 @@ export class OnboardingComponent {
 
     if (this.currentStep() === 1) {
       if (!this.email.trim()) {
-        this.errorMessage = 'Please provide an official broker work email address.';
+        this.errorMessage = 'Please provide an official work email address.';
         return;
       }
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -65,20 +65,17 @@ export class OnboardingComponent {
         return;
       }
       if (!this.agencyName.trim()) {
-        this.errorMessage = 'Please enter your Brokerage / Agency Organization Name.';
+        this.errorMessage = 'Please enter your Agency / Organization Name.';
         return;
       }
-      if (!this.reraNumber.trim()) {
-        this.errorMessage = 'Please enter your RERA registration or license number (or "Applied / In Process").';
-        return;
-      }
+      // Registration ID is optional
       this.currentStep.set(2);
       return;
     }
 
     if (this.currentStep() === 2) {
       if (!this.brokerName.trim()) {
-        this.errorMessage = 'Please enter Principal Broker / Licensee Full Name.';
+        this.errorMessage = 'Please enter Authorized Person / Primary Contact Full Name.';
         return;
       }
       if (!this.phone.trim()) {

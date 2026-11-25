@@ -68,15 +68,33 @@ export interface PlotDetails {
   soilType?: string;
 }
 
+export interface VillaFloorPlan {
+  floorLevel: string; // e.g. "Ground Floor", "1st Floor", "2nd Floor", "Terrace Studio"
+  builtUpAreaSqFt: number; // e.g. 1400
+  bhk: string; // e.g. "2 BHK", "1 BHK", "3 BHK", "Living / Hall"
+  bedroomsCount: number; // e.g. 2
+  bathroomsCount: number; // e.g. 2
+  hasAttachedBath?: boolean; // optional
+  attachedBathCount?: number;
+  hasBalcony?: boolean;
+}
+
 export interface VillaDetails {
   plotArea?: number;
   builtUpArea?: number;
-  floors?: string; // e.g. "G+1", "G+2", "Duplex"
+  groundFloorBuiltUpArea?: number;
+  firstFloorBuiltUpArea?: number;
+  floors?: string; // "Structure / Floors" e.g. "G+1 Duplex", "G+2 Triplex"
+  buildingStructure?: 'framed' | 'load_bearing'; // Framed RCC vs Load Bearing
+  floorBreakdown?: VillaFloorPlan[];
   bedrooms?: number;
   bathrooms?: number;
+  coveredParking?: boolean;
   carParking?: number;
   hasGarden?: boolean;
   facing?: string;
+  roadFacing?: string;
+  mainEntranceFacing?: string;
   furnishing?: 'unfurnished' | 'semi-furnished' | 'fully-furnished';
 }
 
@@ -99,12 +117,21 @@ export interface CommercialDetails {
   fireNoc?: boolean;
 }
 
+export interface VicinityCustomPoint {
+  landmark: string;
+  distance: string;
+}
+
 export interface PropertyVicinity {
   metroDistance?: string;
   airportDistance?: string;
   schoolDistance?: string;
   hospitalDistance?: string;
   highwayDistance?: string;
+  busStopDistance?: string;
+  marketDistance?: string;
+  locationMapUrl?: string;
+  customPoints?: VicinityCustomPoint[];
 }
 
 export interface PropertyMedia {
@@ -303,9 +330,9 @@ export interface SecureSharedLink {
     mapsUrl?: string;
     coordinates?: PlotCoordinate;
     plotBoundary?: PlotBoundaryPoint[];
-    plotDetails?: Record<string, any>;
-    villaDetails?: Record<string, any>;
-    apartmentDetails?: Record<string, any>;
+    plotDetails?: PlotDetails;
+    villaDetails?: VillaDetails;
+    apartmentDetails?: ApartmentDetails;
     infrastructure?: Record<string, any>;
     highlights?: string[];
   };
@@ -319,6 +346,7 @@ export interface SecureSharedLink {
   agentPhone: string;
 
   includePrice: boolean; // "Share amount or not?" -> If false, shows "Price on Request"
+  includeLocation?: boolean; // "Share exact location & maps pin or not?"
   allowScreenshots: boolean; // Anti-screenshot & content protection
   enableWatermark: boolean; // Forensic tiled watermark
   

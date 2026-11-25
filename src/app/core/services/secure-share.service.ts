@@ -20,6 +20,7 @@ import { sanitizeForFirestore } from '../utils/firestore.util';
 export interface CreateShareLinkOptions {
   durationHours: number; // 2, 6, 24, 48, 168
   includePrice: boolean; // "Share amount or not?"
+  includeLocation?: boolean; // "Share exact location & maps pin or not?"
   allowScreenshots?: boolean;
   enableWatermark?: boolean;
 }
@@ -150,6 +151,7 @@ export class SecureShareService {
     const shareId = `sh_${randomHex}`;
     const now = Date.now();
     const expiresAt = now + options.durationHours * 60 * 60 * 1000;
+    const showLoc = options.includeLocation !== false;
 
     // Build sanitized property snapshot (EXCLUDING private owner details & notes)
     const propertySnapshot: SecureSharedLink['propertySnapshot'] = {
@@ -165,11 +167,11 @@ export class SecureShareService {
       areaUnit: property.areaUnit,
       locality: property.location?.locality || '',
       city: property.location?.city || '',
-      address: property.location?.address || '',
+      address: showLoc ? (property.location?.address || '') : '',
       images: property.images && property.images.length > 0 ? [...property.images] : [],
-      mapsUrl: property.mapsUrl || '',
-      coordinates: property.location?.coordinates,
-      plotBoundary: property.location?.plotBoundary ? [...property.location.plotBoundary] : undefined,
+      mapsUrl: showLoc ? (property.mapsUrl || '') : '',
+      coordinates: showLoc ? property.location?.coordinates : undefined,
+      plotBoundary: (showLoc && property.location?.plotBoundary) ? [...property.location.plotBoundary] : undefined,
       plotDetails: property.plotDetails ? { ...property.plotDetails } : undefined,
       villaDetails: property.villaDetails ? { ...property.villaDetails } : undefined,
       apartmentDetails: property.apartmentDetails ? { ...property.apartmentDetails } : undefined,
@@ -191,6 +193,7 @@ export class SecureShareService {
       agentName: user?.displayName || 'Agency Property Specialist',
       agentPhone: user?.phoneNumber || tenant?.phone || '+91 98765 43210',
       includePrice: options.includePrice,
+      includeLocation: showLoc,
       allowScreenshots: options.allowScreenshots ?? false,
       enableWatermark: options.enableWatermark ?? true,
       durationHours: options.durationHours,

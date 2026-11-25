@@ -21,9 +21,12 @@ export class BrochureService {
    * Generates a branded, privacy-masked property PDF brochure client-side
    * and routes to the universal export handler (Android native share sheet vs Desktop browser download).
    */
-  async generateAndShareBrochure(property: Property): Promise<void> {
+  async generateAndShareBrochure(property: Property, options?: { includePrice?: boolean; includeLocation?: boolean }): Promise<void> {
     const tenant = this.tenantService.activeTenant();
     const agent = this.auth.currentUser();
+
+    const showPrice = options?.includePrice !== false;
+    const showLocation = options?.includeLocation !== false;
 
     const doc = new jsPDF({
       orientation: 'portrait',
@@ -61,7 +64,10 @@ export class BrochureService {
     doc.setFontSize(9.5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(95, 99, 104);
-    doc.text(`${property.location.locality}, ${property.location.city}`, 14, 52);
+    const localitySubtitle = showLocation
+      ? `${property.location.locality}, ${property.location.city}`
+      : `${property.location.locality}, ${property.location.city} (Exact location on scheduled site visit)`;
+    doc.text(localitySubtitle, 14, 52);
 
     // 3. Highlighted Price & Rate Pill Card
     doc.setFillColor(230, 244, 234); // #E6F4EA Material Light Green
@@ -73,19 +79,21 @@ export class BrochureService {
     doc.setFont('helvetica', 'bold');
 
     const formattedPrice = this.formatCurrencyPdf(property.price);
-    const priceText = `Price: ${formattedPrice} ${property.negotiable ? '(Negotiable)' : ''}`;
-
-    let rateText = '';
-    if (property.price && property.area && property.area > 0) {
-      const rate = Math.round(property.price / property.area);
-      rateText = `Rate: Rs. ${rate.toLocaleString('en-IN')} / ${property.areaUnit || 'sqft'}`;
-    }
-
-    doc.text(priceText, 18, 64);
-    if (rateText) {
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9.5);
-      doc.text(`•   ${rateText}`, 115, 64);
+    if (showPrice) {
+      const priceText = `Price: ${formattedPrice} ${property.negotiable ? '(Negotiable)' : ''}`;
+      let rateText = '';
+      if (property.price && property.area && property.area > 0) {
+        const rate = Math.round(property.price / property.area);
+        rateText = `Rate: Rs. ${rate.toLocaleString('en-IN')} / ${property.areaUnit || 'sqft'}`;
+      }
+      doc.text(priceText, 18, 64);
+      if (rateText) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+        doc.text(`•   ${rateText}`, 115, 64);
+      }
+    } else {
+      doc.text('Price: Available on Request (Confidential)', 18, 64);
     }
 
     // 4. Specifications Grid (4 Columns)
@@ -124,12 +132,19 @@ export class BrochureService {
         ['Locality', `${property.location.locality}, ${property.location.city}`, '2D/3D Plot Map', property.location.plotBoundary?.length ? `Verified (${property.location.plotBoundary.length}-Corner Mapped)` : 'GPS Pinpoint Active']
       );
     } else if (property.propertyType === 'villa') {
+      const structName = property.villaDetails?.buildingStructure === 'load_bearing'
+        ? 'Load Bearing'
+        : 'RCC Framed Structure';
+      const facingDisplay = property.villaDetails?.roadFacing
+        ? `${property.villaDetails.roadFacing} Road | ${property.villaDetails.mainEntranceFacing || property.facing || 'East'} Entrance`
+        : (property.facing || property.villaDetails?.facing || 'East Facing');
+
       specsData.push(
-        ['Property Type', 'LUXURY VILLA', 'Listing Type', property.listingType.toUpperCase()],
+        ['Property Type', 'INDEPENDENT VILLA', 'Listing Type', property.listingType.toUpperCase()],
         ['Built-up Area', areaDisplay, 'Plot Area', property.villaDetails?.plotArea ? `${property.villaDetails.plotArea} Sq.ft` : 'Independent Land'],
-        ['Floors / Levels', property.villaDetails?.floors || 'G+1 Duplex', 'Facing / Vastu', property.facing || property.villaDetails?.facing || 'East Facing'],
-        ['Bedrooms / Baths', `${property.bhk || property.villaDetails?.bedrooms || 3} BHK | ${property.bathrooms || property.villaDetails?.bathrooms || 3} Baths`, 'Car Parking', property.villaDetails?.carParking ? `${property.villaDetails.carParking} Covered Spots` : 'Covered Parking'],
-        ['Private Garden', property.villaDetails?.hasGarden ? 'Yes (Landscaped)' : 'Available', 'Furnishing', (property.villaDetails?.furnishing || 'Semi-Furnished').toUpperCase()]
+        ['Structure / Floors', property.villaDetails?.floors || 'G+1 Duplex', 'Building Structure', structName],
+        ['Facing / Vastu', facingDisplay, 'Car Parking', property.villaDetails?.carParking ? `${property.villaDetails.carParking} ${property.villaDetails?.coveredParking ? 'Covered Spots' : 'Spots'}` : 'Covered Parking'],
+        ['Bedrooms / Baths', `${property.bhk || property.villaDetails?.bedrooms || 3} BHK | ${property.bathrooms || property.villaDetails?.bathrooms || 3} Baths`, 'Furnishing', (property.villaDetails?.furnishing || 'Semi-Furnished').toUpperCase()]
       );
     } else if (property.propertyType === 'apartment' || property.propertyType === 'penthouse') {
       specsData.push(
@@ -210,9 +225,16 @@ export class BrochureService {
     if (property.vicinity) {
       if (property.vicinity.metroDistance) vicinityData.push(['Nearest Metro / Rail', property.vicinity.metroDistance]);
       if (property.vicinity.highwayDistance) vicinityData.push(['Highway / Arterial Road', property.vicinity.highwayDistance]);
+      if (property.vicinity.busStopDistance) vicinityData.push(['Bus Stop / Bus Stand', property.vicinity.busStopDistance]);
+      if (property.vicinity.marketDistance) vicinityData.push(['Grocery / Vegetable Market', property.vicinity.marketDistance]);
       if (property.vicinity.schoolDistance) vicinityData.push(['Schools & Education', property.vicinity.schoolDistance]);
       if (property.vicinity.hospitalDistance) vicinityData.push(['Hospitals & Healthcare', property.vicinity.hospitalDistance]);
       if (property.vicinity.airportDistance) vicinityData.push(['Airport / Transport Hub', property.vicinity.airportDistance]);
+      if (property.vicinity.customPoints) {
+        for (const cp of property.vicinity.customPoints) {
+          if (cp.landmark && cp.distance) vicinityData.push([cp.landmark, cp.distance]);
+        }
+      }
     }
 
     if (vicinityData.length > 0) {
@@ -253,18 +275,28 @@ export class BrochureService {
     currentY += 5 + (splitDesc.length * 4.2) + 3;
 
     // 8. Clickable Google Maps Location Link
-    const mapLocationUrl = property.mapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.location.address || ''} ${property.location.locality}, ${property.location.city}`.trim())}`;
-    doc.setTextColor(26, 115, 232);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.textWithLink('📍 Open Location on Google Maps (Click to View Pin & Aerial Directions) ↗', 14, currentY, { url: mapLocationUrl });
-    doc.link(14, currentY - 4, 182, 6, { url: mapLocationUrl });
+    if (showLocation) {
+      const mapLocationUrl = property.mapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.location.address || ''} ${property.location.locality}, ${property.location.city}`.trim())}`;
+      doc.setTextColor(26, 115, 232);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.textWithLink('Open Location on Google Maps (Click to View Pin & Aerial Directions) ->', 14, currentY, { url: mapLocationUrl });
+      doc.link(14, currentY - 4, 182, 6, { url: mapLocationUrl });
+    } else {
+      doc.setTextColor(95, 99, 104);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'italic');
+      doc.text('Exact GPS Location & Street Pin: Confidential (Available upon scheduled site visit)', 14, currentY);
+    }
 
     // 9. 2D Cadastral Plot Boundary Map Snapshot (Placed below the link)
-    const has2DMap = (property.location.plotBoundary && property.location.plotBoundary.length >= 3) ||
-                     (property.location.coordinates && property.location.coordinates.lat);
+    const has2DMap = showLocation && (
+      (property.location.plotBoundary && property.location.plotBoundary.length >= 3) ||
+      (property.location.coordinates && property.location.coordinates.lat)
+    );
 
     if (has2DMap) {
+      const mapLocationUrl = property.mapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.location.address || ''} ${property.location.locality}, ${property.location.city}`.trim())}`;
       const mapSnapshot = this.generate2DMapSnapshot(property);
       if (mapSnapshot) {
         currentY += 4;
@@ -290,7 +322,7 @@ export class BrochureService {
 
           doc.setTextColor(26, 115, 232);
           doc.setFontSize(9);
-          doc.textWithLink('📍 View Interactive Satellite Boundary on Google Maps (Clickable) ↗', 14, 39, { url: mapLocationUrl });
+          doc.textWithLink('View Interactive Satellite Boundary on Google Maps (Clickable) ->', 14, 39, { url: mapLocationUrl });
           doc.link(14, 35, 182, 6, { url: mapLocationUrl });
 
           doc.addImage(mapSnapshot, 'JPEG', 14, 44, 182, 70);
@@ -318,7 +350,7 @@ export class BrochureService {
 
         await Share.share({
           title: property.title,
-          text: `Verified Property Brochure: ${property.title} - ${formattedPrice}`,
+          text: showPrice ? `Verified Property Brochure: ${property.title} - ${formattedPrice}` : `Verified Property Brochure: ${property.title} - Price on Request`,
           url: savedFile.uri,
           dialogTitle: 'Share Property Brochure via WhatsApp or Email'
         });
@@ -346,13 +378,20 @@ export class BrochureService {
   /**
    * Generates a beautifully formatted WhatsApp pitch message
    */
-  generateWhatsAppPitch(property: Property): string {
+  generateWhatsAppPitch(property: Property, options?: { includePrice?: boolean; includeLocation?: boolean }): string {
     const tenant = this.tenantService.activeTenant();
     const agent = this.auth.currentUser();
 
+    const showPrice = options?.includePrice !== false;
+    const showLocation = options?.includeLocation !== false;
+
     const formattedPrice = property.price >= 10000000
-      ? `₹ ${(property.price / 10000000).toFixed(2)} Crores`
-      : `₹ ${(property.price / 100000).toFixed(2)} Lakhs`;
+      ? `Rs. ${(property.price / 10000000).toFixed(2)} Crores`
+      : `Rs. ${(property.price / 100000).toFixed(2)} Lakhs`;
+
+    const priceLine = showPrice
+      ? `*Price:* ${formattedPrice} ${property.negotiable ? '(Negotiable)' : ''}`
+      : `*Price:* Available on Request (Confidential)`;
 
     let typeDetails = '';
     if (property.propertyType === 'plot') {
@@ -361,10 +400,14 @@ export class BrochureService {
         `*Approval:* ${property.plotDetails?.approvalStatus || 'DTCP / RERA Approved'}\n` +
         `*Corner Plot:* ${property.plotDetails?.isCornerPlot ? 'Yes (2-side road)' : 'Standard Plot'}`;
     } else if (property.propertyType === 'villa') {
+      const structLabel = property.villaDetails?.buildingStructure === 'load_bearing' ? 'Load Bearing' : 'RCC Framed Structure';
+      const facingStr = property.villaDetails?.roadFacing
+        ? `${property.villaDetails.roadFacing} Road, ${property.villaDetails.mainEntranceFacing || 'East'} Entrance`
+        : (property.facing || 'East Facing');
       typeDetails = `*Configuration:* ${property.bhk || property.villaDetails?.bedrooms || 3} BHK Luxury Villa\n` +
-        `*Floors:* ${property.villaDetails?.floors || 'G+1 Duplex'}\n` +
-        `*Car Parking:* ${property.villaDetails?.carParking ? `${property.villaDetails.carParking} Covered Slots` : 'Available'}\n` +
-        `*Facing:* ${property.facing || property.villaDetails?.facing || 'East Facing'}`;
+        `*Structure / Floors:* ${property.villaDetails?.floors || 'G+1 Duplex'} (${structLabel})\n` +
+        `*Car Parking:* ${property.villaDetails?.carParking ? `${property.villaDetails.carParking} ${property.villaDetails?.coveredParking ? 'Covered Slots' : 'Slots'}` : 'Available'}\n` +
+        `*Facing:* ${facingStr}`;
     } else if (property.propertyType === 'apartment') {
       typeDetails = `*Configuration:* ${property.bhk || '3 BHK'} Apartment\n` +
         `*Floor:* ${property.apartmentDetails?.floorNumber ? `Floor ${property.apartmentDetails.floorNumber} of ${property.apartmentDetails.totalFloors || '—'}` : 'Mid Floor'}\n` +
@@ -376,9 +419,15 @@ export class BrochureService {
       ? property.infrastructure.slice(0, 4).join(', ')
       : '24/7 Security, Metro Water, Wide Blacktop Road, Power Backup';
 
-    const mapsLine = property.mapsUrl
-      ? `\n*Google Maps Location:* ${property.mapsUrl}`
-      : `\n*Google Maps Location:* https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.location.address || ''} ${property.location.locality}, ${property.location.city}`.trim())}`;
+    const locationLine = showLocation
+      ? `*Location:* ${property.location.locality}, ${property.location.city}`
+      : `*Territory:* ${property.location.locality}, ${property.location.city} (Exact location confidential)`;
+
+    const mapsLine = showLocation
+      ? (property.mapsUrl
+          ? `\n*Google Maps Location:* ${property.mapsUrl}`
+          : `\n*Google Maps Location:* https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.location.address || ''} ${property.location.locality}, ${property.location.city}`.trim())}`)
+      : `\n*Google Maps Location:* Exact coordinates provided upon scheduled site visit`;
 
     const agentName = property.assignedAgentName || agent?.displayName || 'Senior Property Consultant';
     const agentPhone = agent?.phoneNumber || tenant.phone;
@@ -390,8 +439,8 @@ export class BrochureService {
 
     return `*VERIFIED PROPERTY OPPORTUNITY*\n\n` +
       `*${property.title}*\n` +
-      `*Location:* ${property.location.locality}, ${property.location.city}${mapsLine}\n` +
-      `*Price:* ${formattedPrice} ${property.negotiable ? '(Negotiable)' : ''}\n` +
+      `${locationLine}${mapsLine}\n` +
+      `${priceLine}\n` +
       `*Area:* ${property.area} ${property.areaUnit.toUpperCase()}\n` +
       (typeDetails ? `\n${typeDetails}\n` : '') +
       `\n*On-Site Services:* ${services}\n` +
@@ -404,8 +453,8 @@ export class BrochureService {
   /**
    * Opens WhatsApp with pre-filled pitch
    */
-  shareToWhatsApp(property: Property): void {
-    const pitch = this.generateWhatsAppPitch(property);
+  shareToWhatsApp(property: Property, options?: { includePrice?: boolean; includeLocation?: boolean }): void {
+    const pitch = this.generateWhatsAppPitch(property, options);
     const url = `https://wa.me/?text=${encodeURIComponent(pitch)}`;
     window.open(url, '_blank');
   }
@@ -413,8 +462,8 @@ export class BrochureService {
   /**
    * Copies formatted pitch text to clipboard
    */
-  async copyPitch(property: Property): Promise<boolean> {
-    const pitch = this.generateWhatsAppPitch(property);
+  async copyPitch(property: Property, options?: { includePrice?: boolean; includeLocation?: boolean }): Promise<boolean> {
+    const pitch = this.generateWhatsAppPitch(property, options);
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(pitch);
@@ -429,8 +478,8 @@ export class BrochureService {
   /**
    * Native device share sheet fallback
    */
-  async shareNative(property: Property): Promise<void> {
-    const pitch = this.generateWhatsAppPitch(property);
+  async shareNative(property: Property, options?: { includePrice?: boolean; includeLocation?: boolean }): Promise<void> {
+    const pitch = this.generateWhatsAppPitch(property, options);
     if (Capacitor.isNativePlatform()) {
       try {
         await Share.share({
@@ -451,7 +500,7 @@ export class BrochureService {
         console.warn('Web share failed:', err);
       }
     } else {
-      await this.copyPitch(property);
+      await this.copyPitch(property, options);
     }
   }
 
