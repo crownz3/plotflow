@@ -96,6 +96,7 @@ export interface VillaDetails {
   roadFacing?: string;
   mainEntranceFacing?: string;
   furnishing?: 'unfurnished' | 'semi-furnished' | 'fully-furnished';
+  ebConnection?: 'single_phase' | 'three_phase';
 }
 
 export interface ApartmentDetails {

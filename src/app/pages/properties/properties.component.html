@@ -584,6 +584,14 @@
               </select>
             </div>
 
+            <div class="ef-form-group">
+              <label>EB Connection</label>
+              <select [(ngModel)]="newProp.villaEbConnection">
+                <option value="single_phase">Single Phase (1-Phase)</option>
+                <option value="three_phase">Three Phase (3-Phase)</option>
+              </select>
+            </div>
+
             <div class="ef-form-group col-span-2 toggles-row">
               <label class="toggle-pill">
                 <input type="checkbox" [(ngModel)]="newProp.villaHasGarden">
@@ -1221,6 +1229,14 @@
                 <option value="unfurnished">Unfurnished</option>
                 <option value="semi-furnished">Semi-Furnished</option>
                 <option value="fully-furnished">Fully Furnished</option>
+              </select>
+            </div>
+
+            <div class="ef-form-group">
+              <label>EB Connection</label>
+              <select [(ngModel)]="editForm.villaEbConnection">
+                <option value="single_phase">Single Phase (1-Phase)</option>
+                <option value="three_phase">Three Phase (3-Phase)</option>
               </select>
             </div>
 

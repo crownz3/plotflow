@@ -207,6 +207,7 @@ export class PropertiesComponent {
       villaRoadFacing: 'East',
       villaMainEntranceFacing: 'East',
       villaFurnishing: 'semi-furnished' as 'unfurnished' | 'semi-furnished' | 'fully-furnished',
+      villaEbConnection: 'three_phase' as 'single_phase' | 'three_phase',
       villaFloorsList: [
         {
           floorLevel: 'Ground Floor',
@@ -773,7 +774,8 @@ export class PropertiesComponent {
         facing: this.newProp.villaFacing,
         roadFacing: this.newProp.villaRoadFacing,
         mainEntranceFacing: this.newProp.villaMainEntranceFacing,
-        furnishing: this.newProp.villaFurnishing
+        furnishing: this.newProp.villaFurnishing,
+        ebConnection: this.newProp.villaEbConnection
       };
     } else if (this.newProp.propertyType === 'apartment') {
       propData.bhk = this.newProp.aptBhk;
@@ -864,6 +866,7 @@ export class PropertiesComponent {
       villaRoadFacing: prop.villaDetails?.roadFacing || prop.villaDetails?.facing || 'East',
       villaMainEntranceFacing: prop.villaDetails?.mainEntranceFacing || 'East',
       villaFurnishing: prop.villaDetails?.furnishing || 'semi-furnished',
+      villaEbConnection: prop.villaDetails?.ebConnection || 'three_phase',
       villaFloorsList: prop.villaDetails?.floorBreakdown && prop.villaDetails.floorBreakdown.length > 0
         ? prop.villaDetails.floorBreakdown.map(f => ({ ...f }))
         : [
@@ -978,7 +981,8 @@ export class PropertiesComponent {
         facing: this.editForm.villaFacing,
         roadFacing: this.editForm.villaRoadFacing,
         mainEntranceFacing: this.editForm.villaMainEntranceFacing,
-        furnishing: this.editForm.villaFurnishing
+        furnishing: this.editForm.villaFurnishing,
+        ebConnection: this.editForm.villaEbConnection
       };
     } else if (this.editForm.propertyType === 'apartment') {
       updates.bhk = this.editForm.aptBhk;

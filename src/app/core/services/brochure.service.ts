@@ -139,12 +139,17 @@ export class BrochureService {
         ? `${property.villaDetails.roadFacing} Road | ${property.villaDetails.mainEntranceFacing || property.facing || 'East'} Entrance`
         : (property.facing || property.villaDetails?.facing || 'East Facing');
 
+      const ebDisplay = property.villaDetails?.ebConnection === 'single_phase'
+        ? 'Single Phase (1-Phase)'
+        : (property.villaDetails?.ebConnection === 'three_phase' ? 'Three Phase (3-Phase)' : 'Available');
+
       specsData.push(
         ['Property Type', 'INDEPENDENT VILLA', 'Listing Type', property.listingType.toUpperCase()],
         ['Built-up Area', areaDisplay, 'Plot Area', property.villaDetails?.plotArea ? `${property.villaDetails.plotArea} Sq.ft` : 'Independent Land'],
         ['Structure / Floors', property.villaDetails?.floors || 'G+1 Duplex', 'Building Structure', structName],
         ['Facing / Vastu', facingDisplay, 'Car Parking', property.villaDetails?.carParking ? `${property.villaDetails.carParking} ${property.villaDetails?.coveredParking ? 'Covered Spots' : 'Spots'}` : 'Covered Parking'],
-        ['Bedrooms / Baths', `${property.bhk || property.villaDetails?.bedrooms || 3} BHK | ${property.bathrooms || property.villaDetails?.bathrooms || 3} Baths`, 'Furnishing', (property.villaDetails?.furnishing || 'Semi-Furnished').toUpperCase()]
+        ['Bedrooms / Baths', `${property.bhk || property.villaDetails?.bedrooms || 3} BHK | ${property.bathrooms || property.villaDetails?.bathrooms || 3} Baths`, 'Furnishing', (property.villaDetails?.furnishing || 'Semi-Furnished').toUpperCase()],
+        ['EB Connection', ebDisplay, 'Private Garden', property.villaDetails?.hasGarden ? 'Yes (Landscaped)' : 'Standard']
       );
     } else if (property.propertyType === 'apartment' || property.propertyType === 'penthouse') {
       specsData.push(
@@ -404,10 +409,14 @@ export class BrochureService {
       const facingStr = property.villaDetails?.roadFacing
         ? `${property.villaDetails.roadFacing} Road, ${property.villaDetails.mainEntranceFacing || 'East'} Entrance`
         : (property.facing || 'East Facing');
+      const ebStr = property.villaDetails?.ebConnection === 'single_phase'
+        ? 'Single Phase'
+        : (property.villaDetails?.ebConnection === 'three_phase' ? 'Three Phase' : '');
       typeDetails = `*Configuration:* ${property.bhk || property.villaDetails?.bedrooms || 3} BHK Luxury Villa\n` +
         `*Structure / Floors:* ${property.villaDetails?.floors || 'G+1 Duplex'} (${structLabel})\n` +
         `*Car Parking:* ${property.villaDetails?.carParking ? `${property.villaDetails.carParking} ${property.villaDetails?.coveredParking ? 'Covered Slots' : 'Slots'}` : 'Available'}\n` +
-        `*Facing:* ${facingStr}`;
+        `*Facing:* ${facingStr}` +
+        (ebStr ? `\n*EB Connection:* ${ebStr}` : '');
     } else if (property.propertyType === 'apartment') {
       typeDetails = `*Configuration:* ${property.bhk || '3 BHK'} Apartment\n` +
         `*Floor:* ${property.apartmentDetails?.floorNumber ? `Floor ${property.apartmentDetails.floorNumber} of ${property.apartmentDetails.totalFloors || '—'}` : 'Mid Floor'}\n` +

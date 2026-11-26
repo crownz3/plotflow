@@ -311,6 +311,10 @@
               <span class="spec-label">Car Parking</span>
               <strong class="spec-val">{{ villa.carParking }} {{ villa.coveredParking ? 'Covered' : 'Slots' }}</strong>
             </div>
+            <div class="spec-card" *ngIf="villa.ebConnection">
+              <span class="spec-label">EB Connection</span>
+              <strong class="spec-val">{{ villa.ebConnection === 'three_phase' ? 'Three Phase (3-Phase)' : 'Single Phase (1-Phase)' }}</strong>
+            </div>
             <div class="spec-card" *ngIf="villa.roadFacing || villa.facing">
               <span class="spec-label">Road Facing</span>
               <strong class="spec-val">{{ villa.roadFacing || villa.facing }} Facing</strong>
